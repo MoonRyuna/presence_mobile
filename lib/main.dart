@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:presence_alpha/provider/date_provider.dart';
 import 'package:presence_alpha/provider/navbar_provider.dart';
@@ -18,13 +19,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.red,
-          textTheme: GoogleFonts.lexendDecaTextTheme(
-            Theme.of(context).textTheme,
-          ),
+      title: 'Sistem Presensi',
+      theme: ThemeData(
+        primarySwatch: Colors.red,
+        textTheme: GoogleFonts.lexendDecaTextTheme(
+          Theme.of(context).textTheme,
         ),
-        home: const SplashScreen());
+      ),
+      home: const SplashScreen(),
+      builder: EasyLoading.init(),
+    );
   }
 }

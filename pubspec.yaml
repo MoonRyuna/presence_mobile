@@ -41,8 +41,16 @@ dependencies:
   ionicons: ^0.2.2
   intl: ^0.18.0
   google_fonts: ^4.0.3
-  location: ^4.4.0
+  location: ^5.0.0-dev.8
   google_maps_flutter: ^2.2.5
+  geolocator: ^9.0.2
+  geocoding: ^2.1.0
+  localstorage: ^4.0.1+2
+  flutter_statusbarcolor_ns: ^0.5.0
+  http: ^0.13.5
+  device_information: ^0.0.4
+  permission_handler: ^10.2.0
+  flutter_easyloading: ^3.0.5
 
 dev_dependencies:
   flutter_test:

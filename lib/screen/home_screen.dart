@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
-import 'package:location/location.dart';
 import 'package:presence_alpha/provider/date_provider.dart';
+import 'package:presence_alpha/utility/maps_utility.dart';
 import 'package:provider/provider.dart';
 import '../constant/color_constant.dart';
 
@@ -17,28 +19,37 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Timer _timer;
-  GoogleMapController? _controller;
-  Location currentLocation = Location();
-  final Set<Marker> _markers = {};
+  late String distanceBetweenPoints = "-";
+  late String address = "-";
+  late Position _currentPosition;
+  late LocationPermission locationPermission;
 
-  void getLocation() async {
-    var location = await currentLocation.getLocation();
-    currentLocation.onLocationChanged.listen((LocationData loc) {
-      _controller?.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-        target: LatLng(loc.latitude ?? 0.0, loc.longitude ?? 0.0),
-        zoom: 12.0,
-      )));
+  static const LatLng mapCenter = LatLng(-6.9147444, 107.6098106);
+  static const CameraPosition _kBandung =
+      CameraPosition(target: mapCenter, zoom: 11.0, tilt: 0, bearing: 0);
 
-      print(loc.latitude);
-      print(loc.longitude);
+  final Completer<GoogleMapController> _controller =
+      Completer<GoogleMapController>();
 
-      setState(() {
-        _markers.add(Marker(
-            markerId: const MarkerId('Home'),
-            position: LatLng(loc.latitude ?? 0.0, loc.longitude ?? 0.0)));
-      });
-    });
-  }
+  static const CameraPosition _kOffice = CameraPosition(
+    target: LatLng(-7.011322068660715, 107.5523534978694),
+    zoom: 17,
+  );
+
+  CameraPosition _kCurrentPosition =
+      const CameraPosition(target: LatLng(-6.9147444, 107.6098106), zoom: 17);
+
+  Set<Circle> circles = {
+    Circle(
+        circleId: const CircleId("kantor_geofence"),
+        center: _kOffice.target,
+        radius: 20,
+        fillColor: Colors.redAccent.withOpacity(0.5),
+        strokeWidth: 3,
+        strokeColor: Colors.redAccent)
+  };
+
+  void getLocation() async {}
 
   @override
   void initState() {
@@ -46,16 +57,78 @@ class _HomeScreenState extends State<HomeScreen> {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       Provider.of<DateProvider>(context, listen: false).setDate(DateTime.now());
     });
-
-    setState(() {
-      getLocation();
-    });
+    _getLocation();
+    calculateDistance();
   }
 
   @override
   void dispose() {
     _timer.cancel();
     super.dispose();
+  }
+
+  Future<void> checkLocationPermission() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      locationPermission = await Geolocator.requestPermission();
+    }
+  }
+
+  Future<void> getCurrentLocation() async {
+    try {
+      checkLocationPermission();
+      _currentPosition = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+          _currentPosition.latitude, _currentPosition.longitude);
+
+      Placemark placemark = placemarks[0];
+      String formattedAddress =
+          "${placemark.name}, ${placemark.subLocality}, ${placemark.locality}, ${placemark.subAdministrativeArea}, ${placemark.administrativeArea}, ${placemark.postalCode}, ${placemark.country}";
+
+      setState(() {
+        address = formattedAddress;
+      });
+    } catch (e) {
+      // ignore: avoid_print
+      print(e);
+    }
+  }
+
+  Future<void> _getLocation() async {
+    await getCurrentLocation();
+    setState(() {
+      _kCurrentPosition = CameraPosition(
+        target: LatLng(_currentPosition.latitude, _currentPosition.longitude),
+        zoom: 17,
+      );
+    });
+    calculateDistance();
+  }
+
+  Future<void> calculateDistance() async {
+    double distance = MapsUtility.calculateDistance(
+        _kOffice.target.latitude,
+        _kOffice.target.longitude,
+        _kCurrentPosition.target.latitude,
+        _kCurrentPosition.target.longitude);
+
+    setState(() {
+      distanceBetweenPoints = "${distance.ceil()} KM";
+    });
+  }
+
+  Future<void> _goToOffice() async {
+    final GoogleMapController controller = await _controller.future;
+    controller.animateCamera(CameraUpdate.newCameraPosition(_kOffice));
+    _getLocation();
+  }
+
+  Future<void> _goToCurrenPosition() async {
+    final GoogleMapController controller = await _controller.future;
+    controller.animateCamera(CameraUpdate.newCameraPosition(_kCurrentPosition));
+    _getLocation();
   }
 
   Widget userInfo(String name, String photoUrl) {
@@ -72,38 +145,43 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const Padding(padding: EdgeInsets.only(left: 10)),
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text(
-            'Selamat Datang',
-            style: TextStyle(
-              fontSize: 18,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Selamat Datang',
+              style: TextStyle(
+                fontSize: 18,
+              ),
             ),
-          ),
-          Text(
-            name,
-            style: TextStyle(
-              fontSize: 23,
-              fontWeight: FontWeight.bold,
-              color: ColorConstant.lightPrimary,
+            Text(
+              name,
+              style: TextStyle(
+                fontSize: 23,
+                fontWeight: FontWeight.bold,
+                color: ColorConstant.lightPrimary,
+              ),
             ),
-          ),
-        ]),
+          ],
+        ),
       ],
     );
   }
 
   Widget boxInfo(String accountType, String checkIn, String checkOut) {
     return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/background.png'),
-            fit: BoxFit.cover,
-          ),
-          borderRadius: BorderRadius.all(Radius.circular(13)),
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/background.png'),
+          fit: BoxFit.cover,
         ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        borderRadius: BorderRadius.all(Radius.circular(13)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Text(
             accountType,
             style: const TextStyle(fontSize: 18, color: Colors.white),
@@ -112,9 +190,10 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (context, dateModel, child) => Text(
               DateFormat('dd MMMM yyyy HH:mm:ss').format(dateModel.date),
               style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
           const Padding(padding: EdgeInsets.only(top: 10)),
@@ -140,9 +219,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       checkIn,
                       style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ],
                 ),
@@ -157,41 +237,110 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Text(
                       "check-out",
                       style: TextStyle(
-                          fontSize: 18,
-                          fontStyle: FontStyle.italic,
-                          color: Colors.white),
+                        fontSize: 18,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.white,
+                      ),
                     ),
                     Text(
                       checkOut,
                       style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ],
                 )
               ],
             ),
-            // tambahkan child atau konten di dalam container di sini
           ),
-        ]));
+        ],
+      ),
+    );
   }
 
-  Widget boxMap() {
-    return Container(
-      height: 200,
+  Widget boxLocation(String address) {
+    return SizedBox(
       width: double.infinity,
-      child: GoogleMap(
-        zoomControlsEnabled: false,
-        initialCameraPosition: const CameraPosition(
-          target: LatLng(48.8561, 2.2930),
-          zoom: 12.0,
-        ),
-        onMapCreated: (GoogleMapController controller) {
-          _controller = controller;
-        },
-        markers: _markers,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            address,
+            style: const TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget distanceLocation(String infoDistance) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Container(
+          padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
+          width: (MediaQuery.of(context).size.width - 50) / 2,
+          decoration: const BoxDecoration(
+            color: Color.fromARGB(255, 238, 238, 238),
+            borderRadius: BorderRadius.all(Radius.circular(13)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Jarak ke Kantor: ",
+                style: TextStyle(
+                  fontSize: 16,
+                ),
+              ),
+              Text(
+                infoDistance,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          width: (MediaQuery.of(context).size.width - 50) / 2,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 60,
+                height: 60,
+                child: IconButton(
+                  icon: CircleAvatar(
+                    backgroundColor: ColorConstant.lightPrimary,
+                    radius: 30,
+                    child:
+                        const Icon(Icons.business_center, color: Colors.white),
+                  ),
+                  onPressed: () {
+                    _goToOffice();
+                  },
+                ),
+              ),
+              SizedBox(
+                width: 60,
+                height: 60,
+                child: IconButton(
+                  icon: const CircleAvatar(
+                    backgroundColor: Colors.red,
+                    radius: 30,
+                    child: Icon(Icons.gps_fixed, color: Colors.white),
+                  ),
+                  onPressed: () {
+                    _goToCurrenPosition();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -211,9 +360,46 @@ class _HomeScreenState extends State<HomeScreen> {
                         "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png"),
                     const Padding(padding: EdgeInsets.all(10)),
                     boxInfo("Karyawan", "10:10:10", "17:10:10"),
-                    const Padding(padding: EdgeInsets.all(10)),
-                    boxMap(),
-                    const Padding(padding: EdgeInsets.all(3)),
+                    const Padding(padding: EdgeInsets.all(8)),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: const Color.fromRGBO(238, 238, 238, 1),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width -
+                            38, // or use fixed size like 200
+                        height: 180,
+                        child: GoogleMap(
+                          mapType: MapType.normal,
+                          initialCameraPosition: _kBandung,
+                          onMapCreated: (GoogleMapController controller) {
+                            _controller.complete(controller);
+                          },
+                          markers: {
+                            Marker(
+                              markerId: const MarkerId('kantor'),
+                              position: _kOffice.target,
+                              infoWindow: const InfoWindow(
+                                  title: 'PT. Digital Amore Kriyanesia'),
+                            ),
+                            Marker(
+                              markerId: const MarkerId('your_position'),
+                              position: _kCurrentPosition.target,
+                              infoWindow:
+                                  const InfoWindow(title: 'Posisi Anda'),
+                            ),
+                          },
+                          circles: circles,
+                        ),
+                      ),
+                    ),
+                    const Padding(padding: EdgeInsets.all(6)),
+                    boxLocation(address),
+                    const Padding(padding: EdgeInsets.all(6)),
+                    distanceLocation(distanceBetweenPoints),
                   ],
                 ),
               ),
