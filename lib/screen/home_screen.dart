@@ -6,9 +6,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:presence_alpha/provider/date_provider.dart';
+import 'package:presence_alpha/screen/izin_screen.dart';
 import 'package:presence_alpha/utility/maps_utility.dart';
 import 'package:provider/provider.dart';
-import '../constant/color_constant.dart';
+import 'package:presence_alpha/constant/color_constant.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -32,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
       Completer<GoogleMapController>();
 
   static const CameraPosition _kOffice = CameraPosition(
-    target: LatLng(-7.011322068660715, 107.5523534978694),
+    target: LatLng(-7.011477899042147, 107.55234770202203),
     zoom: 17,
   );
 
@@ -76,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> getCurrentLocation() async {
     try {
-      checkLocationPermission();
+      await checkLocationPermission();
       _currentPosition = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
 
@@ -309,8 +310,8 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(
-                width: 60,
-                height: 60,
+                width: 75,
+                height: 75,
                 child: IconButton(
                   icon: CircleAvatar(
                     backgroundColor: ColorConstant.lightPrimary,
@@ -324,8 +325,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               SizedBox(
-                width: 60,
-                height: 60,
+                width: 75,
+                height: 75,
                 child: IconButton(
                   icon: const CircleAvatar(
                     backgroundColor: Colors.red,
@@ -341,6 +342,83 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget boxButton() {
+    // return Row(
+    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //   children: [
+    //     Container(
+    //       width: MediaQuery.of(context).size.width / 2 - 30,
+    //       height: 100,
+    //       decoration: BoxDecoration(
+    //         border: Border.all(color: ColorConstant.lightPrimary, width: 2.0),
+    //         borderRadius: BorderRadius.circular(13),
+    //       ),
+    //       child: TextButton.icon(
+    //         onPressed: () {
+    //           Navigator.push(
+    //             context,
+    //             MaterialPageRoute(builder: (context) => const IzinScreen()),
+    //           );
+    //         },
+    //         icon: Icon(Icons.check, color: ColorConstant.lightPrimary),
+    //         label: Text('Izin',
+    //             style: TextStyle(color: ColorConstant.lightPrimary)),
+    //       ),
+    //     ),
+    //     Container(
+    //       width: MediaQuery.of(context).size.width / 2 - 30,
+    //       height: 100,
+    //       decoration: BoxDecoration(
+    //         border: Border.all(color: ColorConstant.lightPrimary, width: 2.0),
+    //         borderRadius: BorderRadius.circular(13),
+    //       ),
+    //       child: TextButton.icon(
+    //         onPressed: () {},
+    //         icon: Icon(Icons.access_time, color: ColorConstant.lightPrimary),
+    //         label: Text('Lembur',
+    //             style: TextStyle(color: ColorConstant.lightPrimary)),
+    //       ),
+    //     ),
+    //   ],
+    // );
+    return GridView.count(
+      shrinkWrap: true,
+      crossAxisCount: 3,
+      mainAxisSpacing: 20,
+      crossAxisSpacing: 20,
+      children: [
+        gridButton("Kehadiran", Icons.fingerprint),
+        gridButton("Izin", Icons.assignment),
+        gridButton("Lembur", Icons.timer),
+      ],
+    );
+  }
+
+  Widget gridButton(String text, IconData icon) {
+    return GestureDetector(
+      onTap: () {
+        // Ketika tombol ditekan
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(13),
+          border: Border.all(
+            color: const Color.fromRGBO(189, 189, 189, 1),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Icon(icon, size: 40, color: Colors.grey[800]),
+            const SizedBox(height: 6),
+            Text(text, style: const TextStyle(fontSize: 12)),
+          ],
+        ),
+      ),
     );
   }
 
@@ -361,6 +439,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Padding(padding: EdgeInsets.all(10)),
                     boxInfo("Karyawan", "10:10:10", "17:10:10"),
                     const Padding(padding: EdgeInsets.all(8)),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            "Menu",
+                            style: TextStyle(
+                              fontSize: 23,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Padding(padding: EdgeInsets.all(6)),
+                    boxButton(),
+                    const Padding(padding: EdgeInsets.all(10)),
                     Container(
                       decoration: BoxDecoration(
                         border: Border.all(

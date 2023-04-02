@@ -11,8 +11,7 @@ class TokenModel {
     );
   }
 
-  @override
-  String toString() {
+  String toPlain() {
     return 'TokenModel{ token: $token }';
   }
 }

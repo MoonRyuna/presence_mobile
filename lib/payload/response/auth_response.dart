@@ -18,8 +18,7 @@ class AuthResponse extends BaseResponse {
     );
   }
 
-  @override
-  String toString() {
+  String toPlain() {
     return 'AuthResponse{ status: $status, message: $message, data: $data }';
   }
 }

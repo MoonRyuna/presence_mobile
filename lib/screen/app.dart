@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:presence_alpha/provider/navbar_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../constant/color_constant.dart';
+import 'package:presence_alpha/constant/color_constant.dart';
 
 class App extends StatelessWidget {
   const App({super.key});

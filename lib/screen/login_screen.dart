@@ -1,15 +1,23 @@
 // ignore_for_file: avoid_print
 
+import 'dart:convert';
+
 import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:device_information/device_information.dart';
 import 'package:flutter/material.dart';
 // ignore: import_of_legacy_library_into_null_safe
-import 'package:flutter_statusbarcolor_ns/flutter_statusbarcolor_ns.dart';
+// import 'package:flutter_statusbarcolor_ns/flutter_statusbarcolor_ns.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
+import 'package:presence_alpha/model/user_auth_model.dart';
 import 'package:presence_alpha/payload/response/auth_response.dart';
 import 'package:presence_alpha/service/auth_service.dart';
+import 'package:presence_alpha/storage/app_storage.dart';
+import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
+import 'package:provider/provider.dart';
+import 'package:presence_alpha/provider/token_provider.dart';
+import 'package:presence_alpha/screen/app.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -60,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  void onLogin(BuildContext ctx) async {
+  void onLogin() async {
     LoadingUtility.show(null);
 
     int errorCount = 0;
@@ -73,7 +81,6 @@ class _LoginScreenState extends State<LoginScreen> {
     String? username = _usernameController.text.trim();
     String? password = _passwordController.text.trim();
 
-    // ignore: avoid_print
     print('username: $username');
     print('password: $password');
 
@@ -106,41 +113,66 @@ class _LoginScreenState extends State<LoginScreen> {
         print(requestData);
 
         AuthResponse response = await AuthService().auth(requestData);
-        print(response.toString());
-
-        String rTitle = "";
-        String rMessage = "";
-        TipType rType = TipType.COMPLETE;
+        if (!mounted) return;
+        print(response.toPlain());
 
         if (response.status == false) {
-          rTitle = "Gagal";
-          rMessage = response.message!;
-          rType = TipType.ERROR;
-        }
+          AmessageUtility.show(
+            context,
+            "Gagal",
+            response.message!,
+            TipType.ERROR,
+          );
+        } else {
+          final tokenProvider = Provider.of<TokenProvider>(
+            context,
+            listen: false,
+          );
 
-        Navigator.push(
-          ctx,
-          AwesomeMessageRoute(
-            awesomeMessage: AwesomeHelper.createAwesome(
-              title: rTitle,
-              message: rMessage,
-              tipType: rType,
-            ),
-          ),
-        );
+          if (response.data!.token != null) {
+            tokenProvider.setToken(response.data!.token as String);
+
+            UserAuthModel userAuthModel = UserAuthModel(
+              username: username,
+              password: password,
+              imei: imei,
+            );
+
+            await AppStorage.localStorage.setItem(
+              "usr",
+              jsonEncode(
+                userAuthModel.toJson(),
+              ),
+            );
+
+            final usr = await AppStorage.localStorage.getItem("usr");
+            print("WOW $usr");
+            if (!mounted) return;
+
+            AmessageUtility.show(
+              context,
+              "Berhasil",
+              "melakukan login",
+              TipType.COMPLETE,
+            );
+
+            Navigator.of(context)
+                .pushReplacement(MaterialPageRoute(builder: (_) {
+              return const App();
+            }));
+          } else {
+            AmessageUtility.show(
+              context,
+              "Gagal",
+              "tidak dapat response dari server",
+              TipType.ERROR,
+            );
+          }
+        }
       } catch (error) {
         print('Error: $error');
 
-        Navigator.push(
-          ctx,
-          AwesomeMessageRoute(
-            awesomeMessage: AwesomeHelper.createAwesome(
-              title: "Gagal",
-              message: error.toString(),
-              tipType: TipType.ERROR,
-            ),
-          ),
-        );
+        AmessageUtility.show(context, "Gagal", error.toString(), TipType.ERROR);
       } finally {
         LoadingUtility.hide();
       }
@@ -149,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    FlutterStatusbarcolor.setStatusBarColor(ColorConstant.lightPrimary);
+    // FlutterStatusbarcolor.setStatusBarColor(ColorConstant.lightPrimary);
 
     return Scaffold(
       body: SafeArea(
@@ -266,7 +298,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 30),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: ColorConstant.lightPrimary,
@@ -276,7 +308,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       onPressed: () {
-                        onLogin(context);
+                        onLogin();
                       },
                       child: const Text(
                         'Masuk',

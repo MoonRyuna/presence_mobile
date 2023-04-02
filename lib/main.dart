@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/date_provider.dart';
 import 'package:presence_alpha/provider/navbar_provider.dart';
 import 'package:presence_alpha/screen/splash_screen.dart';
+import 'package:presence_alpha/storage/app_storage.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AppStorage.init();
+  
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider<NavbarProvider>(create: (_) => NavbarProvider()),
     ChangeNotifierProvider<DateProvider>(create: (_) => DateProvider()),
+    ChangeNotifierProvider<TokenProvider>(create: (_) => TokenProvider())
   ], child: const MyApp()));
 }
 

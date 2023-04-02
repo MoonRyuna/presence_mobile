@@ -83,8 +83,37 @@ class UserModel {
     );
   }
 
-  @override
-  String toString() {
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['user_code'] = userCode;
+    data['username'] = username;
+    data['password'] = password;
+    data['email'] = email;
+    data['phone_number'] = phoneNumber;
+    data['account_type'] = accountType;
+    data['name'] = name;
+    data['address'] = address;
+    data['description'] = description;
+    data['started_work_at'] = startedWorkAt;
+    data['profile_picture'] = profilePicture;
+    data['device_tracker'] = deviceTracker;
+    data['created_by'] = createdBy;
+    data['deleted'] = deleted;
+    data['can_wfh'] = canWfh;
+    data['updated_at'] = updatedAt;
+    data['created_at'] = createdAt;
+    data['token'] = token;
+    data['imei'] = imei;
+    data['device_uid'] = deviceUid;
+    data['otp'] = otp;
+    data['updated_by'] = updatedBy;
+    data['deleted_by'] = deletedBy;
+    data['deleted_at'] = deletedAt;
+    return data;
+  }
+
+  String toPlain() {
     return 'UserModel{ id: $id, userCode: $userCode, username: $username, password: $password, email: $email, phoneNumber: $phoneNumber, accountType: $accountType, name: $name, address: $address, description: $description, startedWorkAt: $startedWorkAt, profilePicture: $profilePicture, deviceTracker: $deviceTracker, createdBy: $createdBy, deleted: $deleted, canWfh: $canWfh, updatedAt: $updatedAt, createdAt: $createdAt, token: $token, imei: $imei, deviceUid: $deviceUid, otp: $otp, updatedBy: $updatedBy, deletedBy: $deletedBy, deletedAt: $deletedAt }';
   }
 }
