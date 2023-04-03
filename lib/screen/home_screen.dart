@@ -33,30 +33,20 @@ class _HomeScreenState extends State<HomeScreen> {
   late Position _currentPosition;
   late LocationPermission locationPermission;
 
-  static const LatLng mapCenter = LatLng(-6.9147444, 107.6098106);
-  static const CameraPosition _kBandung =
-      CameraPosition(target: mapCenter, zoom: 11.0, tilt: 0, bearing: 0);
-
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
-  static const CameraPosition _kOffice = CameraPosition(
-    target: LatLng(-7.011477899042147, 107.55234770202203),
-    zoom: 17,
-  );
+  static const LatLng mapCenter = LatLng(-6.9147444, 107.6098106);
+  final CameraPosition _kBandung =
+      const CameraPosition(target: mapCenter, zoom: 11.0, tilt: 0, bearing: 0);
+
+  CameraPosition _kOffice = const CameraPosition(
+      target: LatLng(-7.011477899042147, 107.55234770202203), zoom: 17);
 
   CameraPosition _kCurrentPosition =
       const CameraPosition(target: LatLng(-6.9147444, 107.6098106), zoom: 17);
 
-  Set<Circle> circles = {
-    Circle(
-        circleId: const CircleId("kantor_geofence"),
-        center: _kOffice.target,
-        radius: 20,
-        fillColor: Colors.redAccent.withOpacity(0.5),
-        strokeWidth: 3,
-        strokeColor: Colors.redAccent)
-  };
+  late Set<Circle>? _circlesSet;
 
   void getLocation() async {}
 
@@ -67,7 +57,20 @@ class _HomeScreenState extends State<HomeScreen> {
       Provider.of<DateProvider>(context, listen: false).setDate(DateTime.now());
     });
     _getLocation();
-    calculateDistance();
+    _circlesSet = _buildCircles();
+  }
+
+  Set<Circle> _buildCircles() {
+    return {
+      Circle(
+        circleId: const CircleId("kantor_geofence"),
+        center: _kOffice.target,
+        radius: 20,
+        fillColor: Colors.redAccent.withOpacity(0.5),
+        strokeWidth: 3,
+        strokeColor: Colors.redAccent,
+      )
+    };
   }
 
   @override
@@ -111,6 +114,18 @@ class _HomeScreenState extends State<HomeScreen> {
         dp.lembur = response.data!.lembur;
         dp.presensi = response.data!.presensi;
         ocp.officeConfig = response.data!.officeConfig;
+
+        var latOffice =
+            response.data?.officeConfig!.latitude ?? -7.01147799042147;
+        var lngOffice =
+            response.data?.officeConfig!.longitude ?? 107.55234770202203;
+
+        setState(() {
+          _kOffice = CameraPosition(
+            target: LatLng(latOffice, lngOffice),
+            zoom: 17,
+          );
+        });
         LoadingUtility.hide();
       }
     }
@@ -148,13 +163,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _getLocation() async {
     await loadData();
-    return;
     await getCurrentLocation();
     setState(() {
       _kCurrentPosition = CameraPosition(
         target: LatLng(_currentPosition.latitude, _currentPosition.longitude),
         zoom: 17,
       );
+      _circlesSet = _buildCircles();
     });
     calculateDistance();
   }
@@ -276,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     Consumer<DashboardProvider>(
                       builder: (context, dashboardProvider, child) => Text(
-                        dashboardProvider.presensi!.checkIn != null
+                        dashboardProvider.presensi?.checkIn != null
                             ? DateFormat('HH:mm:ss').format(
                                 DateFormat("yyyy-MM-dd HH:mm:ss").parse(
                                     dashboardProvider.presensi!.checkIn!),
@@ -309,7 +324,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     Consumer<DashboardProvider>(
                       builder: (context, dashboardProvider, child) => Text(
-                        dashboardProvider.presensi!.checkOut != null
+                        dashboardProvider.presensi?.checkOut != null
                             ? DateFormat('HH:mm:ss').format(
                                 DateFormat("yyyy-MM-dd HH:mm:ss").parse(
                                     dashboardProvider.presensi!.checkOut!),
@@ -545,7 +560,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   const InfoWindow(title: 'Posisi Anda'),
                             ),
                           },
-                          circles: circles,
+                          circles: _circlesSet ?? const <Circle>{},
                         ),
                       ),
                     ),
