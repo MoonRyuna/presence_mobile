@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class UserAuthModel {
   String? username;
   String? password;
@@ -27,5 +29,9 @@ class UserAuthModel {
 
   String toPlain() {
     return 'UserAuthModel{ username: $username, password: $password, imei: $imei }';
+  }
+
+  String toJsonString() {
+    return jsonEncode(toJson());
   }
 }

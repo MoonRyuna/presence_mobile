@@ -1,22 +1,22 @@
 import 'dart:convert';
 
-import 'package:presence_alpha/model/token_model.dart';
+import 'package:presence_alpha/payload/data/dashboard1_data.dart';
 import 'package:presence_alpha/payload/response/base_response.dart';
 
-class AuthResponse extends BaseResponse {
-  final TokenModel? data;
+class Dashboard1Response extends BaseResponse {
+  final Dashboard1Data? data;
 
-  AuthResponse({
+  Dashboard1Response({
     required bool status,
     required String message,
     this.data,
   }) : super(status: status, message: message);
 
-  factory AuthResponse.fromJson(Map<String, dynamic> json) {
-    return AuthResponse(
+  factory Dashboard1Response.fromJson(Map<String, dynamic> json) {
+    return Dashboard1Response(
       status: json['status'],
       message: json['message'],
-      data: json['data'] != null ? TokenModel.fromJson(json['data']) : null,
+      data: json['data'] != null ? Dashboard1Data.fromJson(json['data']) : null,
     );
   }
 
@@ -27,10 +27,6 @@ class AuthResponse extends BaseResponse {
     data['message'] = message;
     data['data'] = this.data != null ? this.data!.toJson() : null;
     return data;
-  }
-
-  String toPlain() {
-    return 'AuthResponse{ status: $status, message: $message, data: $data }';
   }
 
   String toJsonString() {

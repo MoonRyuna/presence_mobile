@@ -10,4 +10,7 @@ class ApiConstant {
     'user:not found (token invalid)',
     'token:is invalid'
   ];
+
+  static String publicPath = "public";
+  static String publicUrl = '$baseUrl/$publicPath';
 }

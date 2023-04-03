@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:presence_alpha/model/user_annual_leave.dart';
+
 class UserModel {
   String? id;
   String? userCode;
@@ -24,34 +28,35 @@ class UserModel {
   String? updatedBy;
   String? deletedBy;
   String? deletedAt;
+  final UserAnnualLeaveModel? userAnnualLeave;
 
-  UserModel({
-    this.id,
-    this.userCode,
-    this.username,
-    this.password,
-    this.email,
-    this.phoneNumber,
-    this.accountType,
-    this.name,
-    this.address,
-    this.description,
-    this.startedWorkAt,
-    this.profilePicture,
-    this.deviceTracker,
-    this.createdBy,
-    this.deleted,
-    this.canWfh,
-    this.updatedAt,
-    this.createdAt,
-    this.token,
-    this.imei,
-    this.deviceUid,
-    this.otp,
-    this.updatedBy,
-    this.deletedBy,
-    this.deletedAt,
-  });
+  UserModel(
+      {this.id,
+      this.userCode,
+      this.username,
+      this.password,
+      this.email,
+      this.phoneNumber,
+      this.accountType,
+      this.name,
+      this.address,
+      this.description,
+      this.startedWorkAt,
+      this.profilePicture,
+      this.deviceTracker,
+      this.createdBy,
+      this.deleted,
+      this.canWfh,
+      this.updatedAt,
+      this.createdAt,
+      this.token,
+      this.imei,
+      this.deviceUid,
+      this.otp,
+      this.updatedBy,
+      this.deletedBy,
+      this.deletedAt,
+      this.userAnnualLeave});
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
@@ -80,6 +85,9 @@ class UserModel {
       updatedBy: json['updated_by'],
       deletedBy: json['deleted_by'],
       deletedAt: json['deletedAt'],
+      userAnnualLeave: json['user_annual_leave'] != null
+          ? UserAnnualLeaveModel.fromJson(json['user_annual_leave'])
+          : null,
     );
   }
 
@@ -110,10 +118,16 @@ class UserModel {
     data['updated_by'] = updatedBy;
     data['deleted_by'] = deletedBy;
     data['deleted_at'] = deletedAt;
+    data['user_annual_leave'] =
+        userAnnualLeave != null ? userAnnualLeave!.toJson() : null;
     return data;
   }
 
   String toPlain() {
-    return 'UserModel{ id: $id, userCode: $userCode, username: $username, password: $password, email: $email, phoneNumber: $phoneNumber, accountType: $accountType, name: $name, address: $address, description: $description, startedWorkAt: $startedWorkAt, profilePicture: $profilePicture, deviceTracker: $deviceTracker, createdBy: $createdBy, deleted: $deleted, canWfh: $canWfh, updatedAt: $updatedAt, createdAt: $createdAt, token: $token, imei: $imei, deviceUid: $deviceUid, otp: $otp, updatedBy: $updatedBy, deletedBy: $deletedBy, deletedAt: $deletedAt }';
+    return 'UserModel{ id: $id, userCode: $userCode, username: $username, password: $password, email: $email, phoneNumber: $phoneNumber, accountType: $accountType, name: $name, address: $address, description: $description, startedWorkAt: $startedWorkAt, profilePicture: $profilePicture, deviceTracker: $deviceTracker, createdBy: $createdBy, deleted: $deleted, canWfh: $canWfh, updatedAt: $updatedAt, createdAt: $createdAt, token: $token, imei: $imei, deviceUid: $deviceUid, otp: $otp, updatedBy: $updatedBy, deletedBy: $deletedBy, deletedAt: $deletedAt, userAnnualLeave: $userAnnualLeave }';
+  }
+
+  String toJsonString() {
+    return jsonEncode(toJson());
   }
 }

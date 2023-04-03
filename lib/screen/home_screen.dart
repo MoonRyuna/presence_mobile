@@ -5,8 +5,16 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:presence_alpha/constant/api_constant.dart';
+import 'package:presence_alpha/payload/response/dashboard1_response.dart';
+import 'package:presence_alpha/provider/dashboard_provider.dart';
 import 'package:presence_alpha/provider/date_provider.dart';
+import 'package:presence_alpha/provider/office_config_provide.dart';
+import 'package:presence_alpha/provider/token_provider.dart';
+import 'package:presence_alpha/provider/user_provider.dart';
 import 'package:presence_alpha/screen/izin_screen.dart';
+import 'package:presence_alpha/service/user_service.dart';
+import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:presence_alpha/utility/maps_utility.dart';
 import 'package:provider/provider.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
@@ -68,6 +76,47 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  Future<void> loadData() async {
+    LoadingUtility.show("Pembaruan Data");
+
+    final tp = Provider.of<TokenProvider>(
+      context,
+      listen: false,
+    );
+    final up = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
+    final dp = Provider.of<DashboardProvider>(
+      context,
+      listen: false,
+    );
+    final ocp = Provider.of<OfficeConfigProvider>(
+      context,
+      listen: false,
+    );
+
+    final String token = tp.token;
+    final requestData = {
+      'date': '2023-04-01',
+    };
+
+    Dashboard1Response response =
+        await UserService().dashboard1(requestData, token);
+
+    if (response.status == true) {
+      if (response.data!.user != null) {
+        up.user = response.data!.user;
+        dp.izin = response.data!.izin;
+        dp.lembur = response.data!.lembur;
+        dp.presensi = response.data!.presensi;
+        ocp.officeConfig = response.data!.officeConfig;
+        LoadingUtility.hide();
+      }
+    }
+    LoadingUtility.hide();
+  }
+
   Future<void> checkLocationPermission() async {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
@@ -98,6 +147,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _getLocation() async {
+    await loadData();
+    return;
     await getCurrentLocation();
     setState(() {
       _kCurrentPosition = CameraPosition(
@@ -132,17 +183,21 @@ class _HomeScreenState extends State<HomeScreen> {
     _getLocation();
   }
 
-  Widget userInfo(String name, String photoUrl) {
+  Widget userInfo() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         ClipOval(
-          child: Image.network(
-            photoUrl,
-            width: 50,
-            height: 50,
-            fit: BoxFit.cover,
+          child: Consumer<UserProvider>(
+            builder: (context, userProvider, _) => Image.network(
+              userProvider.user?.profilePicture != null
+                  ? "${ApiConstant.publicUrl}/${userProvider.user?.profilePicture}"
+                  : "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png",
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+            ),
           ),
         ),
         const Padding(padding: EdgeInsets.only(left: 10)),
@@ -155,12 +210,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontSize: 18,
               ),
             ),
-            Text(
-              name,
-              style: TextStyle(
-                fontSize: 23,
-                fontWeight: FontWeight.bold,
-                color: ColorConstant.lightPrimary,
+            Consumer<UserProvider>(
+              builder: (context, userProvider, _) => Text(
+                userProvider.user?.name ?? "N?A",
+                style: TextStyle(
+                  fontSize: 23,
+                  fontWeight: FontWeight.bold,
+                  color: ColorConstant.lightPrimary,
+                ),
               ),
             ),
           ],
@@ -169,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget boxInfo(String accountType, String checkIn, String checkOut) {
+  Widget boxInfo(String accountType) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
@@ -217,12 +274,19 @@ class _HomeScreenState extends State<HomeScreen> {
                           fontStyle: FontStyle.italic,
                           color: Colors.white),
                     ),
-                    Text(
-                      checkIn,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    Consumer<DashboardProvider>(
+                      builder: (context, dashboardProvider, child) => Text(
+                        dashboardProvider.presensi!.checkIn != null
+                            ? DateFormat('HH:mm:ss').format(
+                                DateFormat("yyyy-MM-dd HH:mm:ss").parse(
+                                    dashboardProvider.presensi!.checkIn!),
+                              )
+                            : "-",
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],
@@ -243,12 +307,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: Colors.white,
                       ),
                     ),
-                    Text(
-                      checkOut,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    Consumer<DashboardProvider>(
+                      builder: (context, dashboardProvider, child) => Text(
+                        dashboardProvider.presensi!.checkOut != null
+                            ? DateFormat('HH:mm:ss').format(
+                                DateFormat("yyyy-MM-dd HH:mm:ss").parse(
+                                    dashboardProvider.presensi!.checkOut!),
+                              )
+                            : "-",
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],
@@ -346,62 +417,49 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget boxButton() {
-    // return Row(
-    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    //   children: [
-    //     Container(
-    //       width: MediaQuery.of(context).size.width / 2 - 30,
-    //       height: 100,
-    //       decoration: BoxDecoration(
-    //         border: Border.all(color: ColorConstant.lightPrimary, width: 2.0),
-    //         borderRadius: BorderRadius.circular(13),
-    //       ),
-    //       child: TextButton.icon(
-    //         onPressed: () {
-    //           Navigator.push(
-    //             context,
-    //             MaterialPageRoute(builder: (context) => const IzinScreen()),
-    //           );
-    //         },
-    //         icon: Icon(Icons.check, color: ColorConstant.lightPrimary),
-    //         label: Text('Izin',
-    //             style: TextStyle(color: ColorConstant.lightPrimary)),
-    //       ),
-    //     ),
-    //     Container(
-    //       width: MediaQuery.of(context).size.width / 2 - 30,
-    //       height: 100,
-    //       decoration: BoxDecoration(
-    //         border: Border.all(color: ColorConstant.lightPrimary, width: 2.0),
-    //         borderRadius: BorderRadius.circular(13),
-    //       ),
-    //       child: TextButton.icon(
-    //         onPressed: () {},
-    //         icon: Icon(Icons.access_time, color: ColorConstant.lightPrimary),
-    //         label: Text('Lembur',
-    //             style: TextStyle(color: ColorConstant.lightPrimary)),
-    //       ),
-    //     ),
-    //   ],
-    // );
     return GridView.count(
       shrinkWrap: true,
       crossAxisCount: 3,
       mainAxisSpacing: 20,
       crossAxisSpacing: 20,
       children: [
-        gridButton("Kehadiran", Icons.fingerprint),
-        gridButton("Izin", Icons.assignment),
-        gridButton("Lembur", Icons.timer),
+        gridButton(
+          "Kehadiran",
+          Icons.fingerprint,
+          () => {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const IzinScreen()),
+            )
+          },
+        ),
+        gridButton(
+          "Izin",
+          Icons.assignment,
+          () => {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const IzinScreen()),
+            )
+          },
+        ),
+        gridButton(
+          "Lembur",
+          Icons.timer,
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const IzinScreen()),
+            );
+          },
+        ),
       ],
     );
   }
 
-  Widget gridButton(String text, IconData icon) {
+  Widget gridButton(String text, IconData icon, VoidCallback callback) {
     return GestureDetector(
-      onTap: () {
-        // Ketika tombol ditekan
-      },
+      onTap: callback,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(13),
@@ -434,10 +492,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 child: Column(
                   children: <Widget>[
-                    userInfo("Ari Ardiansyah",
-                        "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png"),
+                    userInfo(),
                     const Padding(padding: EdgeInsets.all(10)),
-                    boxInfo("Karyawan", "10:10:10", "17:10:10"),
+                    boxInfo("Karyawan"),
                     const Padding(padding: EdgeInsets.all(8)),
                     SizedBox(
                       width: double.infinity,
