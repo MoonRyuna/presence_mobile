@@ -60,12 +60,14 @@ Widget profileInfo() {
                 ),
               ),
               const SizedBox(height: 8.0),
-              Text(
-                'Karyawan',
-                style: TextStyle(
-                  fontSize: 14.0,
-                  color: Colors.grey.shade400,
-                  fontWeight: FontWeight.normal,
+              Consumer<UserProvider>(
+                builder: (context, userProvider, _) => Text(
+                  userProvider.user?.accountType ?? "N/A",
+                  style: TextStyle(
+                    fontSize: 14.0,
+                    color: Colors.grey.shade400,
+                    fontWeight: FontWeight.normal,
+                  ),
                 ),
               ),
             ],
