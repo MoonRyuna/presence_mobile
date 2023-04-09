@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
+import 'package:presence_alpha/screen/login_screen.dart';
+import 'package:presence_alpha/storage/app_storage.dart';
 import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -16,7 +18,7 @@ class ProfileScreen extends StatelessWidget {
           child: Column(
             children: <Widget>[
               profileInfo(),
-              profileActions(),
+              profileActions(context),
             ],
           ),
         ),
@@ -74,7 +76,7 @@ Widget profileInfo() {
   );
 }
 
-Widget profileActions() {
+Widget profileActions(BuildContext context) {
   return Column(
     children: <Widget>[
       Container(
@@ -148,7 +150,14 @@ Widget profileActions() {
             ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              log("Keluar");
+              AppStorage.localStorage.deleteItem("usr");
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const LoginScreen(),
+                ),
+                (route) => false,
+              );
             },
           ),
         ),
