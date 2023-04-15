@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:localstorage/localstorage.dart';
 import 'package:presence_alpha/model/user_auth_model.dart';
 import 'package:presence_alpha/screen/app.dart';
 import 'package:presence_alpha/screen/login_screen.dart';
@@ -83,7 +82,8 @@ class _SplashScreenState extends State<SplashScreen> {
       }
 
       if (response.message == "Connection timed out" ||
-          response.message == "Connection Failed") {
+          response.message == "Connection Failed" ||
+          response.message == "Failed to connect to server") {
         Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) {
           return const OfflineScreen();
         }));
