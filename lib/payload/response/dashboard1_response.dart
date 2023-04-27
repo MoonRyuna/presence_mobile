@@ -29,6 +29,7 @@ class Dashboard1Response extends BaseResponse {
     return data;
   }
 
+  @override
   String toJsonString() {
     return jsonEncode(toJson());
   }

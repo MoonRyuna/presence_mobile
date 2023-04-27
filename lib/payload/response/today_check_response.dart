@@ -1,22 +1,22 @@
 import 'dart:convert';
 
-import 'package:presence_alpha/model/token_model.dart';
+import 'package:presence_alpha/payload/data/today_check_data.dart';
 import 'package:presence_alpha/payload/response/base_response.dart';
 
-class AuthResponse extends BaseResponse {
-  final TokenModel? data;
+class TodayCheckResponse extends BaseResponse {
+  final TodayCheckData? data;
 
-  AuthResponse({
+  TodayCheckResponse({
     required bool status,
     required String message,
     this.data,
   }) : super(status: status, message: message);
 
-  factory AuthResponse.fromJson(Map<String, dynamic> json) {
-    return AuthResponse(
+  factory TodayCheckResponse.fromJson(Map<String, dynamic> json) {
+    return TodayCheckResponse(
       status: json['status'],
       message: json['message'],
-      data: json['data'] != null ? TokenModel.fromJson(json['data']) : null,
+      data: json['data'] != null ? TodayCheckData.fromJson(json['data']) : null,
     );
   }
 
@@ -30,7 +30,7 @@ class AuthResponse extends BaseResponse {
   }
 
   String toPlain() {
-    return 'AuthResponse{ status: $status, message: $message, data: $data }';
+    return 'TodayCheckResponse{ status: $status, message: $message, data: $data }';
   }
 
   @override

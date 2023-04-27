@@ -1,6 +1,7 @@
 import 'dart:math';
 
 class MapsUtility {
+  //haversine formula
   static double calculateDistance(
       double lat1, double lon1, double lat2, double lon2) {
     const R = 6371; // jari-jari bumi dalam kilometer

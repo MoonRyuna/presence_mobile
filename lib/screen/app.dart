@@ -1,6 +1,7 @@
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/provider/navbar_provider.dart';
+import 'package:presence_alpha/screen/presence_action_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'package:presence_alpha/constant/color_constant.dart';
@@ -16,7 +17,14 @@ class App extends StatelessWidget {
       body: mp.items[mp.selectedIndex].widget,
       floatingActionButton: FloatingActionButton(
         backgroundColor: ColorConstant.lightPrimary,
-        onPressed: () {},
+        onPressed: () {
+          //move to PresenceActionScreen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const PresenceActionScreen()),
+          );
+        },
         child: const Icon(
           Icons.fingerprint,
         ),

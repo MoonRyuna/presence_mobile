@@ -4,15 +4,14 @@ import 'dart:io';
 
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:http/http.dart' as http;
-import 'package:presence_alpha/payload/response/dashboard1_response.dart';
-import 'package:presence_alpha/payload/response/today_check_response.dart';
+import 'package:presence_alpha/payload/response/presence_response.dart';
 
-class UserService {
-  Future<Dashboard1Response> dashboard1(
+class PresenceService {
+  Future<PresenceResponse> checkIn(
       Map<String, dynamic> requestData, String token) async {
-    print('POST: dashboard1');
+    print('POST: checkIn');
 
-    String target = '${ApiConstant.baseApi}/user/dashboard1';
+    String target = '${ApiConstant.baseApi}/presence/check_in';
     print('target: $target');
     print('json" ${jsonEncode(json.encode(requestData))}');
 
@@ -30,46 +29,41 @@ class UserService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
-        return Dashboard1Response.fromJson(responseData);
+        return PresenceResponse.fromJson(responseData);
       } else {
-        return Dashboard1Response(
+        return PresenceResponse(
           status: false,
           message: 'Unable to fetch data',
-          data: null,
         );
       }
     } on TimeoutException catch (e) {
-      return Dashboard1Response(
+      return PresenceResponse(
         status: false,
         message: 'Connection timed out',
-        data: null,
       );
     } on SocketException catch (e) {
-      return Dashboard1Response(
+      return PresenceResponse(
         status: false,
         message: e.message,
-        data: null,
       );
     } on Exception catch (e) {
-      return Dashboard1Response(
+      return PresenceResponse(
         status: false,
         message: 'Failed to connect to server',
-        data: null,
       );
     } catch (e) {
-      return Dashboard1Response(
+      return PresenceResponse(
         status: false,
         message: e.toString(),
-        data: null,
       );
     }
   }
 
-  Future<TodayCheckResponse> todayCheck(
+  Future<PresenceResponse> checkOut(
       Map<String, dynamic> requestData, String token) async {
-    print('POST: today_check');
+    print('POST: checkIn');
 
-    String target = '${ApiConstant.baseApi}/user/today_check';
+    String target = '${ApiConstant.baseApi}/presence/check_out';
     print('target: $target');
     print('json" ${jsonEncode(json.encode(requestData))}');
 
@@ -87,37 +81,32 @@ class UserService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
-        return TodayCheckResponse.fromJson(responseData);
+        return PresenceResponse.fromJson(responseData);
       } else {
-        return TodayCheckResponse(
+        return PresenceResponse(
           status: false,
           message: 'Unable to fetch data',
-          data: null,
         );
       }
     } on TimeoutException catch (e) {
-      return TodayCheckResponse(
+      return PresenceResponse(
         status: false,
         message: 'Connection timed out',
-        data: null,
       );
     } on SocketException catch (e) {
-      return TodayCheckResponse(
+      return PresenceResponse(
         status: false,
         message: e.message,
-        data: null,
       );
     } on Exception catch (e) {
-      return TodayCheckResponse(
+      return PresenceResponse(
         status: false,
         message: 'Failed to connect to server',
-        data: null,
       );
     } catch (e) {
-      return TodayCheckResponse(
+      return PresenceResponse(
         status: false,
         message: e.toString(),
-        data: null,
       );
     }
   }

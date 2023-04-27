@@ -1,19 +1,22 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/payload/response/dashboard1_response.dart';
+import 'package:presence_alpha/payload/response/today_check_response.dart';
 import 'package:presence_alpha/provider/dashboard_provider.dart';
 import 'package:presence_alpha/provider/date_provider.dart';
 import 'package:presence_alpha/provider/office_config_provide.dart';
+import 'package:presence_alpha/provider/properties_provider.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
 import 'package:presence_alpha/screen/izin_screen.dart';
 import 'package:presence_alpha/service/user_service.dart';
+import 'package:presence_alpha/utility/calendar_utility.dart';
+import 'package:presence_alpha/utility/common_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:presence_alpha/utility/maps_utility.dart';
 import 'package:provider/provider.dart';
@@ -28,17 +31,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Timer _timer;
+
   late String distanceBetweenPoints = "-";
-  late String address = "-";
   late Position _currentPosition;
   late LocationPermission locationPermission;
-
-  final Completer<GoogleMapController> _controller =
-      Completer<GoogleMapController>();
-
-  static const LatLng mapCenter = LatLng(-6.9147444, 107.6098106);
-  final CameraPosition _kBandung =
-      const CameraPosition(target: mapCenter, zoom: 11.0, tilt: 0, bearing: 0);
 
   CameraPosition _kOffice = const CameraPosition(
       target: LatLng(-7.011477899042147, 107.55234770202203), zoom: 17);
@@ -46,31 +42,18 @@ class _HomeScreenState extends State<HomeScreen> {
   CameraPosition _kCurrentPosition =
       const CameraPosition(target: LatLng(-6.9147444, 107.6098106), zoom: 17);
 
-  late Set<Circle>? _circlesSet;
-
   void getLocation() async {}
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      Provider.of<DateProvider>(context, listen: false).setDate(DateTime.now());
-    });
-    _getLocation();
-    _circlesSet = _buildCircles();
-  }
-
-  Set<Circle> _buildCircles() {
-    return {
-      Circle(
-        circleId: const CircleId("kantor_geofence"),
-        center: _kOffice.target,
-        radius: 20,
-        fillColor: Colors.redAccent.withOpacity(0.5),
-        strokeWidth: 3,
-        strokeColor: Colors.redAccent,
-      )
-    };
+    if (mounted) {
+      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        Provider.of<DateProvider>(context, listen: false)
+            .setDate(DateTime.now());
+      });
+      _getLocation();
+    }
   }
 
   @override
@@ -99,16 +82,22 @@ class _HomeScreenState extends State<HomeScreen> {
       listen: false,
     );
 
+    final pp = Provider.of<PropertiesProvider>(
+      context,
+      listen: false,
+    );
+
+    final String now = CalendarUtility.dateNow();
     final String token = tp.token;
     final requestData = {
-      'date': '2023-04-01',
+      'date': now,
     };
 
     Dashboard1Response response =
         await UserService().dashboard1(requestData, token);
 
     if (response.status == true) {
-      if (response.data!.user != null) {
+      if (response.data != null) {
         up.user = response.data!.user;
         dp.izin = response.data!.izin;
         dp.lembur = response.data!.lembur;
@@ -126,9 +115,18 @@ class _HomeScreenState extends State<HomeScreen> {
             zoom: 17,
           );
         });
-        LoadingUtility.hide();
       }
     }
+
+    TodayCheckResponse response2 =
+        await UserService().todayCheck(requestData, token);
+
+    if (response2.status == true) {
+      if (response2.data != null) {
+        pp.todayCheckData = response2.data;
+      }
+    }
+
     LoadingUtility.hide();
   }
 
@@ -144,17 +142,6 @@ class _HomeScreenState extends State<HomeScreen> {
       await checkLocationPermission();
       _currentPosition = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
-
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-          _currentPosition.latitude, _currentPosition.longitude);
-
-      Placemark placemark = placemarks[0];
-      String formattedAddress =
-          "${placemark.name}, ${placemark.subLocality}, ${placemark.locality}, ${placemark.subAdministrativeArea}, ${placemark.administrativeArea}, ${placemark.postalCode}, ${placemark.country}";
-
-      setState(() {
-        address = formattedAddress;
-      });
     } catch (e) {
       // ignore: avoid_print
       print(e);
@@ -169,7 +156,6 @@ class _HomeScreenState extends State<HomeScreen> {
         target: LatLng(_currentPosition.latitude, _currentPosition.longitude),
         zoom: 17,
       );
-      _circlesSet = _buildCircles();
     });
     calculateDistance();
   }
@@ -182,20 +168,8 @@ class _HomeScreenState extends State<HomeScreen> {
         _kCurrentPosition.target.longitude);
 
     setState(() {
-      distanceBetweenPoints = "${distance.ceil()} KM";
+      distanceBetweenPoints = "${distance.round()} KM";
     });
-  }
-
-  Future<void> _goToOffice() async {
-    final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newCameraPosition(_kOffice));
-    _getLocation();
-  }
-
-  Future<void> _goToCurrenPosition() async {
-    final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newCameraPosition(_kCurrentPosition));
-    _getLocation();
   }
 
   Widget userInfo() {
@@ -225,6 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontSize: 18,
               ),
             ),
+            const Padding(padding: EdgeInsets.all(2)),
             Consumer<UserProvider>(
               builder: (context, userProvider, _) => Text(
                 userProvider.user?.name ?? "N?A",
@@ -259,9 +234,10 @@ class _HomeScreenState extends State<HomeScreen> {
             accountType,
             style: const TextStyle(fontSize: 18, color: Colors.white),
           ),
+          const Padding(padding: EdgeInsets.all(2)),
           Consumer<DateProvider>(
             builder: (context, dateModel, child) => Text(
-              DateFormat('dd MMMM yyyy HH:mm:ss').format(dateModel.date),
+              CalendarUtility.formatBasic(dateModel.date),
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -347,28 +323,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget boxLocation(String address) {
-    return SizedBox(
-      width: double.infinity,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            address,
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget distanceLocation(String infoDistance) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Container(
           padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
-          width: (MediaQuery.of(context).size.width - 50) / 2,
+          width: (MediaQuery.of(context).size.width - 60) / 2,
           decoration: const BoxDecoration(
             color: Color.fromARGB(255, 238, 238, 238),
             borderRadius: BorderRadius.all(Radius.circular(13)),
@@ -390,39 +351,33 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-        SizedBox(
-          width: (MediaQuery.of(context).size.width - 50) / 2,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+        Container(
+          padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
+          width: (MediaQuery.of(context).size.width - 60) / 2,
+          decoration: const BoxDecoration(
+            color: Color.fromARGB(255, 238, 238, 238),
+            borderRadius: BorderRadius.all(Radius.circular(13)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                width: 75,
-                height: 75,
-                child: IconButton(
-                  icon: CircleAvatar(
-                    backgroundColor: ColorConstant.lightPrimary,
-                    radius: 30,
-                    child:
-                        const Icon(Icons.business_center, color: Colors.white),
-                  ),
-                  onPressed: () {
-                    _goToOffice();
-                  },
+              const Text(
+                "Info: ",
+                style: TextStyle(
+                  fontSize: 16,
                 ),
               ),
-              SizedBox(
-                width: 75,
-                height: 75,
-                child: IconButton(
-                  icon: const CircleAvatar(
-                    backgroundColor: Colors.red,
-                    radius: 30,
-                    child: Icon(Icons.gps_fixed, color: Colors.white),
-                  ),
-                  onPressed: () {
-                    _goToCurrenPosition();
-                  },
-                ),
+              Consumer<PropertiesProvider>(
+                builder: (context, propertiesProvider, _) {
+                  String textToShow = CommonUtility.todayStatus(
+                      propertiesProvider.todayCheckData);
+
+                  return Text(
+                    textToShow,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  );
+                },
               ),
             ],
           ),
@@ -510,7 +465,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     userInfo(),
                     const Padding(padding: EdgeInsets.all(10)),
                     boxInfo("Karyawan"),
-                    const Padding(padding: EdgeInsets.all(8)),
+                    const Padding(padding: EdgeInsets.all(10)),
+                    distanceLocation(distanceBetweenPoints),
+                    const Padding(padding: EdgeInsets.all(10)),
                     SizedBox(
                       width: double.infinity,
                       child: Column(
@@ -528,46 +485,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const Padding(padding: EdgeInsets.all(6)),
                     boxButton(),
-                    const Padding(padding: EdgeInsets.all(10)),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: const Color.fromRGBO(238, 238, 238, 1),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: SizedBox(
-                        width: MediaQuery.of(context).size.width -
-                            38, // or use fixed size like 200
-                        height: 180,
-                        child: GoogleMap(
-                          mapType: MapType.normal,
-                          initialCameraPosition: _kBandung,
-                          onMapCreated: (GoogleMapController controller) {
-                            _controller.complete(controller);
-                          },
-                          markers: {
-                            Marker(
-                              markerId: const MarkerId('kantor'),
-                              position: _kOffice.target,
-                              infoWindow: const InfoWindow(
-                                  title: 'PT. Digital Amore Kriyanesia'),
-                            ),
-                            Marker(
-                              markerId: const MarkerId('your_position'),
-                              position: _kCurrentPosition.target,
-                              infoWindow:
-                                  const InfoWindow(title: 'Posisi Anda'),
-                            ),
-                          },
-                          circles: _circlesSet ?? const <Circle>{},
-                        ),
-                      ),
-                    ),
-                    const Padding(padding: EdgeInsets.all(6)),
-                    boxLocation(address),
-                    const Padding(padding: EdgeInsets.all(6)),
-                    distanceLocation(distanceBetweenPoints),
                   ],
                 ),
               ),
