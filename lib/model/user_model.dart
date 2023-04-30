@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:presence_alpha/model/user_annual_leave.dart';
 
 class UserModel {
-  String? id;
+  BigInt? id;
   String? userCode;
   String? username;
   String? password;
@@ -16,18 +16,18 @@ class UserModel {
   String? startedWorkAt;
   String? profilePicture;
   bool? deviceTracker;
-  String? createdBy;
+  BigInt? createdBy;
   bool? deleted;
   bool? canWfh;
-  String? updatedAt;
-  String? createdAt;
+  DateTime? updatedAt;
+  DateTime? createdAt;
   String? token;
   String? imei;
   String? deviceUid;
   String? otp;
-  String? updatedBy;
-  String? deletedBy;
-  String? deletedAt;
+  BigInt? updatedBy;
+  BigInt? deletedBy;
+  DateTime? deletedAt;
   final UserAnnualLeaveModel? userAnnualLeave;
 
   UserModel(
@@ -60,7 +60,7 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'],
+      id: BigInt.from(json['id']),
       userCode: json['user_code'],
       username: json['username'],
       password: json['password'],
@@ -73,18 +73,22 @@ class UserModel {
       startedWorkAt: json['started_work_at'],
       profilePicture: json['profile_picture'],
       deviceTracker: json['device_tracker'],
-      createdBy: json['created_by'],
+      createdBy:
+          json['created_by'] != null ? BigInt.from(json['created_by']) : null,
       deleted: json['deleted'],
       canWfh: json['can_wfh'],
-      updatedAt: json['updatedAt'],
-      createdAt: json['createdAt'],
+      updatedAt: DateTime.parse(json['updatedAt']),
+      createdAt: DateTime.parse(json['createdAt']),
       token: json['token'],
       imei: json['imei'],
       deviceUid: json['device_uid'],
       otp: json['otp'],
-      updatedBy: json['updated_by'],
-      deletedBy: json['deleted_by'],
-      deletedAt: json['deletedAt'],
+      updatedBy:
+          json['updated_by'] != null ? BigInt.from(json['updated_by']) : null,
+      deletedBy:
+          json['deleted_by'] != null ? BigInt.from(json['deleted_by']) : null,
+      deletedAt:
+          json['deletedAt'] != null ? DateTime.parse(json['deletedAt']) : null,
       userAnnualLeave: json['user_annual_leave'] != null
           ? UserAnnualLeaveModel.fromJson(json['user_annual_leave'])
           : null,
@@ -93,7 +97,7 @@ class UserModel {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
+    data['id'] = id.toString();
     data['user_code'] = userCode;
     data['username'] = username;
     data['password'] = password;
@@ -106,18 +110,30 @@ class UserModel {
     data['started_work_at'] = startedWorkAt;
     data['profile_picture'] = profilePicture;
     data['device_tracker'] = deviceTracker;
-    data['created_by'] = createdBy;
+    data['created_by'] = createdBy?.toString();
     data['deleted'] = deleted;
     data['can_wfh'] = canWfh;
-    data['updated_at'] = updatedAt;
-    data['created_at'] = createdAt;
+    data['updated_at'] = updatedAt?.toIso8601String();
+    data['created_at'] = createdAt?.toIso8601String();
     data['token'] = token;
     data['imei'] = imei;
     data['device_uid'] = deviceUid;
     data['otp'] = otp;
-    data['updated_by'] = updatedBy;
-    data['deleted_by'] = deletedBy;
-    data['deleted_at'] = deletedAt;
+    data['updated_by'] = updatedBy?.toString();
+    data['deleted_by'] = deletedBy?.toString();
+    data['deleted_at'] = deletedAt?.toIso8601String();
+    data['created_by'] = createdBy?.toString();
+    data['deleted'] = deleted;
+    data['can_wfh'] = canWfh;
+    data['updated_at'] = updatedAt?.toIso8601String();
+    data['created_at'] = createdAt?.toIso8601String();
+    data['token'] = token;
+    data['imei'] = imei;
+    data['device_uid'] = deviceUid;
+    data['otp'] = otp;
+    data['updated_by'] = updatedBy?.toString();
+    data['deleted_by'] = deletedBy?.toString();
+    data['deleted_at'] = deletedAt?.toIso8601String();
     data['user_annual_leave'] =
         userAnnualLeave != null ? userAnnualLeave!.toJson() : null;
     return data;

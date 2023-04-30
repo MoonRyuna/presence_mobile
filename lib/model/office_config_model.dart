@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 class OfficeConfigModel {
-  int? id;
+  BigInt? id;
   String? name;
   String? theme;
   String? logo;
@@ -12,7 +12,7 @@ class OfficeConfigModel {
   int? amountOfAnnualLeave;
   String? workSchedule;
   String? updatedBy;
-  String? updatedAt;
+  DateTime? updatedAt;
 
   OfficeConfigModel(
       {this.id,
@@ -29,7 +29,7 @@ class OfficeConfigModel {
       this.updatedAt});
 
   OfficeConfigModel.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
+    id = BigInt.from(json['id']);
     name = json['name'];
     theme = json['theme'];
     logo = json['logo'];
@@ -40,12 +40,12 @@ class OfficeConfigModel {
     amountOfAnnualLeave = json['amount_of_annual_leave'];
     workSchedule = json['work_schedule'];
     updatedBy = json['updated_by'];
-    updatedAt = json['updatedAt'];
+    updatedAt = DateTime.parse(json['updatedAt']);
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
+    data['id'] = id.toString();
     data['name'] = name;
     data['theme'] = theme;
     data['logo'] = logo;
@@ -56,7 +56,7 @@ class OfficeConfigModel {
     data['amount_of_annual_leave'] = amountOfAnnualLeave;
     data['work_schedule'] = workSchedule;
     data['updated_by'] = updatedBy;
-    data['updatedAt'] = updatedAt;
+    data['updatedAt'] = updatedAt?.toIso8601String();
     return data;
   }
 

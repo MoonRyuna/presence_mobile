@@ -338,7 +338,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
       String _address = address;
       String _latitude = _currentPosition.latitude.toString();
       String _longitude = _currentPosition.longitude.toString();
-      String? _user_id = up.user?.id;
+      BigInt? _user_id = up.user?.id;
       String _desc = _descController.text.trim();
       String _type = _optionsType[_selectedType].toLowerCase();
       String _time = CalendarUtility.formatDB(dp.date);
