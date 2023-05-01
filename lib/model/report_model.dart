@@ -1,11 +1,16 @@
+import 'dart:convert';
+
+import 'package:presence_alpha/model/user_model.dart';
+
 class ReportModel {
-  BigInt? id;
+  String? id;
   String? title;
-  DateTime? startDate;
-  DateTime? endDate;
-  int? totalEmployee;
-  BigInt? generatedBy;
-  DateTime? generatedAt;
+  String? startDate;
+  String? endDate;
+  String? totalEmployee;
+  String? generatedBy;
+  String? generatedAt;
+  UserModel? generater;
 
   ReportModel({
     this.id,
@@ -15,29 +20,38 @@ class ReportModel {
     this.totalEmployee,
     this.generatedBy,
     this.generatedAt,
+    this.generater,
   });
 
   factory ReportModel.fromJson(Map<String, dynamic> json) {
     return ReportModel(
-      id: BigInt.from(json['id']),
+      id: json['id'],
       title: json['title'],
-      startDate: DateTime.parse(json['start_date']),
-      endDate: DateTime.parse(json['end_date']),
+      startDate: json['start_date'],
+      endDate: json['end_date'],
       totalEmployee: json['total_employee'],
-      generatedBy: BigInt.from(json['generated_by']),
-      generatedAt: DateTime.parse(json['generated_at']),
+      generatedBy: json['generated_by'],
+      generatedAt: json['generated_at'],
+      generater: json['generater'] != null
+          ? UserModel.fromJson(json['generater'])
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = id.toString();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
     data['title'] = title;
-    data['start_date'] = startDate?.toIso8601String();
-    data['end_date'] = endDate?.toIso8601String();
+    data['start_date'] = startDate;
+    data['end_date'] = endDate;
     data['total_employee'] = totalEmployee;
-    data['generated_by'] = generatedBy.toString();
-    data['generated_at'] = generatedAt?.toIso8601String();
+    data['generated_by'] = generatedBy;
+    data['generated_at'] = generatedAt;
+    data['generater'] = generater != null ? generater!.toJson() : null;
     return data;
+  }
+
+  String toJsonString() {
+    return jsonEncode(toJson());
   }
 }

@@ -22,10 +22,6 @@ class UserAnnualLeaveModel {
     return data;
   }
 
-  String toPlain() {
-    return 'UserAnnualLeaveModel{ year: $year, annualLeave: $annualLeave }';
-  }
-
   String toJsonString() {
     return jsonEncode(toJson());
   }

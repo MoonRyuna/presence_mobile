@@ -46,6 +46,13 @@ class _HomeScreenState extends State<HomeScreen> {
   void getLocation() async {}
 
   @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
   void initState() {
     super.initState();
     if (mounted) {
@@ -97,6 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Dashboard1Response response =
         await UserService().dashboard1(requestData, token);
 
+    print("RES1 ${response.message}");
     if (response.status == true) {
       if (response.data != null) {
         up.user = response.data!.user;
@@ -105,10 +113,15 @@ class _HomeScreenState extends State<HomeScreen> {
         dp.presensi = response.data!.presensi;
         ocp.officeConfig = response.data!.officeConfig;
 
-        var latOffice =
-            response.data?.officeConfig!.latitude ?? -7.01147799042147;
-        var lngOffice =
-            response.data?.officeConfig!.longitude ?? 107.55234770202203;
+        double latOffice = -7.01147799042147;
+        double lngOffice = 107.55234770202203;
+
+        if(response.data?.officeConfig?.latitude != null){
+          latOffice = response.data?.officeConfig?.latitude as double;
+        }
+        if(response.data?.officeConfig?.longitude != null){
+          lngOffice = response.data?.officeConfig?.longitude as double;
+        }
 
         setState(() {
           _kOffice = CameraPosition(

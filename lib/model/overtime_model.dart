@@ -1,12 +1,15 @@
 import 'dart:convert';
 
+import 'package:presence_alpha/model/user_model.dart';
+
 class OvertimeModel {
-  BigInt? id;
-  BigInt? userId;
-  DateTime? overtimeAt;
+  String? id;
+  String? userId;
+  String? overtimeAt;
   String? overtimeStatus;
   String? desc;
   String? attachment;
+  final UserModel? user;
 
   OvertimeModel({
     this.id,
@@ -15,25 +18,30 @@ class OvertimeModel {
     this.overtimeStatus,
     this.desc,
     this.attachment,
+    this.user,
   });
 
-  OvertimeModel.fromJson(Map<String, dynamic> json) {
-    id = BigInt.from(json['id']);
-    userId = BigInt.from(json['user_id']);
-    overtimeAt = DateTime.parse(json['overtime_at']);
-    overtimeStatus = json['overtime_status'];
-    desc = json['desc'];
-    attachment = json['attachment'];
+  factory OvertimeModel.fromJson(Map<String, dynamic> json) {
+    return OvertimeModel(
+      id: json['id'],
+      userId: json['user_id'],
+      overtimeAt: json['overtime_at'],
+      overtimeStatus: json['overtime_status'],
+      desc: json['desc'],
+      attachment: json['attachment'],
+      user: json['user'] != null ? UserModel.fromJson(json['user']) : null,
+    );
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id.toString();
-    data['user_id'] = userId.toString();
-    data['overtime_at'] = overtimeAt?.toIso8601String();
+    data['id'] = id;
+    data['user_id'] = userId;
+    data['overtime_at'] = overtimeAt;
     data['overtime_status'] = overtimeStatus;
     data['desc'] = desc;
     data['attachment'] = attachment;
+    data['user'] = user != null ? user!.toJson() : null;
     return data;
   }
 

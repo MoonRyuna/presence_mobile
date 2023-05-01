@@ -175,17 +175,23 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
         dp.presensi = response.data!.presensi;
         ocp.officeConfig = response.data!.officeConfig;
 
+        double rGeonfence = response.data?.officeConfig?.radius as double;
+
         setState(() {
-          radiusGeofence =
-              response.data!.officeConfig!.radius?.toDouble() ?? 20.0;
+          radiusGeofence = rGeonfence;
 
           _circlesSet = _buildCircles();
         });
 
-        var latOffice =
-            response.data?.officeConfig!.latitude ?? -7.01147799042147;
-        var lngOffice =
-            response.data?.officeConfig!.longitude ?? 107.55234770202203;
+        double latOffice = -7.01147799042147;
+        double lngOffice = 107.55234770202203;
+
+        if (response.data?.officeConfig?.latitude != null) {
+          latOffice = response.data?.officeConfig?.latitude as double;
+        }
+        if (response.data?.officeConfig?.longitude != null) {
+          lngOffice = response.data?.officeConfig?.longitude as double;
+        }
 
         setState(() {
           _kOffice = CameraPosition(
@@ -338,7 +344,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
       String _address = address;
       String _latitude = _currentPosition.latitude.toString();
       String _longitude = _currentPosition.longitude.toString();
-      BigInt? _user_id = up.user?.id;
+      String? _user_id = up.user?.id;
       String _desc = _descController.text.trim();
       String _type = _optionsType[_selectedType].toLowerCase();
       String _time = CalendarUtility.formatDB(dp.date);

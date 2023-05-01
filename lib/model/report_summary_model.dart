@@ -1,7 +1,12 @@
+import 'dart:convert';
+
+import 'package:presence_alpha/model/report_model.dart';
+import 'package:presence_alpha/model/user_model.dart';
+
 class ReportSummaryModel {
-  BigInt? id;
-  BigInt? userId;
-  BigInt? reportId;
+  String? id;
+  String? userId;
+  String? reportId;
   int? hadir;
   int? tanpaKeterangan;
   int? cuti;
@@ -13,6 +18,8 @@ class ReportSummaryModel {
   int? lembur;
   int? fulltime;
   int? hariKerja;
+  UserModel? user;
+  ReportModel? report;
 
   ReportSummaryModel({
     this.id,
@@ -29,13 +36,15 @@ class ReportSummaryModel {
     this.lembur,
     this.fulltime,
     this.hariKerja,
+    this.user,
+    this.report,
   });
 
   factory ReportSummaryModel.fromJson(Map<String, dynamic> json) {
     return ReportSummaryModel(
-      id: BigInt.from(json['id']),
-      userId: BigInt.from(json['user_id']),
-      reportId: BigInt.from(json['report_id']),
+      id: json['id'],
+      userId: json['user_id'],
+      reportId: json['report_id'],
       hadir: json['hadir'],
       tanpaKeterangan: json['tanpa_keterangan'],
       cuti: json['cuti'],
@@ -47,14 +56,17 @@ class ReportSummaryModel {
       lembur: json['lembur'],
       fulltime: json['fulltime'],
       hariKerja: json['hari_kerja'],
+      user: json['user'] != null ? UserModel.fromJson(json['user']) : null,
+      report:
+          json['report'] != null ? ReportModel.fromJson(json['report']) : null,
     );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = id.toString();
-    data['user_id'] = userId.toString();
-    data['report_id'] = reportId.toString();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['user_id'] = userId;
+    data['report_id'] = reportId;
     data['hadir'] = hadir;
     data['tanpa_keterangan'] = tanpaKeterangan;
     data['cuti'] = cuti;
@@ -66,6 +78,12 @@ class ReportSummaryModel {
     data['lembur'] = lembur;
     data['fulltime'] = fulltime;
     data['hari_kerja'] = hariKerja;
+    data['user'] = user != null ? user!.toJson() : null;
+    data['report'] = report != null ? report!.toJson() : null;
     return data;
+  }
+
+  String toJsonString() {
+    return jsonEncode(toJson());
   }
 }

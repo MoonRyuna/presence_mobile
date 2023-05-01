@@ -1,14 +1,19 @@
 import 'dart:convert';
 
+import 'package:presence_alpha/model/absence_type_model.dart';
+import 'package:presence_alpha/model/user_model.dart';
+
 class AbsenceModel {
-  BigInt? id;
-  BigInt? userId;
-  DateTime? absenceAt;
+  String? id;
+  String? userId;
+  String? absenceAt;
   String? absenceStatus;
-  BigInt? absenceTypeId;
+  String? absenceTypeId;
   bool? cutAnnualLeave;
   String? desc;
   String? attachment;
+  final AbsenceTypeModel? absenceType;
+  final UserModel? user;
 
   AbsenceModel({
     this.id,
@@ -19,29 +24,39 @@ class AbsenceModel {
     this.cutAnnualLeave,
     this.desc,
     this.attachment,
+    this.absenceType,
+    this.user,
   });
 
-  AbsenceModel.fromJson(Map<String, dynamic> json) {
-    id = BigInt.from(json['id']);
-    userId = BigInt.from(json['user_id']);
-    absenceAt = DateTime.parse(json['absence_at']);
-    absenceStatus = json['absence_status'];
-    absenceTypeId = BigInt.from(json['absence_type_id']);
-    cutAnnualLeave = json['cut_annual_leave'];
-    desc = json['desc'];
-    attachment = json['attachment'];
+  factory AbsenceModel.fromJson(Map<String, dynamic> json) {
+    return AbsenceModel(
+      id: json['id'],
+      userId: json['user_id'],
+      absenceAt: json['absence_at'],
+      absenceStatus: json['absence_status'],
+      absenceTypeId: json['absence_type_id'],
+      cutAnnualLeave: json['cut_annual_leave'],
+      desc: json['desc'],
+      attachment: json['attachment'],
+      absenceType: json['absence_type'] != null
+          ? AbsenceTypeModel.fromJson(json['absence_type'])
+          : null,
+      user: json['user'] != null ? UserModel.fromJson(json['user']) : null,
+    );
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id.toString();
-    data['user_id'] = userId.toString();
-    data['absence_at'] = absenceAt?.toIso8601String();
+    data['id'] = id;
+    data['user_id'] = userId;
+    data['absence_at'] = absenceAt;
     data['absence_status'] = absenceStatus;
-    data['absence_type_id'] = absenceTypeId.toString();
+    data['absence_type_id'] = absenceTypeId;
     data['cut_annual_leave'] = cutAnnualLeave;
     data['desc'] = desc;
     data['attachment'] = attachment;
+    data['absence_type'] = absenceType != null ? absenceType!.toJson() : null;
+    data['user'] = user != null ? user!.toJson() : null;
     return data;
   }
 

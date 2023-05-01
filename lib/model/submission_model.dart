@@ -1,14 +1,17 @@
 import 'dart:convert';
 
+import 'package:presence_alpha/model/user_model.dart';
+
 class SubmissionModel {
-  BigInt? id;
+  String? id;
   String? submissionType;
-  DateTime? submissionAt;
+  String? submissionAt;
   String? submissionStatus;
   String? submissionRefTable;
-  BigInt? submissionRefId;
-  BigInt? authorizationBy;
-  DateTime? authorizationAt;
+  String? submissionRefId;
+  String? authorizationBy;
+  String? authorizationAt;
+  UserModel? authorizer;
 
   SubmissionModel({
     this.id,
@@ -19,29 +22,36 @@ class SubmissionModel {
     this.submissionRefId,
     this.authorizationBy,
     this.authorizationAt,
+    this.authorizer,
   });
 
-  SubmissionModel.fromJson(Map<String, dynamic> json) {
-    id = BigInt.from(json['id']);
-    submissionType = json['submission_type'];
-    submissionAt = DateTime.parse(json['submission_at']);
-    submissionStatus = json['submission_status'];
-    submissionRefTable = json['submission_ref_table'];
-    submissionRefId = BigInt.from(json['submission_ref_id']);
-    authorizationBy = BigInt.from(json['authorization_by']);
-    authorizationAt = DateTime.parse(json['authorization_at']);
+  factory SubmissionModel.fromJson(Map<String, dynamic> json) {
+    return SubmissionModel(
+      id: json['id'],
+      submissionType: json['submission_type'],
+      submissionAt: json['submission_at'],
+      submissionStatus: json['submission_status'],
+      submissionRefTable: json['submission_ref_table'],
+      submissionRefId: json['submission_ref_id'],
+      authorizationBy: json['authorization_by'],
+      authorizationAt: json['authorization_at'],
+      authorizer: json['authorizer'] != null
+          ? UserModel.fromJson(json['authorizer'])
+          : null,
+    );
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id.toString();
+    data['id'] = id;
     data['submission_type'] = submissionType;
-    data['submission_at'] = submissionAt?.toIso8601String();
+    data['submission_at'] = submissionAt;
     data['submission_status'] = submissionStatus;
     data['submission_ref_table'] = submissionRefTable;
-    data['submission_ref_id'] = submissionRefId.toString();
-    data['authorization_by'] = authorizationBy.toString();
-    data['authorization_at'] = authorizationAt?.toIso8601String();
+    data['submission_ref_id'] = submissionRefId;
+    data['authorization_by'] = authorizationBy;
+    data['authorization_at'] = authorizationAt;
+    data['authorizer'] = authorizer != null ? authorizer!.toJson() : null;
     return data;
   }
 

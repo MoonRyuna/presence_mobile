@@ -1,9 +1,11 @@
 import 'dart:convert';
 
+import 'package:presence_alpha/model/user_model.dart';
+
 class PresenceModel {
-  BigInt? id;
-  DateTime? checkIn;
-  DateTime? checkOut;
+  String? id;
+  String? checkIn;
+  String? checkOut;
   String? positionCheckIn;
   String? positionCheckOut;
   String? description;
@@ -12,11 +14,12 @@ class PresenceModel {
   bool? fullTime;
   double? remainingHour;
   bool? overtime;
-  DateTime? overtimeStartAt;
-  DateTime? overtimeEndAt;
+  String? overtimeStartAt;
+  String? overtimeEndAt;
   String? type;
-  BigInt? userId;
-  double? idleAmount;
+  String? userId;
+  bool? idleAmount;
+  final UserModel? user;
 
   PresenceModel({
     this.id,
@@ -35,32 +38,36 @@ class PresenceModel {
     this.type,
     this.userId,
     this.idleAmount,
+    this.user,
   });
 
-  PresenceModel.fromJson(Map<String, dynamic> json) {
-    id = BigInt.from(json['id']);
-    checkIn = DateTime.parse(json['check_in']);
-    checkOut = DateTime.parse(json['check_out']);
-    positionCheckIn = json['position_check_in'];
-    positionCheckOut = json['position_check_out'];
-    description = json['description'];
-    late = json['late'];
-    lateAmount = json['late_amount'];
-    fullTime = json['full_time'];
-    remainingHour = json['remaining_hour'];
-    overtime = json['overtime'];
-    overtimeStartAt = DateTime.parse(json['overtime_start_at']);
-    overtimeEndAt = DateTime.parse(json['overtime_end_at']);
-    type = json['type'];
-    userId = BigInt.from(json['user_id']);
-    idleAmount = json['idle_amount'];
+  factory PresenceModel.fromJson(Map<String, dynamic> json) {
+    return PresenceModel(
+      id: json['id'],
+      checkIn: json['check_in'],
+      checkOut: json['check_out'],
+      positionCheckIn: json['position_check_in'],
+      positionCheckOut: json['position_check_out'],
+      description: json['description'],
+      late: json['late'],
+      lateAmount: json['late_amount'],
+      fullTime: json['full_time'],
+      remainingHour: json['remaining_hour'],
+      overtime: json['overtime'],
+      overtimeStartAt: json['overtime_start_at'],
+      overtimeEndAt: json['overtime_end_at'],
+      type: json['type'],
+      userId: json['user_id'],
+      idleAmount: json['idle_amount'],
+      user: json['user'] != null ? UserModel.fromJson(json['user']) : null,
+    );
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id.toString();
-    data['check_in'] = checkIn?.toIso8601String();
-    data['check_out'] = checkOut?.toIso8601String();
+    data['id'] = id;
+    data['check_in'] = checkIn;
+    data['check_out'] = checkOut;
     data['position_check_in'] = positionCheckIn;
     data['position_check_out'] = positionCheckOut;
     data['description'] = description;
@@ -69,11 +76,12 @@ class PresenceModel {
     data['full_time'] = fullTime;
     data['remaining_hour'] = remainingHour;
     data['overtime'] = overtime;
-    data['overtime_start_at'] = overtimeStartAt?.toIso8601String();
-    data['overtime_end_at'] = overtimeEndAt?.toIso8601String();
+    data['overtime_start_at'] = overtimeStartAt;
+    data['overtime_end_at'] = overtimeEndAt;
     data['type'] = type;
-    data['user_id'] = userId.toString();
+    data['user_id'] = userId;
     data['idle_amount'] = idleAmount;
+    data['user'] = user != null ? user!.toJson() : null;
     return data;
   }
 
