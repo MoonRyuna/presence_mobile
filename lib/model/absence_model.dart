@@ -4,7 +4,7 @@ import 'package:presence_alpha/model/absence_type_model.dart';
 import 'package:presence_alpha/model/user_model.dart';
 
 class AbsenceModel {
-  String? id;
+  int? id;
   String? userId;
   String? absenceAt;
   String? absenceStatus;

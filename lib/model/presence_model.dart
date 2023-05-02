@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:presence_alpha/model/user_model.dart';
 
 class PresenceModel {
-  String? id;
+  int? id;
   String? checkIn;
   String? checkOut;
   String? positionCheckIn;

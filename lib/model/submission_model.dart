@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:presence_alpha/model/user_model.dart';
 
 class SubmissionModel {
-  String? id;
+  int? id;
   String? submissionType;
   String? submissionAt;
   String? submissionStatus;

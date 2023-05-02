@@ -116,10 +116,10 @@ class _HomeScreenState extends State<HomeScreen> {
         double latOffice = -7.01147799042147;
         double lngOffice = 107.55234770202203;
 
-        if(response.data?.officeConfig?.latitude != null){
+        if (response.data?.officeConfig?.latitude != null) {
           latOffice = response.data?.officeConfig?.latitude as double;
         }
-        if(response.data?.officeConfig?.longitude != null){
+        if (response.data?.officeConfig?.longitude != null) {
           lngOffice = response.data?.officeConfig?.longitude as double;
         }
 
@@ -181,8 +181,14 @@ class _HomeScreenState extends State<HomeScreen> {
         _kCurrentPosition.target.latitude,
         _kCurrentPosition.target.longitude);
 
+    String dstring;
+    if (distance >= 1) {
+      dstring = "$distance KM";
+    } else {
+      dstring = "${(distance * 1000).round()} M";
+    }
     setState(() {
-      distanceBetweenPoints = "${distance.round()} KM";
+      distanceBetweenPoints = dstring;
     });
   }
 

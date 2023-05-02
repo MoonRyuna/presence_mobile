@@ -4,7 +4,7 @@ import 'package:presence_alpha/model/report_model.dart';
 import 'package:presence_alpha/model/user_model.dart';
 
 class ReportSummaryModel {
-  String? id;
+  int? id;
   String? userId;
   String? reportId;
   int? hadir;

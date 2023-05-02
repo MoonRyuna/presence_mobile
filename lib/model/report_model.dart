@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:presence_alpha/model/user_model.dart';
 
 class ReportModel {
-  String? id;
+  int? id;
   String? title;
   String? startDate;
   String? endDate;

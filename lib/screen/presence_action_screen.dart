@@ -36,9 +36,11 @@ class PresenceActionScreen extends StatefulWidget {
 class _PresenceActionScreenState extends State<PresenceActionScreen> {
   late Timer _timer;
   late String distanceBetweenPoints = "-";
+  int distanceInMeter = 0;
   late String address = "-";
   bool showDesc = false;
   bool showType = false;
+  bool showBtn = false;
 
   final TextEditingController _descController = TextEditingController();
 
@@ -128,8 +130,15 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
         _kCurrentPosition.target.latitude,
         _kCurrentPosition.target.longitude);
 
+    String dstring;
+    if (distance >= 1) {
+      dstring = "$distance KM";
+    } else {
+      dstring = "${(distance * 1000).round()} M";
+    }
     setState(() {
-      distanceBetweenPoints = "${distance.round()} KM";
+      distanceInMeter = (distance * 1000).round();
+      distanceBetweenPoints = dstring;
     });
   }
 
@@ -175,14 +184,6 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
         dp.presensi = response.data!.presensi;
         ocp.officeConfig = response.data!.officeConfig;
 
-        double rGeonfence = response.data?.officeConfig?.radius as double;
-
-        setState(() {
-          radiusGeofence = rGeonfence;
-
-          _circlesSet = _buildCircles();
-        });
-
         double latOffice = -7.01147799042147;
         double lngOffice = 107.55234770202203;
 
@@ -198,6 +199,8 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
             target: LatLng(latOffice, lngOffice),
             zoom: 17,
           );
+          radiusGeofence = ocp.officeConfig?.radius!.toDouble() ?? 20;
+          _circlesSet = _buildCircles();
         });
       }
     }
@@ -208,18 +211,34 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
     if (response2.status == true) {
       if (response2.data != null) {
         pp.todayCheckData = response2.data;
+
+        pp.todayCheckData?.isHoliday = false;
+        pp.todayCheckData?.isWorkday = true;
+
         setState(() {
           showType = false;
           showDesc = false;
+          showBtn = false;
         });
 
         if (response2.data?.alreadyCheckIn as bool == true) {
           setState(() {
             showDesc = true;
+            showBtn = true;
           });
-        } else {
+        } else if (response2.data?.alreadyCheckIn == false &&
+            response2.data?.isWorkday == true) {
           setState(() {
             showType = true;
+            showBtn = true;
+          });
+        }
+
+        if (response2.data?.alreadyCheckOut == true) {
+          setState(() {
+            showType = false;
+            showDesc = false;
+            showBtn = false;
           });
         }
 
@@ -227,7 +246,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                 response2.data?.isWeekend as bool == true) &&
             response2.data?.haveOvertime as bool) {
           setState(() {
-            showType = true;
+            showBtn = true;
           });
         }
       }
@@ -297,152 +316,191 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
   }
 
   void onConfirmation() async {
-    // print("WOW $radiusGeofence");
-    // return;
+    final pp = Provider.of<PropertiesProvider>(
+      context,
+      listen: false,
+    );
+
+    // 1 = Belum Check In
+    // 2 = Belum Check Out
+    // 3 = Sudah Check Out
+    // 4 = Lembur Belum Dimulai
+    // 5 = Lembur Belum Diakhiri
+    // 6 = Lembur Telah Berakhir
+    // 7 = Cuti/Sakit
+    // 8 = Akhir Pekan
+    // 9 = Hari Libur
+    // 10 = Lembur Belum Dimulai (akhir pekan/holiday)
+    // 11 = Lembur Belum Diakhiri (akhir pekan/holiday)
+    // 12 = Lembur Telah Berakhir (akhir pekan/holiday)
+
+    String infoType = CommonUtility.getInfoType(pp.todayCheckData);
+    print("info type $infoType");
+
+    String msg = "";
+    switch (infoType) {
+      case "1":
+        msg = "Lanjutkan untuk melakukan check-in?";
+        break;
+      case "2":
+        msg = "Lanjutkan untuk melakukan check-out?";
+        break;
+      case "3":
+        msg = "Lanjutkan untuk memulai lembur?";
+        break;
+      case "4":
+        msg = "Lanjutkan untuk mengakhiri lembur?";
+        break;
+      case "10":
+        msg = "Lanjutkan untuk memulai lembur di akhir pekan/hari libur? ";
+        break;
+      case "11":
+        msg = "Lanjutkan untuk mengakhiri lembur di akhir pekan/hari libur?";
+        break;
+      default:
+    }
+
     try {
-      LoadingUtility.show("Sedang Proses");
-      final tp = Provider.of<TokenProvider>(
-        context,
-        listen: false,
-      );
-      final pp = Provider.of<PropertiesProvider>(
-        context,
-        listen: false,
-      );
-
-      final up = Provider.of<UserProvider>(
-        context,
-        listen: false,
-      );
-
-      final dp = Provider.of<DateProvider>(
-        context,
-        listen: false,
-      );
-
-      final ocd = Provider.of<OfficeConfigProvider>(
-        context,
-        listen: false,
-      );
-
-      // 1 = Belum Check In
-      // 2 = Belum Check Out
-      // 3 = Sudah Check Out
-      // 4 = Lembur Belum Dimulai
-      // 5 = Lembur Belum Diakhiri
-      // 6 = Lembur Telah Berakhir
-      // 7 = Cuti/Sakit
-      // 8 = Akhir Pekan
-      // 9 = Hari Libur
-      // 10 = Lembur Belum Dimulai
-      // 11 = Lembur Belum Diakhiri
-      // 12 = Lembur Telah Berakhir
-
-      String infoType = CommonUtility.getInfoType(pp.todayCheckData);
-      print("info type $infoType");
-
-      String _address = address;
-      String _latitude = _currentPosition.latitude.toString();
-      String _longitude = _currentPosition.longitude.toString();
-      String? _user_id = up.user?.id;
-      String _desc = _descController.text.trim();
-      String _type = _optionsType[_selectedType].toLowerCase();
-      String _time = CalendarUtility.formatDB(dp.date);
-      String token = tp.token;
-
-      double geofence = radiusGeofence;
-      print("geofence $geofence");
-
-      double jarakM =
-          double.parse((distanceBetweenPoints.replaceAll(" KM", ""))) * 1000;
-      print("jarak dalam meter $jarakM");
-      // return;
-
-      if (_type == 'wfo') {
-        // cek jarak kantor ke lokasi
-        if (jarakM > geofence) {
-          AmessageUtility.show(
-            context,
-            "Info",
-            "Anda Diluar Kantor",
-            TipType.WARN,
+      bool isConfirmed = await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Konfirmasi"),
+            content: Text(msg),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text("Batal"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text("Lanjut"),
+              ),
+            ],
           );
-          return;
+        },
+      );
+
+      if (isConfirmed == true) {
+        if (!mounted) return;
+        LoadingUtility.show("Sedang Proses");
+        final tp = Provider.of<TokenProvider>(
+          context,
+          listen: false,
+        );
+
+        final up = Provider.of<UserProvider>(
+          context,
+          listen: false,
+        );
+
+        final dp = Provider.of<DateProvider>(
+          context,
+          listen: false,
+        );
+
+        String _address = address;
+        String _latitude = _currentPosition.latitude.toString();
+        String _longitude = _currentPosition.longitude.toString();
+        String? _user_id = up.user?.id;
+        String _desc = _descController.text.trim();
+        String _type = _optionsType[_selectedType].toLowerCase();
+        String _time = CalendarUtility.formatDB(dp.date);
+        String token = tp.token;
+
+        double geofence = radiusGeofence;
+        print("geofence $geofence");
+
+        int jarakM = distanceInMeter;
+        print("jarak dalam meter $jarakM");
+        // return;
+
+        if (_type == 'wfo') {
+          // cek jarak kantor ke lokasi
+          if (jarakM > geofence) {
+            AmessageUtility.show(
+              context,
+              "Info",
+              "Anda Diluar Kantor",
+              TipType.WARN,
+            );
+            return;
+          }
         }
+
+        final _location = {
+          'lat': _latitude,
+          'lng': _longitude,
+          'address': _address,
+        };
+
+        if (infoType == "1") {
+          final requestData = {
+            "user_id": _user_id,
+            "check_in": _time,
+            "position_check_in": _location,
+            "type": _type
+          };
+
+          PresenceResponse response =
+              await PresenceService().checkIn(requestData, token);
+          if (!mounted) return;
+          print(response.toJsonString());
+
+          if (response.status == true) {
+            AmessageUtility.show(
+              context,
+              "Berhasil",
+              response.message!,
+              TipType.COMPLETE,
+            );
+          } else {
+            AmessageUtility.show(
+              context,
+              "Gagal",
+              response.message!,
+              TipType.ERROR,
+            );
+          }
+        } else if (infoType == "2") {
+          final requestData = {
+            "user_id": _user_id,
+            "check_out": _time,
+            "position_check_out": _location,
+            "description": _desc
+          };
+
+          PresenceResponse response =
+              await PresenceService().checkOut(requestData, token);
+          if (!mounted) return;
+          print(response.toJsonString());
+
+          if (response.status == true) {
+            AmessageUtility.show(
+              context,
+              "Berhasil",
+              response.message!,
+              TipType.COMPLETE,
+            );
+          } else {
+            AmessageUtility.show(
+              context,
+              "Gagal",
+              response.message!,
+              TipType.ERROR,
+            );
+          }
+        } else if (infoType == "3") {
+        } else if (infoType == "4") {
+        } else if (infoType == "5") {
+        } else if (infoType == "6") {
+        } else if (infoType == "7") {
+        } else if (infoType == "8") {
+        } else if (infoType == "9") {
+        } else if (infoType == "10") {
+        } else if (infoType == "11") {
+        } else if (infoType == "12") {}
       }
-
-      final _location = {
-        'lat': _latitude,
-        'lng': _longitude,
-        'address': _address,
-      };
-
-      if (infoType == "1") {
-        final requestData = {
-          "user_id": _user_id,
-          "check_in": _time,
-          "position_check_in": _location,
-          "type": _type
-        };
-
-        PresenceResponse response =
-            await PresenceService().checkIn(requestData, token);
-        if (!mounted) return;
-        print(response.toJsonString());
-
-        if (response.status == true) {
-          AmessageUtility.show(
-            context,
-            "Berhasil",
-            response.message!,
-            TipType.COMPLETE,
-          );
-        } else {
-          AmessageUtility.show(
-            context,
-            "Gagal",
-            response.message!,
-            TipType.ERROR,
-          );
-        }
-      } else if (infoType == "2") {
-        final requestData = {
-          "user_id": _user_id,
-          "check_out": _time,
-          "position_check_out": _location,
-          "description": _desc
-        };
-
-        PresenceResponse response =
-            await PresenceService().checkOut(requestData, token);
-        if (!mounted) return;
-        print(response.toJsonString());
-
-        if (response.status == true) {
-          AmessageUtility.show(
-            context,
-            "Berhasil",
-            response.message!,
-            TipType.COMPLETE,
-          );
-        } else {
-          AmessageUtility.show(
-            context,
-            "Gagal",
-            response.message!,
-            TipType.ERROR,
-          );
-        }
-      } else if (infoType == "3") {
-      } else if (infoType == "4") {
-      } else if (infoType == "5") {
-      } else if (infoType == "6") {
-      } else if (infoType == "7") {
-      } else if (infoType == "8") {
-      } else if (infoType == "9") {
-      } else if (infoType == "10") {
-      } else if (infoType == "11") {
-      } else if (infoType == "12") {}
     } catch (error) {
       print('Error: $error');
 
@@ -788,20 +846,22 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                                   ),
                                 ),
                               if (showDesc) const SizedBox(height: 16),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: ColorConstant.lightPrimary,
-                                  minimumSize: const Size.fromHeight(50), // NEW
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
+                              if (showBtn)
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: ColorConstant.lightPrimary,
+                                    minimumSize:
+                                        const Size.fromHeight(50), // NEW
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                  ),
+                                  onPressed: onConfirmation,
+                                  child: const Text(
+                                    'Konfirmasi',
+                                    style: TextStyle(fontSize: 20),
                                   ),
                                 ),
-                                onPressed: onConfirmation,
-                                child: const Text(
-                                  'Konfirmasi',
-                                  style: TextStyle(fontSize: 20),
-                                ),
-                              ),
                             ],
                           ),
                         ),

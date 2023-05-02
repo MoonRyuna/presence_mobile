@@ -1,17 +1,17 @@
 import 'dart:convert';
 
 class TodayCheckData {
-  final String? date;
-  final bool? isWeekend;
-  final bool? isHoliday;
-  final List<String>? holidayTitle;
-  final bool? isWorkday;
-  final bool? alreadyCheckIn;
-  final bool? alreadyCheckOut;
-  final bool? isAbsence;
-  final bool? haveOvertime;
-  final bool? alreadyOvertimeStarted;
-  final bool? alreadyOvertimeEnded;
+  String? date;
+  bool? isWeekend;
+  bool? isHoliday;
+  List<String>? holidayTitle;
+  bool? isWorkday;
+  bool? alreadyCheckIn;
+  bool? alreadyCheckOut;
+  bool? isAbsence;
+  bool? haveOvertime;
+  bool? alreadyOvertimeStarted;
+  bool? alreadyOvertimeEnded;
 
   TodayCheckData({
     this.date,

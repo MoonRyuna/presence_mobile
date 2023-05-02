@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:presence_alpha/model/user_model.dart';
 
 class OvertimeModel {
-  String? id;
+  int? id;
   String? userId;
   String? overtimeAt;
   String? overtimeStatus;

@@ -1,7 +1,19 @@
+import 'dart:convert';
+
+import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
+import 'package:presence_alpha/model/overtime_model.dart';
+import 'package:presence_alpha/payload/response/overtime/list_response.dart';
 import 'package:presence_alpha/payload/test_overtime.dart';
+import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
+import 'package:presence_alpha/provider/token_provider.dart';
+import 'package:presence_alpha/provider/user_provider.dart';
+import 'package:presence_alpha/service/overtime_service.dart';
+import 'package:presence_alpha/utility/amessage_utility.dart';
+import 'package:presence_alpha/utility/calendar_utility.dart';
+import 'package:provider/provider.dart';
 
 class OvertimeScreen extends StatefulWidget {
   const OvertimeScreen({super.key});
@@ -13,50 +25,9 @@ class OvertimeScreen extends StatefulWidget {
 class _OvertimeScreenState extends State<OvertimeScreen> {
   late DateTime _startDate;
   late DateTime _endDate;
-  final List<Overtime> overtimes = [
-    Overtime(
-      id: 2,
-      userId: "3",
-      overtimeAt: DateTime.parse("2023-03-20T00:00:00.000Z"),
-      overtimeStatus: "1",
-      desc: "Kerjaan harus dilanjut",
-      attachment: "",
-      user: User(
-        id: "3",
-        userCode: "12.001",
-        username: "ari",
-        name: "Ari Ardiansyah",
-      ),
-    ),
-    Overtime(
-      id: 3,
-      userId: "3",
-      overtimeAt: DateTime.parse("2023-03-20T00:00:00.000Z"),
-      overtimeStatus: "0",
-      desc: "Kerjaan harus dilanjut",
-      attachment: "",
-      user: User(
-        id: "3",
-        userCode: "12.001",
-        username: "ari",
-        name: "Ari Ardiansyah",
-      ),
-    ),
-    Overtime(
-      id: 4,
-      userId: "3",
-      overtimeAt: DateTime.parse("2023-03-20T00:00:00.000Z"),
-      overtimeStatus: "3",
-      desc: "Lorem ipsum kolor si jamet lorem ipsum is mesum",
-      attachment: "",
-      user: User(
-        id: "3",
-        userCode: "12.001",
-        username: "ari",
-        name: "Ari Ardiansyah",
-      ),
-    ),
-  ];
+  List<OvertimeModel> overtimes = List<OvertimeModel>.empty();
+  int limit = 30;
+  int page = 1;
 
   void _openDatePicker() async {
     final DateTime currentDate = DateTime.now();
@@ -87,6 +58,9 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
       setState(() {
         _startDate = pickedDateRange.start;
         _endDate = pickedDateRange.end;
+        overtimes = List<OvertimeModel>.empty();
+        page = 1;
+        loadData();
       });
     }
   }
@@ -99,56 +73,113 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
     // TODO: implement cancelOvertime
   }
 
+  void loadData() async {
+    final tp = Provider.of<TokenProvider>(
+      context,
+      listen: false,
+    );
+    final up = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
+
+    String? user_id = up.user?.id;
+    String token = tp.token;
+
+    final queryParams = {
+      "user_id": user_id.toString(),
+      "start_date": CalendarUtility.formatDB2(_startDate),
+      "end_date": CalendarUtility.formatDB2(_endDate),
+      "limit": limit.toString(),
+      "page": page.toString(),
+    };
+
+    print("Query Before Send ${jsonEncode(queryParams)}");
+
+    ListResponse response = await OvertimeService().list(queryParams, token);
+    if (!mounted) return;
+    print(response.toJsonString());
+
+    if (response.status == true) {
+      print(response.data?.result);
+      setState(() {
+        if (response.data!.nextPage != 0) {
+          page = response.data!.nextPage;
+        }
+        if (response.data?.result != null) {
+          overtimes = [...overtimes, ...?response.data?.result];
+        }
+      });
+      // AmessageUtility.show(
+      //   context,
+      //   "Berhasil",
+      //   response.message!,
+      //   TipType.COMPLETE,
+      // );
+    } else {
+      AmessageUtility.show(
+        context,
+        "Gagal",
+        response.message!,
+        TipType.ERROR,
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _startDate = DateTime.now().subtract(Duration(days: 7));
+    _startDate = DateTime.now().subtract(const Duration(days: 7));
     _endDate = DateTime.now();
+
+    loadData();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Lembur'),
-          centerTitle: true,
-          backgroundColor: ColorConstant.lightPrimary,
-          elevation: 0,
-        ),
-        body: Container(
-          color: ColorConstant.bgOpt,
-          child: Column(
-            children: [
-              Container(
-                padding: EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.shade300,
-                      offset: const Offset(0.0, 0.5), //(x,y)
-                      blurRadius: 6.0,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.date_range),
-                        const SizedBox(width: 5),
-                        Text(
-                          '${DateFormat('dd/MM/yyyy').format(_startDate)} - ${DateFormat('dd/MM/yyyy').format(_endDate)}',
-                          style: const TextStyle(fontSize: 16.0),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+      appBar: AppBar(
+        title: const Text('Lembur'),
+        centerTitle: true,
+        backgroundColor: ColorConstant.lightPrimary,
+        elevation: 0,
+      ),
+      body: Container(
+        color: ColorConstant.bgOpt,
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.shade300,
+                    offset: const Offset(0.0, 0.5), //(x,y)
+                    blurRadius: 6.0,
+                  ),
+                ],
               ),
-              Expanded(
-                child: ListView.builder(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.date_range),
+                      const SizedBox(width: 5),
+                      Text(
+                        '${DateFormat('dd/MM/yyyy').format(_startDate)} - ${DateFormat('dd/MM/yyyy').format(_endDate)}',
+                        style: const TextStyle(fontSize: 16.0),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ConditionalBuilder(
+                condition: overtimes.isNotEmpty,
+                builder: (context) => ListView.builder(
                   padding: const EdgeInsets.only(top: 7.0),
                   itemCount: overtimes.length,
                   itemBuilder: (BuildContext context, int index) {
@@ -178,21 +209,22 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
                           ],
                         ),
                         child: ListTile(
-                          title: Text(overtime.user.name),
+                          title: Text(overtime.user!.name!),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 2.0),
                               Text(
-                                overtime.desc.length > 40
-                                    ? '${overtime.desc.substring(0, 40)}...'
-                                    : overtime.desc,
-                                style: TextStyle(fontSize: 16.0),
+                                overtime.desc != null &&
+                                        overtime.desc!.length > 40
+                                    ? '${overtime.desc!.substring(0, 40)}...'
+                                    : overtime.desc ?? '',
+                                style: const TextStyle(fontSize: 16.0),
                               ),
                               const SizedBox(height: 4.0),
                               Text(
-                                "Lembur pada ${DateFormat.yMMMd().format(overtime.overtimeAt)}",
-                                style: TextStyle(color: Colors.grey),
+                                "Lembur pada ${DateFormat.yMMMd().format(DateTime.parse(overtime.overtimeAt!))}",
+                                style: const TextStyle(color: Colors.grey),
                               ),
                               const SizedBox(height: 2.0),
                               Text(
@@ -224,27 +256,40 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
                     );
                   },
                 ),
+                fallback: (context) => Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.air, size: 80),
+                    SizedBox(height: 16),
+                    Text(
+                      "Belum Ada Data",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
-        floatingActionButton: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            FloatingActionButton(
-              onPressed: _addOvertime,
-              heroTag: "btnAdd",
-              backgroundColor: ColorConstant.lightPrimary,
-              child: const Icon(Icons.add),
-            ),
-            const SizedBox(height: 16),
-            FloatingActionButton(
-              onPressed: _openDatePicker,
-              heroTag: "btnDatePicker",
-              backgroundColor: ColorConstant.lightPrimary,
-              child: const Icon(Icons.date_range),
             ),
           ],
-        ));
+        ),
+      ),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: _addOvertime,
+            heroTag: "btnAdd",
+            backgroundColor: ColorConstant.lightPrimary,
+            child: const Icon(Icons.add),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: _openDatePicker,
+            heroTag: "btnDatePicker",
+            backgroundColor: ColorConstant.lightPrimary,
+            child: const Icon(Icons.date_range),
+          ),
+        ],
+      ),
+    );
   }
 }
