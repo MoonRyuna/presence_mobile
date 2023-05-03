@@ -27,10 +27,6 @@ class UserAuthModel {
     return data;
   }
 
-  String toPlain() {
-    return 'UserAuthModel{ username: $username, password: $password, imei: $imei }';
-  }
-
   String toJsonString() {
     return jsonEncode(toJson());
   }

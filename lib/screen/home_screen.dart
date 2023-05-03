@@ -14,6 +14,7 @@ import 'package:presence_alpha/provider/properties_provider.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
 import 'package:presence_alpha/screen/izin_screen.dart';
+import 'package:presence_alpha/screen/overtime_screen.dart';
 import 'package:presence_alpha/service/user_service.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
 import 'package:presence_alpha/utility/common_utility.dart';
@@ -43,6 +44,13 @@ class _HomeScreenState extends State<HomeScreen> {
       const CameraPosition(target: LatLng(-6.9147444, 107.6098106), zoom: 17);
 
   void getLocation() async {}
+
+  @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
 
   @override
   void initState() {
@@ -96,6 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Dashboard1Response response =
         await UserService().dashboard1(requestData, token);
 
+    print("RES1 ${response.message}");
     if (response.status == true) {
       if (response.data != null) {
         up.user = response.data!.user;
@@ -104,10 +113,15 @@ class _HomeScreenState extends State<HomeScreen> {
         dp.presensi = response.data!.presensi;
         ocp.officeConfig = response.data!.officeConfig;
 
-        var latOffice =
-            response.data?.officeConfig!.latitude ?? -7.01147799042147;
-        var lngOffice =
-            response.data?.officeConfig!.longitude ?? 107.55234770202203;
+        double latOffice = -7.01147799042147;
+        double lngOffice = 107.55234770202203;
+
+        if (response.data?.officeConfig?.latitude != null) {
+          latOffice = response.data?.officeConfig?.latitude as double;
+        }
+        if (response.data?.officeConfig?.longitude != null) {
+          lngOffice = response.data?.officeConfig?.longitude as double;
+        }
 
         setState(() {
           _kOffice = CameraPosition(
@@ -167,8 +181,14 @@ class _HomeScreenState extends State<HomeScreen> {
         _kCurrentPosition.target.latitude,
         _kCurrentPosition.target.longitude);
 
+    String dstring;
+    if (distance >= 1) {
+      dstring = "$distance KM";
+    } else {
+      dstring = "${(distance * 1000).round()} M";
+    }
     setState(() {
-      distanceBetweenPoints = "${distance.round()} KM";
+      distanceBetweenPoints = dstring;
     });
   }
 
@@ -419,7 +439,7 @@ class _HomeScreenState extends State<HomeScreen> {
           () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const IzinScreen()),
+              MaterialPageRoute(builder: (context) => const OvertimeScreen()),
             );
           },
         ),

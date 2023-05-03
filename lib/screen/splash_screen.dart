@@ -31,7 +31,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (usrJson != null) {
       UserAuthModel userAuthModel = UserAuthModel.fromJson(jsonDecode(usrJson));
-      print("userAuthModel ${userAuthModel.toPlain()}");
+      print("userAuthModel ${userAuthModel.toJsonString()}");
       String? username = userAuthModel.username;
       String? password = userAuthModel.password;
       String? imei = userAuthModel.imei;

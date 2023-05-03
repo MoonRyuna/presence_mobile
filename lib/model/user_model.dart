@@ -118,13 +118,21 @@ class UserModel {
     data['updated_by'] = updatedBy;
     data['deleted_by'] = deletedBy;
     data['deleted_at'] = deletedAt;
+    data['created_by'] = createdBy;
+    data['deleted'] = deleted;
+    data['can_wfh'] = canWfh;
+    data['updated_at'] = updatedAt;
+    data['created_at'] = createdAt;
+    data['token'] = token;
+    data['imei'] = imei;
+    data['device_uid'] = deviceUid;
+    data['otp'] = otp;
+    data['updated_by'] = updatedBy;
+    data['deleted_by'] = deletedBy;
+    data['deleted_at'] = deletedAt;
     data['user_annual_leave'] =
         userAnnualLeave != null ? userAnnualLeave!.toJson() : null;
     return data;
-  }
-
-  String toPlain() {
-    return 'UserModel{ id: $id, userCode: $userCode, username: $username, password: $password, email: $email, phoneNumber: $phoneNumber, accountType: $accountType, name: $name, address: $address, description: $description, startedWorkAt: $startedWorkAt, profilePicture: $profilePicture, deviceTracker: $deviceTracker, createdBy: $createdBy, deleted: $deleted, canWfh: $canWfh, updatedAt: $updatedAt, createdAt: $createdAt, token: $token, imei: $imei, deviceUid: $deviceUid, otp: $otp, updatedBy: $updatedBy, deletedBy: $deletedBy, deletedAt: $deletedAt, userAnnualLeave: $userAnnualLeave }';
   }
 
   String toJsonString() {

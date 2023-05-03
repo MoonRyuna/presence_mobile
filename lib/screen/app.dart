@@ -11,10 +11,37 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Future<bool> showExitPopup() async {
+      return await showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Konfirmasi'),
+              content:
+                  const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Tidak'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Ya'),
+                ),
+              ],
+            ),
+          ) ??
+          false;
+    }
+
     final mp = Provider.of<NavbarProvider>(context);
 
     return Scaffold(
-      body: mp.items[mp.selectedIndex].widget,
+      body: WillPopScope(
+        onWillPop: showExitPopup,
+        child: Scaffold(
+          body: mp.items[mp.selectedIndex].widget,
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: ColorConstant.lightPrimary,
         onPressed: () {

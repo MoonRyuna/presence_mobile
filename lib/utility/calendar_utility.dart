@@ -19,4 +19,9 @@ class CalendarUtility {
     final formatter = DateFormat('yyyy-MM-dd HH:mm:ss', 'id_ID');
     return formatter.format(date);
   }
+
+  static String formatDB2(DateTime date) {
+    final formatter = DateFormat('yyyy-MM-dd', 'id_ID');
+    return "${formatter.format(date)} 00:00:00";
+  }
 }
