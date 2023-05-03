@@ -1,9 +1,9 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
 import 'package:presence_alpha/screen/login_screen.dart';
+import 'package:presence_alpha/screen/ubah_password_screen.dart';
+import 'package:presence_alpha/screen/ubah_profile_screen.dart';
 import 'package:presence_alpha/storage/app_storage.dart';
 import 'package:provider/provider.dart';
 
@@ -104,7 +104,12 @@ Widget profileActions(BuildContext context) {
             ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              log("Ubah Profile");
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const UbahProfileScreen(),
+                ),
+              );
             },
           ),
         ),
@@ -128,7 +133,12 @@ Widget profileActions(BuildContext context) {
             ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              log("Ubah Password");
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const UbahPasswordScreen(),
+                ),
+              );
             },
           ),
         ),
