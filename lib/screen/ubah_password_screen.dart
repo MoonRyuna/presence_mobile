@@ -1,6 +1,7 @@
 import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
+import 'package:presence_alpha/model/user_model.dart';
 import 'package:presence_alpha/payload/response/change_password_response.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
@@ -43,7 +44,7 @@ class _UbahPasswordScreenState extends State<UbahPasswordScreen> {
 
     int errorCount = 0;
 
-    final user = Provider.of<UserProvider>(context, listen: false).user;
+    UserModel? user = Provider.of<UserProvider>(context, listen: false).user;
     final token = Provider.of<TokenProvider>(
       context,
       listen: false,
@@ -134,6 +135,8 @@ class _UbahPasswordScreenState extends State<UbahPasswordScreen> {
         response.message!,
         TipType.COMPLETE,
       );
+
+      user = response.data;
     } catch (e) {
       LoadingUtility.hide();
       AmessageUtility.show(

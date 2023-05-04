@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:presence_alpha/payload/data/dashboard1_data.dart';
+import 'package:presence_alpha/model/user_model.dart';
 import 'package:presence_alpha/payload/response/base_response.dart';
 
 class ChangePasswordResponse extends BaseResponse {
-  final UpdateProfileData? data;
+  final UserModel? data;
 
   ChangePasswordResponse({
     required bool status,
@@ -16,9 +16,7 @@ class ChangePasswordResponse extends BaseResponse {
     return ChangePasswordResponse(
       status: json['status'],
       message: json['message'],
-      data: json['data'] != null
-          ? UpdateProfileData.fromJson(json['data'])
-          : null,
+      data: json['data'] != null ? UserModel.fromJson(json['data']) : null,
     );
   }
 
