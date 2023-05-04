@@ -641,13 +641,13 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                                   const Text(
                                     "Jarak ke Kantor: ",
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                     ),
                                   ),
                                   Text(
                                     distanceBetweenPoints,
                                     style: const TextStyle(
-                                        fontSize: 18,
+                                        fontSize: 16,
                                         fontWeight: FontWeight.bold),
                                   ),
                                 ],
@@ -669,7 +669,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                                   const Text(
                                     "Info: ",
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                     ),
                                   ),
                                   Consumer<PropertiesProvider>(
@@ -682,7 +682,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                                       return Text(
                                         textToShow,
                                         style: const TextStyle(
-                                          fontSize: 18,
+                                          fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       );

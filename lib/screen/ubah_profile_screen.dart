@@ -30,7 +30,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _startedWorkAtController =
-  TextEditingController();
+      TextEditingController();
   bool _canWfh = false;
 
   String? _usernameErrorText;
@@ -45,9 +45,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
   @override
   void initState() {
     super.initState();
-    final user = Provider
-        .of<UserProvider>(context, listen: false)
-        .user;
+    final user = Provider.of<UserProvider>(context, listen: false).user;
     if (user != null) {
       _usernameController.text = user.username ?? '';
       _emailController.text = user.email ?? '';
@@ -78,7 +76,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
     final ImagePicker imagePicker = ImagePicker();
 
     final XFile? imagePicked =
-    await imagePicker.pickImage(source: ImageSource.gallery);
+        await imagePicker.pickImage(source: ImageSource.gallery);
     final image = File(imagePicked!.path);
     setState(() {
       _image = image;
@@ -90,19 +88,15 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
 
     int errorCount = 0;
 
-    UserModel? user = Provider
-        .of<UserProvider>(context, listen: false)
-        .user;
-    final token = Provider
-        .of<TokenProvider>(context, listen: false)
-        .token;
+    UserModel? user = Provider.of<UserProvider>(context, listen: false).user;
+    final token = Provider.of<TokenProvider>(context, listen: false).token;
 
     if (user == null || user.id == null) {
       LoadingUtility.hide();
       Navigator.pushNamedAndRemoveUntil(
         context,
         '/login',
-            (route) => false,
+        (route) => false,
       );
       return;
     }
@@ -195,7 +189,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
       };
 
       UpdateProfileResponse response =
-      await UserService().updateProfile(requestData, user.id!, token);
+          await UserService().updateProfile(requestData, user.id!, token);
       if (!mounted) return;
 
       if (response.status != true || response.data == null) {
@@ -217,7 +211,9 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
         TipType.COMPLETE,
       );
 
-      user = response.data;
+      UserProvider? up = Provider.of<UserProvider>(context, listen: false);
+
+      up.user = response.data;
     } catch (e) {
       LoadingUtility.hide();
       AmessageUtility.show(
@@ -257,29 +253,26 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                               child: Consumer<UserProvider>(
                                 builder: (context, userProvider, _) =>
                                     Image.network(
-                                      userProvider.user?.profilePicture != null
-                                          ? "${ApiConstant
-                                          .publicUrl}/${userProvider.user
-                                          ?.profilePicture}"
-                                          : "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png",
-                                      width: 100,
-                                      height: 100,
-                                      fit: BoxFit.cover,
-                                    ),
+                                  userProvider.user?.profilePicture != null
+                                      ? "${ApiConstant.publicUrl}/${userProvider.user?.profilePicture}"
+                                      : "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png",
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
                           ),
                           const SizedBox(height: 8.0),
                           Consumer<UserProvider>(
-                            builder: (context, userProvider, _) =>
-                                Text(
-                                  userProvider.user?.accountType ?? "N/A",
-                                  style: TextStyle(
-                                    fontSize: 14.0,
-                                    color: Colors.grey.shade400,
-                                    fontWeight: FontWeight.normal,
-                                  ),
-                                ),
+                            builder: (context, userProvider, _) => Text(
+                              userProvider.user?.accountType ?? "N/A",
+                              style: TextStyle(
+                                fontSize: 14.0,
+                                color: Colors.grey.shade400,
+                                fontWeight: FontWeight.normal,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -436,7 +429,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
 
                         if (pickedDate != null) {
                           String formattedDate =
-                          DateFormat('yyyy-MM-dd').format(pickedDate);
+                              DateFormat('yyyy-MM-dd').format(pickedDate);
                           setState(() {
                             _startedWorkAtController.text =
                                 formattedDate; //set output date to TextField value.

@@ -252,14 +252,14 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Text(
             accountType,
-            style: const TextStyle(fontSize: 18, color: Colors.white),
+            style: const TextStyle(fontSize: 16, color: Colors.white),
           ),
           const Padding(padding: EdgeInsets.all(2)),
           Consumer<DateProvider>(
             builder: (context, dateModel, child) => Text(
               CalendarUtility.formatBasic(dateModel.date),
               style: const TextStyle(
-                fontSize: 24,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
@@ -294,7 +294,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               )
                             : "-",
                         style: const TextStyle(
-                          fontSize: 24,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
@@ -327,7 +327,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               )
                             : "-",
                         style: const TextStyle(
-                          fontSize: 24,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
@@ -360,13 +360,13 @@ class _HomeScreenState extends State<HomeScreen> {
               const Text(
                 "Jarak ke Kantor: ",
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
               ),
               Text(
                 infoDistance,
                 style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -384,7 +384,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const Text(
                 "Info: ",
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
               ),
               Consumer<PropertiesProvider>(
@@ -395,7 +395,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   return Text(
                     textToShow,
                     style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
+                        fontSize: 16, fontWeight: FontWeight.bold),
                   );
                 },
               ),
@@ -461,7 +461,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Icon(icon, size: 40, color: Colors.grey[800]),
+            Icon(icon, size: 35, color: Colors.grey[800]),
             const SizedBox(height: 6),
             Text(text, style: const TextStyle(fontSize: 12)),
           ],
