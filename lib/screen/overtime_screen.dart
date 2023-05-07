@@ -10,6 +10,7 @@ import 'package:presence_alpha/payload/test_overtime.dart';
 import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
+import 'package:presence_alpha/screen/overtime_add_screen.dart';
 import 'package:presence_alpha/service/overtime_service.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
@@ -75,7 +76,10 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
   }
 
   void _addOvertime() {
-    // TODO: implement addOvertime
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const OvertimeAddScreen()),
+    );
   }
 
   void _cancelOvertime(Overtime overtime) {

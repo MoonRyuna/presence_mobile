@@ -132,7 +132,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
 
     String dstring;
     if (distance >= 1) {
-      dstring = "$distance KM";
+      dstring = "${distance.round()} KM";
     } else {
       dstring = "${(distance * 1000).round()} M";
     }
@@ -235,6 +235,15 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
         }
 
         if (response2.data?.alreadyCheckOut == true) {
+          setState(() {
+            showType = false;
+            showDesc = false;
+            showBtn = false;
+          });
+        }
+
+        if (response2.data?.isHoliday as bool == true ||
+            response2.data?.isWeekend == true) {
           setState(() {
             showType = false;
             showDesc = false;

@@ -183,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     String dstring;
     if (distance >= 1) {
-      dstring = "$distance KM";
+      dstring = "${distance.round()} KM";
     } else {
       dstring = "${(distance * 1000).round()} M";
     }
