@@ -101,8 +101,8 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
 
     final queryParams = {
       "user_id": userId.toString(),
-      "start_date": CalendarUtility.formatDB2(_startDate),
-      "end_date": CalendarUtility.formatDB2(_endDate),
+      "start_date": "${CalendarUtility.formatDB3(_startDate)} 00:00:00",
+      "end_date": "${CalendarUtility.formatDB3(_endDate)} 23:59:59",
       "limit": limit.toString(),
       "page": page.toString(),
       "order": "overtime_at:desc"
@@ -277,8 +277,8 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
                                     const SizedBox(height: 2.0),
                                     Text(
                                       overtime.desc != null &&
-                                              overtime.desc!.length > 40
-                                          ? '${overtime.desc!.substring(0, 40)}...'
+                                              overtime.desc!.length > 35
+                                          ? '${overtime.desc!.substring(0, 35)}...'
                                           : overtime.desc ?? '',
                                       style: const TextStyle(fontSize: 16.0),
                                     ),

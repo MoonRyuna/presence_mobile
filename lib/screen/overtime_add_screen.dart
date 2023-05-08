@@ -3,15 +3,20 @@ import 'dart:io';
 import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
-import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
+import 'package:presence_alpha/model/user_model.dart';
+import 'package:presence_alpha/payload/response/overtime/submission_response.dart';
 import 'package:presence_alpha/payload/response/upload_response.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
+import 'package:presence_alpha/provider/user_provider.dart';
+import 'package:presence_alpha/service/overtime_service.dart';
 import 'package:presence_alpha/service/upload_service.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
+import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:provider/provider.dart';
 
 class OvertimeAddScreen extends StatefulWidget {
@@ -35,6 +40,8 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
     super.initState();
     _overtimeAtController.text =
         DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+    _descController.text = "Pekerjaan perlu di lemburkan";
   }
 
   @override
@@ -54,49 +61,65 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
         attachment = File(pickedFile.path);
       }
     });
-    await uploadAttachment();
+
+    if (attachment?.path != null) {
+      await uploadAttachment();
+    }
   }
 
   Future<void> uploadAttachment() async {
-    final tp = Provider.of<TokenProvider>(
-      context,
-      listen: false,
-    );
-
-    String token = tp.token;
-
-    if (attachment?.path == null) {
-      AmessageUtility.show(
+    LoadingUtility.show("Melakukan Upload");
+    try {
+      final tp = Provider.of<TokenProvider>(
         context,
-        "Gagal",
-        "Upload tidak dapat dilakukan",
-        TipType.ERROR,
+        listen: false,
       );
-      return;
+      String token = tp.token;
+
+      if (attachment?.path == null) {
+        AmessageUtility.show(
+          context,
+          "Info",
+          "Tidak memilih file",
+          TipType.INFO,
+        );
+        return;
+      }
+
+      final mimeType = MediaType('image', 'jpeg');
+      MultipartFile file = await http.MultipartFile.fromPath(
+        'image',
+        attachment!.path,
+        contentType: mimeType,
+      );
+
+      UploadResponse response = await UploadService().image(file, token);
+      if (!mounted) return;
+
+      if (response.data!.path == null) {
+        AmessageUtility.show(
+          context,
+          "Gagal",
+          "melakukan upload ke server",
+          TipType.ERROR,
+        );
+        return;
+      } else {
+        if (response.data!.path != null) {
+          setState(() {
+            attachmentPath = response.data!.path;
+          });
+        }
+
+        print("file upload $attachmentPath");
+      }
+    } catch (error) {
+      print('Error: $error');
+
+      AmessageUtility.show(context, "Gagal", error.toString(), TipType.ERROR);
+    } finally {
+      LoadingUtility.hide();
     }
-
-    MultipartFile file =
-        await http.MultipartFile.fromPath('image', attachment!.path);
-    UploadResponse response = await UploadService().image(file, token);
-    if (!mounted) return;
-
-    // if (response.data!.path == null) {
-    //   AmessageUtility.show(
-    //     context,
-    //     "Gagal",
-    //     "melakukan upload ke server",
-    //     TipType.ERROR,
-    //   );
-    //   return;
-    // } else {
-    //   if (response.data!.path != null) {
-    //     setState(() {
-    //       attachmentPath = response.data!.path;
-    //     });
-    //   }
-
-    //   print("file upload $attachmentPath");
-    // }
   }
 
   Widget _buildImagePreview() {
@@ -107,14 +130,14 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
         height: 150.0,
         decoration: BoxDecoration(
           color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(10.0),
+          borderRadius: BorderRadius.circular(8.0),
           border: attachment != null
-              ? Border.all(color: Colors.red, width: 2.0)
+              ? Border.all(color: Colors.grey, width: 2.0)
               : null,
         ),
         child: attachment != null
             ? ClipRRect(
-                borderRadius: BorderRadius.circular(8.0),
+                borderRadius: BorderRadius.circular(6.0),
                 child: Image.file(
                   attachment!,
                   fit: BoxFit.cover,
@@ -125,6 +148,102 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
               ),
       ),
     );
+  }
+
+  Future<void> onAjukan() async {
+    LoadingUtility.show(null);
+
+    int errorCount = 0;
+
+    UserModel? user = Provider.of<UserProvider>(context, listen: false).user;
+    final token = Provider.of<TokenProvider>(context, listen: false).token;
+
+    if (user == null || user.id == null) {
+      LoadingUtility.hide();
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/login',
+        (route) => false,
+      );
+      return;
+    }
+
+    setState(() {
+      _overtimeAtErrorText = null;
+      _descErrorText = null;
+    });
+
+    final overtimeAt = _overtimeAtController.text.trim();
+    final desc = _descController.text.trim();
+
+    if (overtimeAt.isEmpty) {
+      setState(() {
+        _overtimeAtErrorText = "Tanggal lembur tidak boleh kosong";
+      });
+      errorCount++;
+    }
+
+    if (desc.isEmpty) {
+      setState(() {
+        _descErrorText = "Deskripsi lembur tidak boleh kosong";
+      });
+      errorCount++;
+    }
+
+    if (attachmentPath == null) {
+      AmessageUtility.show(
+        context,
+        "Info",
+        "Silakan masukan bukti harus lembur",
+        TipType.INFO,
+      );
+      errorCount++;
+    }
+
+    if (errorCount > 0) {
+      LoadingUtility.hide();
+      return;
+    }
+
+    try {
+      final requestData = {
+        "user_id": user.id,
+        "overtime_at": overtimeAt,
+        "desc": desc,
+        "attachment": attachmentPath
+      };
+
+      SubmissionResponse response =
+          await OvertimeService().submission(requestData, token);
+      if (!mounted) return;
+
+      if (response.status != true) {
+        LoadingUtility.hide();
+        AmessageUtility.show(
+          context,
+          "Gagal",
+          response.message!,
+          TipType.ERROR,
+        );
+        return;
+      }
+
+      LoadingUtility.hide();
+      AmessageUtility.show(
+        context,
+        "Berhasil",
+        response.message!,
+        TipType.COMPLETE,
+      );
+    } catch (e) {
+      LoadingUtility.hide();
+      AmessageUtility.show(
+        context,
+        "Gagal",
+        e.toString(),
+        TipType.ERROR,
+      );
+    }
   }
 
   @override
@@ -169,7 +288,7 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
                         final pickedDate = await showDatePicker(
                           context: context,
                           initialDate: DateTime.now(),
-                          firstDate: DateTime(2018),
+                          firstDate: DateTime.now(),
                           lastDate: DateTime(2101),
                         );
 
@@ -208,9 +327,6 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
                       alignment: Alignment.bottomLeft,
                       child: const Text(
                         "Sertakan Bukti Harus Lembur Dari Atasan/PIC",
-                        // style: TextStyle(
-                        //   color: Colors.,
-                        // ),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -224,7 +340,9 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                       ),
-                      onPressed: () async {},
+                      onPressed: () async {
+                        await onAjukan();
+                      },
                       child: const Text(
                         'Ajukan',
                         style: TextStyle(fontSize: 20),
