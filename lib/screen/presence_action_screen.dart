@@ -132,7 +132,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
 
     String dstring;
     if (distance >= 1) {
-      dstring = "$distance KM";
+      dstring = "${distance.round()} KM";
     } else {
       dstring = "${(distance * 1000).round()} M";
     }
@@ -235,6 +235,15 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
         }
 
         if (response2.data?.alreadyCheckOut == true) {
+          setState(() {
+            showType = false;
+            showDesc = false;
+            showBtn = false;
+          });
+        }
+
+        if (response2.data?.isHoliday as bool == true ||
+            response2.data?.isWeekend == true) {
           setState(() {
             showType = false;
             showDesc = false;
@@ -641,13 +650,13 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                                   const Text(
                                     "Jarak ke Kantor: ",
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                     ),
                                   ),
                                   Text(
                                     distanceBetweenPoints,
                                     style: const TextStyle(
-                                        fontSize: 18,
+                                        fontSize: 16,
                                         fontWeight: FontWeight.bold),
                                   ),
                                 ],
@@ -669,7 +678,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                                   const Text(
                                     "Info: ",
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                     ),
                                   ),
                                   Consumer<PropertiesProvider>(
@@ -682,7 +691,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                                       return Text(
                                         textToShow,
                                         style: const TextStyle(
-                                          fontSize: 18,
+                                          fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       );

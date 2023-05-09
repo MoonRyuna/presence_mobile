@@ -195,7 +195,9 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
         TipType.COMPLETE,
       );
 
-      user = response.data;
+      UserProvider? up = Provider.of<UserProvider>(context, listen: false);
+
+      up.user = response.data;
     } catch (e) {
       LoadingUtility.hide();
       AmessageUtility.show(
