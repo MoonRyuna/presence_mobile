@@ -29,8 +29,6 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _startedWorkAtController =
-      TextEditingController();
   bool _canWfh = false;
 
   String? _usernameErrorText;
@@ -39,7 +37,6 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
   String? _nameErrorText;
   String? _addressErrorText;
   String? _descriptionErrorText;
-  String? _startedWorkAtErrorText;
   File? _image;
 
   @override
@@ -53,9 +50,6 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
       _nameController.text = user.name ?? '';
       _addressController.text = user.address ?? '';
       _descriptionController.text = user.description ?? '';
-      _startedWorkAtController.text = user.startedWorkAt != null
-          ? DateFormat('yyyy-MM-dd').format(DateTime.parse(user.startedWorkAt!))
-          : '';
       _canWfh = user.canWfh ?? false;
     }
   }
@@ -68,7 +62,6 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
     _nameController.dispose();
     _addressController.dispose();
     _descriptionController.dispose();
-    _startedWorkAtController.dispose();
     super.dispose();
   }
 
@@ -108,7 +101,6 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
       _nameErrorText = null;
       _addressErrorText = null;
       _descriptionErrorText = null;
-      _startedWorkAtErrorText = null;
     });
 
     final username = _usernameController.text.trim();
@@ -117,7 +109,6 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
     final name = _nameController.text.trim();
     final address = _addressController.text.trim();
     final description = _descriptionController.text.trim();
-    final startedWorkAt = _startedWorkAtController.text.trim();
 
     if (username.isEmpty) {
       setState(() {
@@ -161,13 +152,6 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
       errorCount++;
     }
 
-    if (startedWorkAt.isEmpty) {
-      setState(() {
-        _startedWorkAtErrorText = "Tanggal mulai kerja tidak boleh kosong";
-      });
-      errorCount++;
-    }
-
     if (errorCount > 0) {
       LoadingUtility.hide();
       return;
@@ -182,7 +166,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
         "name": name,
         "address": address,
         "description": description,
-        "started_work_at": startedWorkAt,
+        "started_work_at": user.startedWorkAt,
         "device_tracker": user.deviceTracker,
         "updated_by": user.id,
         "can_wfh": user.canWfh,
@@ -267,6 +251,23 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                           Consumer<UserProvider>(
                             builder: (context, userProvider, _) => Text(
                               userProvider.user?.accountType ?? "N/A",
+                              style: TextStyle(
+                                fontSize: 14.0,
+                                color: Colors.grey.shade400,
+                                fontWeight: FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8.0),
+                          Consumer<UserProvider>(
+                            builder: (context, userProvider, _) => Text(
+                              userProvider.user?.startedWorkAt != null
+                                  ? DateFormat('yyyy-MM-dd').format(
+                                      DateTime.parse(
+                                        userProvider.user?.startedWorkAt ?? '',
+                                      ),
+                                    )
+                                  : '',
                               style: TextStyle(
                                 fontSize: 14.0,
                                 color: Colors.grey.shade400,
@@ -400,53 +401,11 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    TextField(
-                      controller: _startedWorkAtController,
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        labelText: 'Started work at',
-                        errorText: _startedWorkAtErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        suffixIcon: const Icon(Icons.calendar_today),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                      onTap: () async {
-                        final pickedDate = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2018),
-                          lastDate: DateTime(2101),
-                        );
-
-                        if (pickedDate != null) {
-                          String formattedDate =
-                              DateFormat('yyyy-MM-dd').format(pickedDate);
-                          setState(() {
-                            _startedWorkAtController.text =
-                                formattedDate; //set output date to TextField value.
-                          });
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 20),
                     Row(
                       children: [
                         Checkbox(
                           value: _canWfh,
-                          onChanged: (value) {
-                            setState(() {
-                              _canWfh = value ?? false;
-                            });
-                          },
+                          onChanged: (value) {},
                         ),
                         const Text("Can work from home"),
                       ],
