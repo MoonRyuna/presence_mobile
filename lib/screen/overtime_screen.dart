@@ -11,6 +11,7 @@ import 'package:conditional_builder_null_safety/conditional_builder_null_safety.
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
 import 'package:presence_alpha/screen/overtime_add_screen.dart';
+import 'package:presence_alpha/screen/overtime_detail_screen.dart';
 import 'package:presence_alpha/service/overtime_service.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
@@ -75,11 +76,22 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
     }
   }
 
-  void _addOvertime() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const OvertimeAddScreen()),
-    );
+  void _onRefresh() async {
+    setState(() {
+      overtimes = List<OvertimeModel>.empty();
+      page = 1;
+      firstLoad = true;
+      endOfList = false;
+    });
+    loadData();
+  }
+
+  void _addOvertime() async {
+    bool result = await Navigator.push(context,
+        MaterialPageRoute(builder: (context) => const OvertimeAddScreen()));
+    if (result == true) {
+      _onRefresh();
+    }
   }
 
   void _cancelOvertime(Overtime overtime) {
@@ -304,13 +316,32 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
                                   ],
                                 ),
                                 trailing: PopupMenuButton(
+                                  onSelected: (result) async {
+                                    debugPrint(result);
+                                    if (result == "detail") {
+                                      bool result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              OvertimeDetailScreen(
+                                            id: overtime.id.toString(),
+                                          ),
+                                        ),
+                                      );
+                                      if (result == true) {
+                                        _onRefresh();
+                                      }
+                                    }
+                                  },
                                   itemBuilder: (BuildContext context) =>
                                       <PopupMenuEntry>[
                                     const PopupMenuItem(
+                                      value: "batalkan",
                                       child: Text('Batalkan'),
                                     ),
                                     const PopupMenuItem(
-                                      child: Text('Detail'),
+                                      value: "detail",
+                                      child: Text("Detail"),
                                     ),
                                   ],
                                 ),
@@ -365,6 +396,13 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
             heroTag: "btnDatePicker",
             backgroundColor: ColorConstant.lightPrimary,
             child: const Icon(Icons.date_range),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: _onRefresh,
+            heroTag: "btnRefresh",
+            backgroundColor: ColorConstant.lightPrimary,
+            child: const Icon(Icons.refresh),
           ),
         ],
       ),

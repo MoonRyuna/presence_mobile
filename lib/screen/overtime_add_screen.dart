@@ -96,16 +96,23 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
       UploadResponse response = await UploadService().image(file, token);
       if (!mounted) return;
 
-      if (response.data!.path == null) {
+      if (response.data?.path == null) {
+        String msg = response.message ?? "melakukan upload ke server";
+
         AmessageUtility.show(
           context,
           "Gagal",
-          "melakukan upload ke server",
+          msg,
           TipType.ERROR,
         );
+
+        setState(() {
+          attachment = null;
+          attachmentPath = null;
+        });
         return;
       } else {
-        if (response.data!.path != null) {
+        if (response.data?.path != null) {
           setState(() {
             attachmentPath = response.data!.path;
           });
@@ -248,110 +255,122 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Ajukan Lembur"),
-        backgroundColor: ColorConstant.lightPrimary,
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              const SizedBox(height: 20.0),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    TextField(
-                      controller: _overtimeAtController,
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        labelText: 'Tanggal Lembur',
-                        errorText: _overtimeAtErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        suffixIcon: const Icon(Icons.calendar_today),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pop(context, true);
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context, true);
+            },
+          ),
+          title: const Text("Ajukan Lembur"),
+          backgroundColor: ColorConstant.lightPrimary,
+          centerTitle: true,
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                const SizedBox(height: 20.0),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      TextField(
+                        controller: _overtimeAtController,
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          labelText: 'Tanggal Lembur',
+                          errorText: _overtimeAtErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          suffixIcon: const Icon(Icons.calendar_today),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
                           ),
-                          borderRadius: BorderRadius.circular(8.0),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
                         ),
-                      ),
-                      onTap: () async {
-                        final pickedDate = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime(2101),
-                        );
+                        onTap: () async {
+                          final pickedDate = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime(2101),
+                          );
 
-                        if (pickedDate != null) {
-                          String formattedDate =
-                              DateFormat('yyyy-MM-dd').format(pickedDate);
-                          setState(() {
-                            _overtimeAtController.text =
-                                formattedDate; //set output date to TextField value.
-                          });
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      maxLines: 4,
-                      controller: _descController,
-                      decoration: InputDecoration(
-                        labelText: 'Deskripsi Lembur',
-                        errorText: _descErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
+                          if (pickedDate != null) {
+                            String formattedDate =
+                                DateFormat('yyyy-MM-dd').format(pickedDate);
+                            setState(() {
+                              _overtimeAtController.text =
+                                  formattedDate; //set output date to TextField value.
+                            });
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        maxLines: 4,
+                        controller: _descController,
+                        decoration: InputDecoration(
+                          labelText: 'Deskripsi Lembur',
+                          errorText: _descErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
                           ),
-                          borderRadius: BorderRadius.circular(8.0),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    Container(
-                      alignment: Alignment.bottomLeft,
-                      child: const Text(
-                        "Sertakan Bukti Harus Lembur Dari Atasan/PIC",
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    _buildImagePreview(),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: ColorConstant.lightPrimary,
-                        minimumSize: const Size.fromHeight(50), // NEW
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
+                      const SizedBox(height: 20),
+                      Container(
+                        alignment: Alignment.bottomLeft,
+                        child: const Text(
+                          "Sertakan Bukti Harus Lembur Dari Atasan/PIC",
                         ),
                       ),
-                      onPressed: () async {
-                        await onAjukan();
-                      },
-                      child: const Text(
-                        'Ajukan',
-                        style: TextStyle(fontSize: 20),
+                      const SizedBox(height: 10),
+                      _buildImagePreview(),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ColorConstant.lightPrimary,
+                          minimumSize: const Size.fromHeight(50), // NEW
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        onPressed: () async {
+                          await onAjukan();
+                        },
+                        child: const Text(
+                          'Ajukan',
+                          style: TextStyle(fontSize: 20),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
