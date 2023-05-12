@@ -15,6 +15,7 @@ import 'package:presence_alpha/screen/overtime_detail_screen.dart';
 import 'package:presence_alpha/service/overtime_service.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
+import 'package:presence_alpha/widget/bs_badge.dart';
 import 'package:provider/provider.dart';
 
 class OvertimeScreen extends StatefulWidget {
@@ -282,7 +283,12 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
                                 ],
                               ),
                               child: ListTile(
-                                title: Text(overtime.user!.name!),
+                                title: Text(
+                                  overtime.user!.name!,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -294,23 +300,39 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
                                           : overtime.desc ?? '',
                                       style: const TextStyle(fontSize: 16.0),
                                     ),
-                                    const SizedBox(height: 4.0),
+                                    const SizedBox(height: 6.0),
                                     Text(
-                                      "Lembur pada ${DateFormat.yMMMd().format(DateTime.parse(overtime.overtimeAt!))}",
-                                      style:
-                                          const TextStyle(color: Colors.grey),
-                                    ),
-                                    const SizedBox(height: 2.0),
-                                    Text(
-                                      "Status: $overtimeStatusText",
+                                      CalendarUtility.formatDate(
+                                          DateTime.parse(overtime.overtimeAt!)),
                                       style: TextStyle(
-                                        color: overtime.overtimeStatus == "1"
-                                            ? Colors.green
-                                            : (overtime.overtimeStatus == "2" ||
-                                                    overtime.overtimeStatus ==
-                                                        "3")
-                                                ? Colors.red
-                                                : null,
+                                        color: Colors.grey.shade900,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4.0),
+                                    BsBadge(
+                                      text: overtimeStatusText!.toUpperCase(),
+                                      textStyle: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                      ),
+                                      backgroundColor: (overtime!
+                                                  .overtimeStatus! ==
+                                              "0"
+                                          ? Colors.blue
+                                          : overtime!.overtimeStatus! == "1"
+                                              ? Colors.green
+                                              : (overtime!.overtimeStatus! ==
+                                                          "2" ||
+                                                      overtime!
+                                                              .overtimeStatus! ==
+                                                          "3")
+                                                  ? Colors.red
+                                                  : Colors.grey),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                        vertical: 4.0,
                                       ),
                                     ),
                                   ],

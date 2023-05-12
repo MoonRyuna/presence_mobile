@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
       title: 'Sistem Presensi',
       theme: ThemeData(
         primarySwatch: Colors.red,
-        textTheme: GoogleFonts.lexendDecaTextTheme(
+        textTheme: GoogleFonts.openSansTextTheme(
           Theme.of(context).textTheme,
         ),
       ),

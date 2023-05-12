@@ -26,11 +26,11 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   startSplashScreen() async {
-    String? usrJson = await AppStorage.localStorage.getItem('usr');
-    print("WOW $usrJson!");
+    final Map<String, dynamic>? usrJson =
+        await AppStorage.localStorage.getItem('usr');
 
     if (usrJson != null) {
-      UserAuthModel userAuthModel = UserAuthModel.fromJson(jsonDecode(usrJson));
+      UserAuthModel userAuthModel = UserAuthModel.fromJson(usrJson);
       print("userAuthModel ${userAuthModel.toJsonString()}");
       String? username = userAuthModel.username;
       String? password = userAuthModel.password;
@@ -62,10 +62,10 @@ class _SplashScreenState extends State<SplashScreen> {
             imei: imei,
           );
 
-          AppStorage.localStorage.setItem(
-            "usr",
-            jsonEncode(userAuthModel.toJson()),
-          );
+          String strUser = jsonEncode(userAuthModel.toJson());
+          debugPrint(strUser);
+
+          AppStorage.localStorage.setItem("usr", userAuthModel);
 
           Duration duration = const Duration(seconds: 5);
           return Timer(duration, () {

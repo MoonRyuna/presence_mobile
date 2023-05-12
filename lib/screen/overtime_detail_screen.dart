@@ -1,6 +1,21 @@
+import 'dart:ffi';
+
+import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
+import 'package:presence_alpha/model/overtime_model.dart';
+import 'package:presence_alpha/model/submission_model.dart';
+import 'package:presence_alpha/payload/response/overtime/detail_response.dart';
+import 'package:presence_alpha/payload/response/overtime/list_submission.dart';
+import 'package:presence_alpha/provider/token_provider.dart';
+import 'package:presence_alpha/provider/user_provider.dart';
+import 'package:presence_alpha/service/overtime_service.dart';
+import 'package:presence_alpha/utility/amessage_utility.dart';
+import 'package:presence_alpha/utility/calendar_utility.dart';
+import 'package:presence_alpha/widget/bs_badge.dart';
+import 'package:provider/provider.dart';
+import 'package:timeline_tile/timeline_tile.dart';
 
 class OvertimeDetailScreen extends StatefulWidget {
   final String id;
@@ -12,9 +27,28 @@ class OvertimeDetailScreen extends StatefulWidget {
 }
 
 class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
+  OvertimeModel? overtimeData;
+  List<SubmissionModel>? submissionList;
+  bool loading = true;
+  final overtimeStatusText = {
+    "0": "Pending",
+    "1": "Approved",
+    "2": "Rejected",
+    "3": "Canceled",
+    "4": "Expired",
+  };
+
+  final submissionStatusText = {
+    "0": "Pending",
+    "1": "Approved",
+    "2": "Rejected",
+    "4": "Expired",
+  };
+
   @override
   void initState() {
     super.initState();
+    loadData();
   }
 
   @override
@@ -22,36 +56,52 @@ class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
     super.dispose();
   }
 
+  Future<void> loadData() async {
+    final tp = Provider.of<TokenProvider>(
+      context,
+      listen: false,
+    );
+    String token = tp.token;
+    String id = widget.id;
+
+    DetailResponse res1 = await OvertimeService().detail(id, token);
+    debugPrint("overtime data ${res1.toJsonString()}");
+
+    ListSubmissionResponse res2 =
+        await OvertimeService().listSubmission(id, token);
+    debugPrint("submission list ${res2.toJsonString()}");
+
+    if (res1.status == true) {
+      setState(() {
+        overtimeData = res1.data;
+      });
+    }
+
+    if (res2.status == true) {
+      setState(() {
+        submissionList = res2.data;
+      });
+    }
+
+    if (res1.status == false || res2.status == false) {
+      debugPrint("err1 ${res1.message}");
+      debugPrint("err2 ${res2.message}");
+      if (!mounted) return;
+      AmessageUtility.show(
+        context,
+        "Gagal",
+        "Fetch data dari server",
+        TipType.ERROR,
+      );
+    }
+
+    setState(() {
+      loading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic> overtime = {
-      "id": 52,
-      "user_id": "3",
-      "overtime_at": "2023-05-10T00:00:00.000Z",
-      "overtime_status": "0",
-      "desc": "Pekerjaan perlu di lemburkan",
-      "attachment": "public\\images\\image-1683731077869-259886403.jpeg",
-      "user": {
-        "id": "3",
-        "user_code": "12.001",
-        "username": "ari",
-        "name": "Ari Ardiansyah"
-      },
-      "data": [
-        {
-          "id": 6,
-          "submission_type": "new",
-          "submission_at": "2023-04-28T01:53:28.044Z",
-          "submission_status": "0",
-          "submission_ref_table": "overtime",
-          "submission_ref_id": "3",
-          "authorization_by": null,
-          "authorization_at": null,
-          "authorizer": null
-        }
-      ]
-    };
-
     return WillPopScope(
       onWillPop: () async {
         Navigator.pop(context, true);
@@ -70,96 +120,216 @@ class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
           centerTitle: true,
         ),
         body: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
+          child: loading
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: const [
+                    Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ],
+                )
+              : SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Pemohon: ${overtime['user']['name']}',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Tanggal Lembur:',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '${overtime['overtime_at']}',
-                        style: TextStyle(
-                          fontSize: 16,
+                      Container(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 10.0),
+                            Text(
+                              overtimeData!.user!.name!,
+                              style: const TextStyle(
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2.0),
+                            Text(
+                              overtimeData!.desc!,
+                              style: TextStyle(
+                                fontSize: 16.0,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            const SizedBox(height: 6.0),
+                            Text(
+                              CalendarUtility.formatDate(
+                                  DateTime.parse(overtimeData!.overtimeAt!)),
+                              style: TextStyle(
+                                color: Colors.grey.shade900,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4.0),
+                            BsBadge(
+                              text: overtimeStatusText[
+                                      overtimeData!.overtimeStatus!]!
+                                  .toUpperCase(),
+                              textStyle: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontSize: 11,
+                              ),
+                              backgroundColor: (overtimeData!.overtimeStatus! ==
+                                      "0"
+                                  ? Colors.blue
+                                  : overtimeData!.overtimeStatus! == "1"
+                                      ? Colors.green
+                                      : (overtimeData!.overtimeStatus! == "2" ||
+                                              overtimeData!.overtimeStatus! ==
+                                                  "3")
+                                          ? Colors.red
+                                          : Colors.grey),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0,
+                                vertical: 4.0,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            const Text(
+                              "Bukti Harus Lembur Dari Atasan/PIC",
+                              style: TextStyle(
+                                fontSize: 14.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Image.network(
+                              "${ApiConstant.baseUrl}/${overtimeData!.attachment!}",
+                              width: MediaQuery.of(context).size.width - 32,
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Status Lembur:',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '${overtime['overtime_status'] == '0' ? 'Pending' : overtime['overtime_status'] == '1' ? 'Approved' : overtime['overtime_status'] == '2' ? 'Rejected' : overtime['overtime_status'] == '3' ? 'Canceled' : overtime['overtime_status'] == '4' ? 'Expired' : ''}',
-                        style: TextStyle(
-                          fontSize: 16,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Deskripsi:',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '${overtime['desc']}',
-                        style: TextStyle(
-                          fontSize: 16,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Lampiran:',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      Image.network(
-                        "${ApiConstant.baseUrl}/${overtime['attachment']}",
-                        width: 100,
-                        height: 100,
-                      ),
+                      const Divider(),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+                            child: Text(
+                              'Riwayat Pengajuan',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                            child: Column(
+                              children: submissionList!.asMap().entries.map(
+                                (entry) {
+                                  int index = entry.key;
+                                  SubmissionModel submission = entry.value;
+                                  Color idicatorColor = Colors.blue;
+                                  Color backgroundColor =
+                                      Colors.blue.withOpacity(0.2);
+                                  String title = "";
+
+                                  if (submission.submissionType == "new") {
+                                    title = "Pengajuan Lembur";
+                                    idicatorColor = Colors.green;
+                                    backgroundColor =
+                                        Colors.green.withOpacity(0.2);
+                                  } else if (submission.submissionType ==
+                                      "cancel") {
+                                    title = "Pembatalan Lembur";
+                                    idicatorColor = Colors.red;
+                                    backgroundColor =
+                                        Colors.red.withOpacity(0.2);
+                                  }
+
+                                  return TimelineTile(
+                                    alignment: TimelineAlign.start,
+                                    isFirst: index == 0,
+                                    indicatorStyle: IndicatorStyle(
+                                      width: 10,
+                                      color: idicatorColor,
+                                      padding: const EdgeInsets.all(8),
+                                    ),
+                                    endChild: Container(
+                                      constraints: const BoxConstraints(
+                                        minHeight: 80,
+                                      ),
+                                      padding: const EdgeInsets.all(16.0),
+                                      color: backgroundColor,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            title,
+                                            style: const TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                              'Tanggal Pengajuan: ${CalendarUtility.formatDate(DateTime.parse(submission.submissionAt!))}'),
+                                          Text(
+                                              'Status: ${submissionStatusText[submission.submissionStatus]!}'),
+                                          const SizedBox(height: 2),
+                                          const SizedBox(height: 8),
+                                          if (submission.authorizationAt !=
+                                              null)
+                                            Text(
+                                                'Disetujui pada: ${CalendarUtility.formatDate(DateTime.parse(submission.authorizationAt!))}'),
+                                          if (submission.authorizer?.name !=
+                                              null)
+                                            Text(
+                                                'Disetujui oleh: ${submission.authorizer?.name}'),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ).toList(),
+                              // TimelineTile(
+                              //   alignment: TimelineAlign.start,
+                              //   indicatorStyle: const IndicatorStyle(
+                              //     width: 10,
+                              //     color: Colors.red,
+                              //     padding: EdgeInsets.all(8),
+                              //   ),
+                              //   endChild: Container(
+                              //     constraints: const BoxConstraints(
+                              //       minHeight: 80,
+                              //     ),
+                              //     padding: const EdgeInsets.all(16.0),
+                              //     color: Colors.red.withOpacity(0.2),
+                              //     child: Column(
+                              //       crossAxisAlignment:
+                              //           CrossAxisAlignment.start,
+                              //       children: const [
+                              //         Text(
+                              //           'Pembatalan Lembur',
+                              //           style: TextStyle(
+                              //             fontSize: 15,
+                              //             fontWeight: FontWeight.bold,
+                              //           ),
+                              //         ),
+                              //         SizedBox(height: 8),
+                              //         Text('Tanggal Pengajuan: 11 Mei 2023'),
+                              //         Text('Disetujui oleh: Meta Lia'),
+                              //       ],
+                              //     ),
+                              //   ),
+                              // ),
+                            ),
+                          )
+                        ],
+                      )
                     ],
                   ),
                 ),
-                Divider(),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'Daftar Pengajuan',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: overtime['data'].length,
-                  itemBuilder: (context, index) {
-                    final pengajuan = overtime['data'][index];
-                    return ListTile(
-                      title: Text('ID Pengajuan: ${pengajuan['id']}'),
-                      subtitle: Text(
-                          'Tipe Pengajuan: ${pengajuan['submission_type']}'),
-                      trailing: Text(
-                          'Status Pengajuan: ${pengajuan['submission_status'] == '0' ? 'Belum Disetujui' : 'Disetujui'}'),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );

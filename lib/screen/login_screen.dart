@@ -138,12 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
               imei: imei,
             );
 
-            await AppStorage.localStorage.setItem(
-              "usr",
-              jsonEncode(
-                userAuthModel.toJson(),
-              ),
-            );
+            await AppStorage.localStorage.setItem("usr", userAuthModel);
 
             final usr = await AppStorage.localStorage.getItem("usr");
             print("WOW $usr");

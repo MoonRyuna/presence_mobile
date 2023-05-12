@@ -29,4 +29,9 @@ class CalendarUtility {
     final formatter = DateFormat('yyyy-MM-dd', 'id_ID');
     return formatter.format(date);
   }
+
+  static String formatDate(DateTime date) {
+    final formatter = DateFormat('d MMM y', 'id_ID');
+    return formatter.format(date);
+  }
 }
