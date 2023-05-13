@@ -31,9 +31,10 @@ class PresenceService {
         final Map<String, dynamic> responseData = json.decode(response.body);
         return PresenceResponse.fromJson(responseData);
       } else {
+        final Map<String, dynamic> responseData = json.decode(response.body);
         return PresenceResponse(
           status: false,
-          message: 'Unable to fetch data',
+          message: responseData['message'] ?? 'Unable to fetch data',
         );
       }
     } on TimeoutException catch (e) {
@@ -83,9 +84,10 @@ class PresenceService {
         final Map<String, dynamic> responseData = json.decode(response.body);
         return PresenceResponse.fromJson(responseData);
       } else {
+        final Map<String, dynamic> responseData = json.decode(response.body);
         return PresenceResponse(
           status: false,
-          message: 'Unable to fetch data',
+          message: responseData['message'] ?? 'Unable to fetch data',
         );
       }
     } on TimeoutException catch (e) {

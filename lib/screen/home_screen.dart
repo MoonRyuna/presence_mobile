@@ -13,7 +13,7 @@ import 'package:presence_alpha/provider/office_config_provide.dart';
 import 'package:presence_alpha/provider/properties_provider.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
-import 'package:presence_alpha/screen/izin_screen.dart';
+import 'package:presence_alpha/screen/absence_screen.dart';
 import 'package:presence_alpha/screen/overtime_screen.dart';
 import 'package:presence_alpha/service/user_service.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
@@ -415,11 +415,11 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         gridButton(
           "Kehadiran",
-          Icons.fingerprint,
+          Icons.history,
           () => {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const IzinScreen()),
+              MaterialPageRoute(builder: (context) => const AbsenceScreen()),
             )
           },
         ),
@@ -429,7 +429,7 @@ class _HomeScreenState extends State<HomeScreen> {
           () => {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const IzinScreen()),
+              MaterialPageRoute(builder: (context) => const AbsenceScreen()),
             )
           },
         ),
@@ -461,8 +461,8 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Icon(icon, size: 35, color: Colors.grey[800]),
-            const SizedBox(height: 6),
+            Icon(icon, size: 34, color: Colors.grey[800]),
+            const SizedBox(height: 8),
             Text(text, style: const TextStyle(fontSize: 12)),
           ],
         ),
@@ -494,16 +494,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: const [
                           Text(
-                            "Menu",
+                            "Menu Lainnya",
                             style: TextStyle(
-                              fontSize: 23,
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const Padding(padding: EdgeInsets.all(6)),
+                    const Padding(padding: EdgeInsets.all(5)),
                     boxButton(),
                   ],
                 ),

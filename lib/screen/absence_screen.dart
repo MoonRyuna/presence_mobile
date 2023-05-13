@@ -4,32 +4,32 @@ import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
-import 'package:presence_alpha/model/overtime_model.dart';
-import 'package:presence_alpha/payload/response/overtime/cancel_response.dart';
-import 'package:presence_alpha/payload/response/overtime/list_response.dart';
+import 'package:presence_alpha/model/absence_model.dart';
+import 'package:presence_alpha/payload/response/absence/cancel_response.dart';
+import 'package:presence_alpha/payload/response/absence/list_response.dart';
 import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
-import 'package:presence_alpha/screen/overtime_add_screen.dart';
-import 'package:presence_alpha/screen/overtime_detail_screen.dart';
-import 'package:presence_alpha/service/overtime_service.dart';
+import 'package:presence_alpha/screen/absence_add_screen.dart';
+import 'package:presence_alpha/screen/absence_detail_screen.dart';
+import 'package:presence_alpha/service/absence_service.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:presence_alpha/widget/bs_badge.dart';
 import 'package:provider/provider.dart';
 
-class OvertimeScreen extends StatefulWidget {
-  const OvertimeScreen({super.key});
+class AbsenceScreen extends StatefulWidget {
+  const AbsenceScreen({super.key});
 
   @override
-  State<OvertimeScreen> createState() => _OvertimeScreenState();
+  State<AbsenceScreen> createState() => _AbsenceScreenState();
 }
 
-class _OvertimeScreenState extends State<OvertimeScreen> {
+class _AbsenceScreenState extends State<AbsenceScreen> {
   late DateTime _startDate;
   late DateTime _endDate;
-  List<OvertimeModel> overtimes = List<OvertimeModel>.empty();
+  List<AbsenceModel> absences = List<AbsenceModel>.empty();
 
   int limit = 10;
   int page = 1;
@@ -69,7 +69,7 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
       setState(() {
         _startDate = pickedDateRange.start;
         _endDate = pickedDateRange.end;
-        overtimes = List<OvertimeModel>.empty();
+        absences = List<AbsenceModel>.empty();
         page = 1;
         firstLoad = true;
         endOfList = false;
@@ -80,7 +80,7 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
 
   void _onRefresh() async {
     setState(() {
-      overtimes = List<OvertimeModel>.empty();
+      absences = List<AbsenceModel>.empty();
       page = 1;
       firstLoad = true;
       endOfList = false;
@@ -88,15 +88,15 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
     loadData();
   }
 
-  void _addOvertime() async {
+  void _addAbsence() async {
     bool result = await Navigator.push(context,
-        MaterialPageRoute(builder: (context) => const OvertimeAddScreen()));
+        MaterialPageRoute(builder: (context) => const AbsenceAddScreen()));
     if (result == true) {
       _onRefresh();
     }
   }
 
-  void _cancelOvertime(OvertimeModel overtime) async {
+  void _cancelAbsence(AbsenceModel absence) async {
     try {
       bool isConfirmed = await showDialog(
         context: context,
@@ -128,10 +128,10 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
 
         String token = tp.token;
 
-        final requestData = {'overtime_id': overtime.id};
+        final requestData = {'absence_id': absence.id};
 
         CancelResponse response =
-            await OvertimeService().cancel(requestData, token);
+            await AbsenceService().cancel(requestData, token);
         if (!mounted) return;
         print(response.toJsonString());
 
@@ -180,7 +180,7 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
       "end_date": "${CalendarUtility.formatDB3(_endDate)} 23:59:59",
       "limit": limit.toString(),
       "page": page.toString(),
-      "order": "overtime_at:desc"
+      "order": "absence_at:desc"
     };
 
     print("Query Before Send ${jsonEncode(queryParams)}");
@@ -193,14 +193,14 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
         loadMoreRunning = true;
       });
 
-      ListResponse response = await OvertimeService().list(queryParams, token);
+      ListResponse response = await AbsenceService().list(queryParams, token);
       if (!mounted) return;
       print(response.toJsonString());
 
       if (response.status == true) {
         setState(() {
           if (response.data?.result != null) {
-            overtimes = [...overtimes, ...?response.data?.result];
+            absences = [...absences, ...?response.data?.result];
           }
 
           if (response.data!.nextPage == 0) {
@@ -226,14 +226,14 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
       setState(() {
         firstLoadRunning = true;
       });
-      ListResponse response = await OvertimeService().list(queryParams, token);
+      ListResponse response = await AbsenceService().list(queryParams, token);
       if (!mounted) return;
       print(response.toJsonString());
 
       if (response.status == true) {
         setState(() {
           if (response.data?.result != null) {
-            overtimes = response.data!.result;
+            absences = response.data!.result;
           }
 
           if (response.data!.nextPage == 0) {
@@ -270,7 +270,7 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lembur'),
+        title: const Text('Izin'),
         centerTitle: true,
         backgroundColor: ColorConstant.lightPrimary,
         elevation: 0,
@@ -313,20 +313,20 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
                       child: CircularProgressIndicator(),
                     )
                   : ConditionalBuilder(
-                      condition: overtimes.isNotEmpty,
+                      condition: absences.isNotEmpty,
                       builder: (context) => ListView.builder(
                         padding: const EdgeInsets.only(top: 7.0),
                         controller: _controller,
-                        itemCount: overtimes.length,
+                        itemCount: absences.length,
                         itemBuilder: (BuildContext context, int index) {
-                          final overtime = overtimes[index];
-                          final overtimeStatusText = {
+                          final absence = absences[index];
+                          final absenceStatusText = {
                             "0": "Pending",
                             "1": "Approved",
                             "2": "Rejected",
                             "3": "Canceled",
                             "4": "Expired",
-                          }[overtime.overtimeStatus];
+                          }[absence.absenceStatus];
 
                           return Padding(
                             padding: const EdgeInsets.symmetric(
@@ -346,7 +346,7 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
                               ),
                               child: ListTile(
                                 title: Text(
-                                  overtime.user!.name!,
+                                  absence.user!.name!,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -356,16 +356,24 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
                                   children: [
                                     const SizedBox(height: 2.0),
                                     Text(
-                                      overtime.desc != null &&
-                                              overtime.desc!.length > 35
-                                          ? '${overtime.desc!.substring(0, 35)}...'
-                                          : overtime.desc ?? '',
+                                      absence.desc != null &&
+                                              absence.desc!.length > 35
+                                          ? '${absence.desc!.substring(0, 35)}...'
+                                          : absence.desc ?? '',
                                       style: const TextStyle(fontSize: 16.0),
                                     ),
                                     const SizedBox(height: 6.0),
                                     Text(
+                                      absence.absenceType!.name!,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.red.withOpacity(0.8),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4.0),
+                                    Text(
                                       CalendarUtility.formatDate(
-                                          DateTime.parse(overtime.overtimeAt!)),
+                                          DateTime.parse(absence.absenceAt!)),
                                       style: TextStyle(
                                         color: Colors.grey.shade900,
                                         fontWeight: FontWeight.w500,
@@ -373,22 +381,21 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
                                     ),
                                     const SizedBox(height: 4.0),
                                     BsBadge(
-                                      text: overtimeStatusText!.toUpperCase(),
+                                      text: absenceStatusText!.toUpperCase(),
                                       textStyle: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,
                                         fontSize: 11,
                                       ),
-                                      backgroundColor: (overtime!
-                                                  .overtimeStatus! ==
+                                      backgroundColor: (absence!
+                                                  .absenceStatus! ==
                                               "0"
                                           ? Colors.blue
-                                          : overtime!.overtimeStatus! == "1"
+                                          : absence!.absenceStatus! == "1"
                                               ? Colors.green
-                                              : (overtime!.overtimeStatus! ==
+                                              : (absence!.absenceStatus! ==
                                                           "2" ||
-                                                      overtime!
-                                                              .overtimeStatus! ==
+                                                      absence!.absenceStatus! ==
                                                           "3")
                                                   ? Colors.red
                                                   : Colors.grey),
@@ -407,8 +414,8 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              OvertimeDetailScreen(
-                                            id: overtime.id.toString(),
+                                              AbsenceDetailScreen(
+                                            id: absence.id.toString(),
                                           ),
                                         ),
                                       );
@@ -416,12 +423,12 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
                                         _onRefresh();
                                       }
                                     } else if (result == "batalkan") {
-                                      _cancelOvertime(overtime);
+                                      _cancelAbsence(absence);
                                     }
                                   },
                                   itemBuilder: (BuildContext context) =>
                                       <PopupMenuEntry>[
-                                    if (overtime.overtimeStatus == "1")
+                                    if (absence.absenceStatus == "1")
                                       const PopupMenuItem(
                                         value: "batalkan",
                                         child: Text('Batalkan'),
@@ -472,7 +479,7 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton(
-            onPressed: _addOvertime,
+            onPressed: _addAbsence,
             heroTag: "btnAdd",
             backgroundColor: ColorConstant.lightPrimary,
             child: const Icon(Icons.add),

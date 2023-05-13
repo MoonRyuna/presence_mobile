@@ -31,9 +31,11 @@ class UploadService {
         Map<String, dynamic> responseData = jsonDecode(data);
         return UploadResponse.fromJson(responseData);
       } else {
+        String data = await response.stream.bytesToString();
+        final Map<String, dynamic> responseData = jsonDecode(data);
         return UploadResponse(
           status: false,
-          message: 'Unable to fetch data',
+          message: responseData['message'] ?? 'Unable to fetch data',
         );
       }
     } on TimeoutException catch (e) {

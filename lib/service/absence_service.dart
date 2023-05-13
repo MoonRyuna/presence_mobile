@@ -4,18 +4,18 @@ import 'dart:io';
 
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:http/http.dart' as http;
-import 'package:presence_alpha/payload/response/overtime/cancel_response.dart';
-import 'package:presence_alpha/payload/response/overtime/detail_response.dart';
-import 'package:presence_alpha/payload/response/overtime/list_response.dart';
-import 'package:presence_alpha/payload/response/overtime/list_submission.dart';
-import 'package:presence_alpha/payload/response/overtime/submission_response.dart';
+import 'package:presence_alpha/payload/response/absence/cancel_response.dart';
+import 'package:presence_alpha/payload/response/absence/detail_response.dart';
+import 'package:presence_alpha/payload/response/absence/list_response.dart';
+import 'package:presence_alpha/payload/response/absence/list_submission.dart';
+import 'package:presence_alpha/payload/response/absence/submission_response.dart';
 
-class OvertimeService {
+class AbsenceService {
   Future<ListResponse> list(
       Map<String, dynamic> queryParams, String token) async {
-    print('GET: overtime - list');
+    print('GET: absence - list');
 
-    String target = '${ApiConstant.baseApi}/overtime';
+    String target = '${ApiConstant.baseApi}/absence';
     final queryParameters = Uri(queryParameters: queryParams).queryParameters;
 
     final queryString = Uri(queryParameters: queryParameters).query;
@@ -68,7 +68,7 @@ class OvertimeService {
       Map<String, dynamic> requestData, String token) async {
     print('POST: submission');
 
-    String target = '${ApiConstant.baseApi}/overtime/submission';
+    String target = '${ApiConstant.baseApi}/absence/submission';
     print('target: $target');
     print('json" ${jsonEncode(json.encode(requestData))}');
 
@@ -118,9 +118,9 @@ class OvertimeService {
   }
 
   Future<DetailResponse> detail(String id, String token) async {
-    print('GET: overtime - detail');
+    print('GET: absence - detail');
 
-    String target = '${ApiConstant.baseApi}/overtime/$id';
+    String target = '${ApiConstant.baseApi}/absence/$id';
     print('target: ${Uri.parse(target)}');
 
     try {
@@ -166,9 +166,9 @@ class OvertimeService {
   }
 
   Future<ListSubmissionResponse> listSubmission(String id, String token) async {
-    print('GET: overtime - list_submission');
+    print('GET: absence - list_submission');
 
-    String target = '${ApiConstant.baseApi}/overtime/submission/$id';
+    String target = '${ApiConstant.baseApi}/absence/submission/$id';
     print('target: ${Uri.parse(target)}');
 
     try {
@@ -217,7 +217,7 @@ class OvertimeService {
       Map<String, dynamic> requestData, String token) async {
     print('POST: cancel');
 
-    String target = '${ApiConstant.baseApi}/overtime/cancel';
+    String target = '${ApiConstant.baseApi}/absence/cancel';
     print('target: $target');
     print('json" ${jsonEncode(json.encode(requestData))}');
 

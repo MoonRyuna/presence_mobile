@@ -34,9 +34,10 @@ class UserService {
         final Map<String, dynamic> responseData = json.decode(response.body);
         return Dashboard1Response.fromJson(responseData);
       } else {
+        final Map<String, dynamic> responseData = json.decode(response.body);
         return Dashboard1Response(
           status: false,
-          message: 'Unable to fetch data',
+          message: responseData['message'] ?? 'Unable to fetch data',
           data: null,
         );
       }
@@ -91,9 +92,10 @@ class UserService {
         final Map<String, dynamic> responseData = json.decode(response.body);
         return TodayCheckResponse.fromJson(responseData);
       } else {
+        final Map<String, dynamic> responseData = json.decode(response.body);
         return TodayCheckResponse(
           status: false,
-          message: 'Unable to fetch data',
+          message: responseData['message'] ?? 'Unable to fetch data',
           data: null,
         );
       }
@@ -148,9 +150,10 @@ class UserService {
         final Map<String, dynamic> responseData = json.decode(response.body);
         return ChangePasswordResponse.fromJson(responseData);
       } else {
+        final Map<String, dynamic> responseData = json.decode(response.body);
         return ChangePasswordResponse(
           status: false,
-          message: 'Unable to fetch data',
+          message: responseData['message'] ?? 'Unable to fetch data',
           data: null,
         );
       }
@@ -205,9 +208,10 @@ class UserService {
         final Map<String, dynamic> responseData = json.decode(response.body);
         return UpdateProfileResponse.fromJson(responseData);
       } else {
+        final Map<String, dynamic> responseData = json.decode(response.body);
         return UpdateProfileResponse(
           status: false,
-          message: 'Unable to fetch data',
+          message: responseData['message'] ?? 'Unable to fetch data',
           data: null,
         );
       }

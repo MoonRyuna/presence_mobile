@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:ionicons/ionicons.dart';
+// import 'package:ionicons/ionicons.dart';
 import 'package:presence_alpha/screen/home_screen.dart';
 import 'package:presence_alpha/screen/profile_screen.dart';
 
 class NavbarProvider with ChangeNotifier {
   List<NavItem> items = [
     NavItem(
-        label: "Home", widget: const HomeScreen(), iconData: Ionicons.planet),
+        label: "Home", widget: const HomeScreen(), iconData: Icons.dashboard),
     NavItem(
         label: "Profile",
         widget: const ProfileScreen(),
-        iconData: Ionicons.construct),
+        iconData: Icons.settings),
   ];
 
   int _selectedIndex = 0;

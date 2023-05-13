@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:ai_awesome_message/ai_awesome_message.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:http_parser/http_parser.dart';
@@ -8,38 +9,44 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:presence_alpha/constant/color_constant.dart';
+import 'package:presence_alpha/model/absence_type_model.dart';
 import 'package:presence_alpha/model/user_model.dart';
-import 'package:presence_alpha/payload/response/overtime/submission_response.dart';
+import 'package:presence_alpha/payload/response/absence/submission_response.dart';
+import 'package:presence_alpha/payload/response/absence_type/all_response.dart';
 import 'package:presence_alpha/payload/response/upload_response.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
-import 'package:presence_alpha/service/overtime_service.dart';
+import 'package:presence_alpha/service/absence_service.dart';
+import 'package:presence_alpha/service/absence_type_service.dart';
 import 'package:presence_alpha/service/upload_service.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:provider/provider.dart';
 
-class OvertimeAddScreen extends StatefulWidget {
-  const OvertimeAddScreen({super.key});
+class AbsenceAddScreen extends StatefulWidget {
+  const AbsenceAddScreen({super.key});
 
   @override
-  State<OvertimeAddScreen> createState() => _OvertimeAddScreenState();
+  State<AbsenceAddScreen> createState() => _AbsenceAddScreenState();
 }
 
-class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
-  final TextEditingController _overtimeAtController = TextEditingController();
+class _AbsenceAddScreenState extends State<AbsenceAddScreen> {
+  final TextEditingController _absenceAtController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   File? attachment;
   String? attachmentPath;
+  String? absenceTypeId;
 
-  String? _overtimeAtErrorText;
+  String? _absenceAtErrorText;
   String? _descErrorText;
+  String? _absenceTypeErrorText;
+
+  List<AbsenceTypeModel>? absenceTypeList;
 
   @override
   void initState() {
     super.initState();
-    _overtimeAtController.text =
-        DateFormat('yyyy-MM-dd').format(DateTime.now());
+    _absenceAtController.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
     _descController.text = "";
   }
@@ -47,8 +54,27 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
   @override
   void dispose() {
     _descController.dispose();
-    _overtimeAtController.dispose();
+    _absenceAtController.dispose();
     super.dispose();
+  }
+
+  Future<List<AbsenceTypeModel>> getDataAbsenceType() async {
+    List<AbsenceTypeModel> absenceTypes = [];
+    try {
+      final tp = Provider.of<TokenProvider>(
+        context,
+        listen: false,
+      );
+      String token = tp.token;
+      AllResponse res = await AbsenceTypeService().all(token);
+
+      if (res.data != null) {
+        absenceTypes = res.data!;
+      }
+    } catch (error) {
+      print('Error: $error');
+    }
+    return absenceTypes;
   }
 
   Future<void> _pickAttachment() async {
@@ -176,23 +202,31 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
     }
 
     setState(() {
-      _overtimeAtErrorText = null;
+      _absenceTypeErrorText = null;
+      _absenceAtErrorText = null;
       _descErrorText = null;
     });
 
-    final overtimeAt = _overtimeAtController.text.trim();
+    final absenceAt = _absenceAtController.text.trim();
     final desc = _descController.text.trim();
 
-    if (overtimeAt.isEmpty) {
+    if (absenceAt.isEmpty) {
       setState(() {
-        _overtimeAtErrorText = "Tanggal lembur tidak boleh kosong";
+        _absenceAtErrorText = "Tanggal izin tidak boleh kosong";
+      });
+      errorCount++;
+    }
+
+    if (absenceTypeId == null) {
+      setState(() {
+        _absenceTypeErrorText = "Jenis izin tidak boleh kosong";
       });
       errorCount++;
     }
 
     if (desc.isEmpty) {
       setState(() {
-        _descErrorText = "Deskripsi lembur tidak boleh kosong";
+        _descErrorText = "Deskripsi izin tidak boleh kosong";
       });
       errorCount++;
     }
@@ -201,7 +235,7 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
       AmessageUtility.show(
         context,
         "Info",
-        "Silakan masukan bukti harus lembur",
+        "Silakan masukan bukti harus izin",
         TipType.INFO,
       );
       errorCount++;
@@ -215,13 +249,14 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
     try {
       final requestData = {
         "user_id": user.id,
-        "overtime_at": overtimeAt,
+        "absence_at": absenceAt,
+        "absence_type_id": absenceTypeId,
         "desc": desc,
         "attachment": attachmentPath
       };
 
       SubmissionResponse response =
-          await OvertimeService().submission(requestData, token);
+          await AbsenceService().submission(requestData, token);
       if (!mounted) return;
 
       if (response.status != true) {
@@ -268,7 +303,7 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
               Navigator.pop(context, true);
             },
           ),
-          title: const Text("Ajukan Lembur"),
+          title: const Text("Ajukan Izin"),
           backgroundColor: ColorConstant.lightPrimary,
           centerTitle: true,
         ),
@@ -286,15 +321,15 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
                       Container(
                         alignment: Alignment.bottomLeft,
                         child: const Text(
-                          "Tanggal Lembur",
+                          "Tanggal Izin",
                         ),
                       ),
                       const SizedBox(height: 10),
                       TextField(
-                        controller: _overtimeAtController,
+                        controller: _absenceAtController,
                         readOnly: true,
                         decoration: InputDecoration(
-                          errorText: _overtimeAtErrorText,
+                          errorText: _absenceAtErrorText,
                           errorStyle: const TextStyle(color: Colors.red),
                           suffixIcon: const Icon(Icons.calendar_today),
                           border: OutlineInputBorder(
@@ -317,7 +352,7 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
                             String formattedDate =
                                 DateFormat('yyyy-MM-dd').format(pickedDate);
                             setState(() {
-                              _overtimeAtController.text =
+                              _absenceAtController.text =
                                   formattedDate; //set output date to TextField value.
                             });
                           }
@@ -327,7 +362,41 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
                       Container(
                         alignment: Alignment.bottomLeft,
                         child: const Text(
-                          "Deskripsi Lembur",
+                          "Jenis Izin",
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownSearch<AbsenceTypeModel>(
+                        asyncItems: (String filter) async {
+                          return getDataAbsenceType();
+                        },
+                        itemAsString: (AbsenceTypeModel u) => u.name.toString(),
+                        onChanged: (AbsenceTypeModel? data) {
+                          print(data!.toJsonString());
+                          setState(() {
+                            absenceTypeId = data.id.toString();
+                          });
+                          print("absenceTypeId $absenceTypeId");
+                        },
+                        dropdownDecoratorProps: DropDownDecoratorProps(
+                          dropdownSearchDecoration: InputDecoration(
+                            errorText: _absenceTypeErrorText,
+                            errorStyle: const TextStyle(color: Colors.red),
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: ColorConstant.lightPrimary,
+                              ),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Container(
+                        alignment: Alignment.bottomLeft,
+                        child: const Text(
+                          "Deskripsi Izin",
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -351,7 +420,7 @@ class _OvertimeAddScreenState extends State<OvertimeAddScreen> {
                       Container(
                         alignment: Alignment.bottomLeft,
                         child: const Text(
-                          "Sertakan Bukti Harus Lembur Dari Atasan/PIC",
+                          "Sertakan Bukti Izin",
                         ),
                       ),
                       const SizedBox(height: 10),

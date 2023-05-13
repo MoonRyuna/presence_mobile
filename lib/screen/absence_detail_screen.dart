@@ -2,32 +2,32 @@ import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
-import 'package:presence_alpha/model/overtime_model.dart';
+import 'package:presence_alpha/model/absence_model.dart';
 import 'package:presence_alpha/model/submission_model.dart';
-import 'package:presence_alpha/payload/response/overtime/detail_response.dart';
-import 'package:presence_alpha/payload/response/overtime/list_submission.dart';
+import 'package:presence_alpha/payload/response/absence/detail_response.dart';
+import 'package:presence_alpha/payload/response/absence/list_submission.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
-import 'package:presence_alpha/service/overtime_service.dart';
+import 'package:presence_alpha/service/absence_service.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
 import 'package:presence_alpha/widget/bs_badge.dart';
 import 'package:provider/provider.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 
-class OvertimeDetailScreen extends StatefulWidget {
+class AbsenceDetailScreen extends StatefulWidget {
   final String id;
 
-  const OvertimeDetailScreen({required this.id, super.key});
+  const AbsenceDetailScreen({required this.id, super.key});
 
   @override
-  State<OvertimeDetailScreen> createState() => _OvertimeDetailScreenState();
+  State<AbsenceDetailScreen> createState() => _AbsenceDetailScreenState();
 }
 
-class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
-  OvertimeModel? overtimeData;
+class _AbsenceDetailScreenState extends State<AbsenceDetailScreen> {
+  AbsenceModel? absenceData;
   List<SubmissionModel>? submissionList;
   bool loading = true;
-  final overtimeStatusText = {
+  final absenceStatusText = {
     "0": "Pending",
     "1": "Approved",
     "2": "Rejected",
@@ -61,16 +61,16 @@ class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
     String token = tp.token;
     String id = widget.id;
 
-    DetailResponse res1 = await OvertimeService().detail(id, token);
-    debugPrint("overtime data ${res1.toJsonString()}");
+    DetailResponse res1 = await AbsenceService().detail(id, token);
+    debugPrint("absence data ${res1.toJsonString()}");
 
     ListSubmissionResponse res2 =
-        await OvertimeService().listSubmission(id, token);
+        await AbsenceService().listSubmission(id, token);
     debugPrint("submission list ${res2.toJsonString()}");
 
     if (res1.status == true) {
       setState(() {
-        overtimeData = res1.data;
+        absenceData = res1.data;
       });
     }
 
@@ -138,7 +138,7 @@ class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
                           children: [
                             const SizedBox(height: 10.0),
                             Text(
-                              overtimeData!.user!.name!,
+                              absenceData!.user!.name!,
                               style: const TextStyle(
                                 fontSize: 16.0,
                                 fontWeight: FontWeight.bold,
@@ -146,7 +146,7 @@ class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
                             ),
                             const SizedBox(height: 2.0),
                             Text(
-                              overtimeData!.desc!,
+                              absenceData!.desc!,
                               style: TextStyle(
                                 fontSize: 16.0,
                                 color: Colors.grey.shade600,
@@ -154,8 +154,16 @@ class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
                             ),
                             const SizedBox(height: 6.0),
                             Text(
+                              absenceData!.absenceType!.name!,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red.withOpacity(0.8),
+                              ),
+                            ),
+                            const SizedBox(height: 4.0),
+                            Text(
                               CalendarUtility.formatDate(
-                                  DateTime.parse(overtimeData!.overtimeAt!)),
+                                  DateTime.parse(absenceData!.absenceAt!)),
                               style: TextStyle(
                                 color: Colors.grey.shade900,
                                 fontWeight: FontWeight.w500,
@@ -163,21 +171,21 @@ class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
                             ),
                             const SizedBox(height: 4.0),
                             BsBadge(
-                              text: overtimeStatusText[
-                                      overtimeData!.overtimeStatus!]!
+                              text: absenceStatusText[
+                                      absenceData!.absenceStatus!]!
                                   .toUpperCase(),
                               textStyle: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                                 fontSize: 11,
                               ),
-                              backgroundColor: (overtimeData!.overtimeStatus! ==
+                              backgroundColor: (absenceData!.absenceStatus! ==
                                       "0"
                                   ? Colors.blue
-                                  : overtimeData!.overtimeStatus! == "1"
+                                  : absenceData!.absenceStatus! == "1"
                                       ? Colors.green
-                                      : (overtimeData!.overtimeStatus! == "2" ||
-                                              overtimeData!.overtimeStatus! ==
+                                      : (absenceData!.absenceStatus! == "2" ||
+                                              absenceData!.absenceStatus! ==
                                                   "3")
                                           ? Colors.red
                                           : Colors.grey),
@@ -190,7 +198,7 @@ class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
                               height: 10,
                             ),
                             const Text(
-                              "Bukti Harus Lembur Dari Atasan/PIC",
+                              "Bukti Harus Izin Dari Atasan/PIC",
                               style: TextStyle(
                                 fontSize: 14.0,
                                 fontWeight: FontWeight.bold,
@@ -200,7 +208,7 @@ class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
                               height: 10,
                             ),
                             Image.network(
-                              "${ApiConstant.baseUrl}/${overtimeData!.attachment!}",
+                              "${ApiConstant.baseUrl}/${absenceData!.attachment!}",
                               width: MediaQuery.of(context).size.width - 32,
                             ),
                           ],
@@ -231,13 +239,13 @@ class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
                                   String title = "";
 
                                   if (submission.submissionType == "new") {
-                                    title = "Pengajuan Lembur";
+                                    title = "Pengajuan Izin";
                                     idicatorColor = Colors.green;
                                     backgroundColor =
                                         Colors.green.withOpacity(0.2);
                                   } else if (submission.submissionType ==
                                       "cancel") {
-                                    title = "Pembatalan Lembur";
+                                    title = "Pembatalan Izin";
                                     idicatorColor = Colors.red;
                                     backgroundColor =
                                         Colors.red.withOpacity(0.2);
