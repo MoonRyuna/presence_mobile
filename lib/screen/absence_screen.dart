@@ -387,15 +387,15 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
                                         color: Colors.white,
                                         fontSize: 11,
                                       ),
-                                      backgroundColor: (absence!
+                                      backgroundColor: (absence
                                                   .absenceStatus! ==
                                               "0"
                                           ? Colors.blue
-                                          : absence!.absenceStatus! == "1"
+                                          : absence.absenceStatus! == "1"
                                               ? Colors.green
-                                              : (absence!.absenceStatus! ==
+                                              : (absence.absenceStatus! ==
                                                           "2" ||
-                                                      absence!.absenceStatus! ==
+                                                      absence.absenceStatus! ==
                                                           "3")
                                                   ? Colors.red
                                                   : Colors.grey),

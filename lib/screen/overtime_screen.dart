@@ -379,16 +379,15 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
                                         color: Colors.white,
                                         fontSize: 11,
                                       ),
-                                      backgroundColor: (overtime!
+                                      backgroundColor: (overtime
                                                   .overtimeStatus! ==
                                               "0"
                                           ? Colors.blue
-                                          : overtime!.overtimeStatus! == "1"
+                                          : overtime.overtimeStatus! == "1"
                                               ? Colors.green
-                                              : (overtime!.overtimeStatus! ==
+                                              : (overtime.overtimeStatus! ==
                                                           "2" ||
-                                                      overtime!
-                                                              .overtimeStatus! ==
+                                                      overtime.overtimeStatus! ==
                                                           "3")
                                                   ? Colors.red
                                                   : Colors.grey),
