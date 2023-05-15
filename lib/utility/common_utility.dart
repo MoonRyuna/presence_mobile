@@ -22,10 +22,12 @@ class CommonUtility {
       if (obj?.haveOvertime == true) {
         if (obj?.alreadyOvertimeStarted == true) {
           textToShow = 'Lembur Belum Diakhiri';
-        } else if (obj?.alreadyOvertimeEnded == true) {
-          textToShow = 'Lembur Telah Berakhir';
         } else {
           textToShow = 'Lembur Belum Dimulai';
+        }
+
+        if (obj?.alreadyOvertimeEnded == true) {
+          textToShow = 'Lembur Telah Berakhir';
         }
       } else {
         textToShow = 'Hari Libur';
@@ -34,10 +36,12 @@ class CommonUtility {
       if (obj?.haveOvertime == true) {
         if (obj?.alreadyOvertimeStarted == true) {
           textToShow = 'Lembur Belum Diakhiri';
-        } else if (obj?.alreadyOvertimeEnded == true) {
-          textToShow = 'Lembur Telah Berakhir';
         } else {
           textToShow = 'Lembur Belum Dimulai';
+        }
+
+        if (obj?.alreadyOvertimeEnded == true) {
+          textToShow = 'Lembur Telah Berakhir';
         }
       } else {
         textToShow = 'Akhir Pekan';
@@ -55,10 +59,12 @@ class CommonUtility {
         if (obj?.haveOvertime == true) {
           if (obj?.alreadyOvertimeStarted == true) {
             textToShow = 'Lembur Belum Diakhiri';
-          } else if (obj?.alreadyOvertimeEnded == true) {
-            textToShow = 'Lembur Telah Berakhir';
           } else {
             textToShow = 'Lembur Belum Dimulai';
+          }
+
+          if (obj?.alreadyOvertimeEnded == true) {
+            textToShow = 'Lembur Telah Berakhir';
           }
         } else {
           textToShow = "Sudah Check Out";

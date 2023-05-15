@@ -23,6 +23,7 @@ import 'package:presence_alpha/utility/calendar_utility.dart';
 import 'package:presence_alpha/utility/common_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:presence_alpha/utility/maps_utility.dart';
+import 'package:presence_alpha/widget/bs_alert.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
@@ -254,9 +255,21 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
         if ((response2.data?.isHoliday as bool == true ||
                 response2.data?.isWeekend as bool == true) &&
             response2.data?.haveOvertime as bool) {
-          setState(() {
-            showBtn = true;
-          });
+          if (response2.data?.alreadyOvertimeStarted == true) {
+            setState(() {
+              showBtn = true;
+            });
+          } else {
+            setState(() {
+              showBtn = true;
+            });
+          }
+
+          if (response2.data?.alreadyOvertimeEnded == true) {
+            setState(() {
+              showBtn = false;
+            });
+          }
         }
       }
     }
@@ -500,14 +513,114 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
             );
           }
         } else if (infoType == "3") {
+          final requestData = {
+            "user_id": _user_id,
+            "overtime_start_at": _time,
+          };
+
+          PresenceResponse response =
+              await PresenceService().startOvertime(requestData, token);
+          if (!mounted) return;
+          print(response.toJsonString());
+
+          if (response.status == true) {
+            AmessageUtility.show(
+              context,
+              "Berhasil",
+              response.message!,
+              TipType.COMPLETE,
+            );
+          } else {
+            AmessageUtility.show(
+              context,
+              "Gagal",
+              response.message!,
+              TipType.ERROR,
+            );
+          }
         } else if (infoType == "4") {
+          final requestData = {
+            "user_id": _user_id,
+            "overtime_end_at": _time,
+          };
+
+          PresenceResponse response =
+              await PresenceService().endOvertime(requestData, token);
+          if (!mounted) return;
+          print(response.toJsonString());
+
+          if (response.status == true) {
+            AmessageUtility.show(
+              context,
+              "Berhasil",
+              response.message!,
+              TipType.COMPLETE,
+            );
+          } else {
+            AmessageUtility.show(
+              context,
+              "Gagal",
+              response.message!,
+              TipType.ERROR,
+            );
+          }
         } else if (infoType == "5") {
         } else if (infoType == "6") {
         } else if (infoType == "7") {
         } else if (infoType == "8") {
         } else if (infoType == "9") {
         } else if (infoType == "10") {
+          final requestData = {
+            "user_id": _user_id,
+            "overtime_start_at": _time,
+          };
+
+          PresenceResponse response =
+              await PresenceService().startHolidayOvertime(requestData, token);
+          if (!mounted) return;
+          print(response.toJsonString());
+
+          if (response.status == true) {
+            AmessageUtility.show(
+              context,
+              "Berhasil",
+              response.message!,
+              TipType.COMPLETE,
+            );
+          } else {
+            AmessageUtility.show(
+              context,
+              "Gagal",
+              response.message!,
+              TipType.ERROR,
+            );
+          }
         } else if (infoType == "11") {
+          final requestData = {
+            "user_id": _user_id,
+            "overtime_end_at": _time,
+          };
+
+          PresenceResponse response =
+              await PresenceService().endHolidayOvertime(requestData, token);
+          if (!mounted) return;
+          print(response.toJsonString());
+
+          if (response.status == true) {
+            AmessageUtility.show(
+              context,
+              "Berhasil",
+              response.message!,
+              TipType.COMPLETE,
+            );
+          } else {
+            AmessageUtility.show(
+              context,
+              "Gagal",
+              response.message!,
+              TipType.ERROR,
+            );
+          }
         } else if (infoType == "12") {}
       }
     } catch (error) {
@@ -515,6 +628,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
 
       AmessageUtility.show(context, "Gagal", error.toString(), TipType.ERROR);
     } finally {
+      loadData();
       LoadingUtility.hide();
     }
   }
@@ -564,7 +678,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
             ),
           ),
           Positioned(
-            bottom: ((MediaQuery.of(context).size.height * 0.168) + 16),
+            bottom: ((MediaQuery.of(context).size.height * 0.16) + 16),
             right: 16,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -599,12 +713,12 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
           SlidingUpPanel(
             controller: _panelCtl,
             maxHeight: (MediaQuery.of(context).size.height),
-            minHeight: (MediaQuery.of(context).size.height * 0.168),
+            minHeight: (MediaQuery.of(context).size.height * 0.16),
             boxShadow: const [],
             padding: const EdgeInsets.all(0.0),
-            border: const Border(
+            border: Border(
               top: BorderSide(
-                color: Colors.grey,
+                color: Colors.grey.withOpacity(0.3),
                 width: 1.0,
               ),
             ),
@@ -656,7 +770,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                                   Text(
                                     distanceBetweenPoints,
                                     style: const TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 14,
                                         fontWeight: FontWeight.bold),
                                   ),
                                 ],
@@ -691,7 +805,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                                       return Text(
                                         textToShow,
                                         style: const TextStyle(
-                                          fontSize: 16,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       );
@@ -708,7 +822,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
-                              color: Colors.grey,
+                              color: Colors.grey.withOpacity(0.3),
                               width: 1,
                             ),
                           ),
@@ -719,14 +833,14 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                               const Text(
                                 'Lokasi Anda:',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                 ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 address,
                                 style: const TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -734,14 +848,14 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                               const Text(
                                 'Latitude & Longitude:',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                 ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 '${_currentPosition.latitude}, ${_currentPosition.longitude}',
                                 style: const TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -749,7 +863,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                               const Text(
                                 'Waktu Presensi:',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -757,7 +871,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                                 builder: (context, dateModel, child) => Text(
                                   CalendarUtility.formatBasic(dateModel.date),
                                   style: const TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -767,38 +881,30 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                         ),
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
+                          padding: const EdgeInsets.fromLTRB(0, 20, 0, 16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Status Presensi:',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
                               Consumer<PropertiesProvider>(
                                 builder: (context, propertiesProvider, _) {
                                   String textToShow =
                                       CommonUtility.presenceStatus(
                                           propertiesProvider.todayCheckData);
 
-                                  return Text(
-                                    textToShow,
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  return BsAlert(
+                                    icon: Icons.info_outline,
+                                    title: 'Status',
+                                    message: textToShow,
+                                    type: BsAlertType.info,
                                   );
                                 },
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 20),
                               if (showType)
                                 const Text(
                                   'Pilih Jenis Kehadiran',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 14,
                                   ),
                                 ),
                               if (showType) const SizedBox(height: 8),
@@ -836,7 +942,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                                 const Text(
                                   'Catatan Harian',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 14,
                                   ),
                                 ),
                               if (showDesc) const SizedBox(height: 8),
