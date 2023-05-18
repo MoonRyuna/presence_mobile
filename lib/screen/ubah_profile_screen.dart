@@ -224,7 +224,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                 alignment: Alignment.topCenter,
                 children: <Widget>[
                   SizedBox(
-                    height: 200.0,
+                    height: 210.0,
                     child: Padding(
                       padding: const EdgeInsets.all(32.0),
                       child: Column(
@@ -247,7 +247,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8.0),
+                          const SizedBox(height: 4.0),
                           Consumer<UserProvider>(
                             builder: (context, userProvider, _) => Text(
                               userProvider.user?.accountType ?? "N/A",

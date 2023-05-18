@@ -213,62 +213,51 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
       if (response2.data != null) {
         pp.todayCheckData = response2.data;
 
-        pp.todayCheckData?.isHoliday = false;
-        pp.todayCheckData?.isWorkday = true;
-
         setState(() {
           showType = false;
           showDesc = false;
           showBtn = false;
         });
 
-        if (response2.data?.alreadyCheckIn as bool == true) {
-          setState(() {
-            showDesc = true;
-            showBtn = true;
-          });
+        if (response2.data?.alreadyCheckIn == true) {
+          showDesc = true;
+          showBtn = true;
         } else if (response2.data?.alreadyCheckIn == false &&
             response2.data?.isWorkday == true) {
-          setState(() {
-            showType = true;
-            showBtn = true;
-          });
+          showType = true;
+          showBtn = true;
         }
 
         if (response2.data?.alreadyCheckOut == true) {
-          setState(() {
-            showType = false;
-            showDesc = false;
-            showBtn = false;
-          });
+          showType = false;
+          showDesc = false;
+          showBtn = false;
         }
 
-        if (response2.data?.isHoliday as bool == true ||
-            response2.data?.isWeekend == true) {
-          setState(() {
-            showType = false;
-            showDesc = false;
-            showBtn = false;
-          });
-        }
-
-        if ((response2.data?.isHoliday as bool == true ||
-                response2.data?.isWeekend as bool == true) &&
-            response2.data?.haveOvertime as bool) {
-          if (response2.data?.alreadyOvertimeStarted == true) {
-            setState(() {
-              showBtn = true;
-            });
-          } else {
-            setState(() {
-              showBtn = true;
-            });
-          }
+        if (response2.data?.isWorkday == true &&
+            response2.data?.alreadyCheckOut == true &&
+            response2.data?.haveOvertime == true) {
+          showBtn = true;
 
           if (response2.data?.alreadyOvertimeEnded == true) {
-            setState(() {
-              showBtn = false;
-            });
+            showBtn = false;
+          }
+        }
+
+        if (response2.data?.isHoliday == true ||
+            response2.data?.isWeekend == true) {
+          showType = false;
+          showDesc = false;
+          showBtn = false;
+        }
+
+        if ((response2.data?.isHoliday == true ||
+                response2.data?.isWeekend == true) &&
+            response2.data?.haveOvertime == true) {
+          showBtn = true;
+
+          if (response2.data?.alreadyOvertimeEnded == true) {
+            showBtn = false;
           }
         }
       }
@@ -367,10 +356,10 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
       case "2":
         msg = "Lanjutkan untuk melakukan check-out?";
         break;
-      case "3":
+      case "4":
         msg = "Lanjutkan untuk memulai lembur?";
         break;
-      case "4":
+      case "5":
         msg = "Lanjutkan untuk mengakhiri lembur?";
         break;
       case "10":
@@ -513,6 +502,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
             );
           }
         } else if (infoType == "3") {
+        } else if (infoType == "4") {
           final requestData = {
             "user_id": _user_id,
             "overtime_start_at": _time,
@@ -538,7 +528,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
               TipType.ERROR,
             );
           }
-        } else if (infoType == "4") {
+        } else if (infoType == "5") {
           final requestData = {
             "user_id": _user_id,
             "overtime_end_at": _time,
@@ -564,7 +554,6 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
               TipType.ERROR,
             );
           }
-        } else if (infoType == "5") {
         } else if (infoType == "6") {
         } else if (infoType == "7") {
         } else if (infoType == "8") {

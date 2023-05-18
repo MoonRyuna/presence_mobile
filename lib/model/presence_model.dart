@@ -10,9 +10,9 @@ class PresenceModel {
   String? positionCheckOut;
   String? description;
   bool? late;
-  double? lateAmount;
+  int? lateAmount;
   bool? fullTime;
-  double? remainingHour;
+  int? remainingHour;
   bool? overtime;
   String? overtimeStartAt;
   String? overtimeEndAt;

@@ -15,6 +15,7 @@ import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
 import 'package:presence_alpha/screen/absence_screen.dart';
 import 'package:presence_alpha/screen/overtime_screen.dart';
+import 'package:presence_alpha/screen/presence_screen.dart';
 import 'package:presence_alpha/service/user_service.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
 import 'package:presence_alpha/utility/common_utility.dart';
@@ -419,7 +420,7 @@ class _HomeScreenState extends State<HomeScreen> {
           () => {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const AbsenceScreen()),
+              MaterialPageRoute(builder: (context) => const PresenceScreen()),
             )
           },
         ),
