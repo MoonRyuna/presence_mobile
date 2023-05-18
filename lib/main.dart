@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:presence_alpha/provider/dashboard_provider.dart';
+import 'package:presence_alpha/provider/date_provider.dart';
+import 'package:presence_alpha/provider/hr_navbar_provider.dart';
+import 'package:presence_alpha/provider/navbar_provider.dart';
 import 'package:presence_alpha/provider/office_config_provide.dart';
 import 'package:presence_alpha/provider/properties_provider.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
-import 'package:presence_alpha/provider/date_provider.dart';
-import 'package:presence_alpha/provider/navbar_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
 import 'package:presence_alpha/screen/splash_screen.dart';
 import 'package:presence_alpha/storage/app_storage.dart';
@@ -20,6 +21,7 @@ void main() async {
 
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider<NavbarProvider>(create: (_) => NavbarProvider()),
+    ChangeNotifierProvider<HRNavbarProvider>(create: (_) => HRNavbarProvider()),
     ChangeNotifierProvider<DateProvider>(create: (_) => DateProvider()),
     ChangeNotifierProvider<TokenProvider>(create: (_) => TokenProvider()),
     ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
