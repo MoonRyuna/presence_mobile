@@ -1,15 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/model/user_auth_model.dart';
+import 'package:presence_alpha/payload/response/auth_response.dart';
+import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/screen/app.dart';
+import 'package:presence_alpha/screen/hr/app.dart' as hrApp;
 import 'package:presence_alpha/screen/login_screen.dart';
 import 'package:presence_alpha/screen/offline_screen.dart';
 import 'package:presence_alpha/service/auth_service.dart';
 import 'package:presence_alpha/storage/app_storage.dart';
 import 'package:provider/provider.dart';
-import 'package:presence_alpha/payload/response/auth_response.dart';
-import 'package:presence_alpha/provider/token_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -56,6 +58,8 @@ class _SplashScreenState extends State<SplashScreen> {
         if (response.data!.token != null) {
           tokenProvider.setToken(response.data!.token as String);
 
+          final accountType = response.data!.accountType;
+
           UserAuthModel userAuthModel = UserAuthModel(
             username: username,
             password: password,
@@ -69,9 +73,23 @@ class _SplashScreenState extends State<SplashScreen> {
 
           Duration duration = const Duration(seconds: 5);
           return Timer(duration, () {
+            if (accountType == "hrd" || accountType == "admin") {
+              Navigator.of(context)
+                  .pushReplacement(MaterialPageRoute(builder: (_) {
+                return const hrApp.App();
+              }));
+              return;
+            } else if (accountType == "karyawan") {
+              Navigator.of(context)
+                  .pushReplacement(MaterialPageRoute(builder: (_) {
+                return const App();
+              }));
+              return;
+            }
+
             Navigator.of(context)
                 .pushReplacement(MaterialPageRoute(builder: (_) {
-              return const App();
+              return const OfflineScreen();
             }));
           });
         } else {
