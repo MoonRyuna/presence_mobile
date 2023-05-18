@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:presence_alpha/screen/hr/ubah_pengaturan_kantor_screen.dart';
 import 'package:presence_alpha/screen/profile_screen.dart';
 
 class ManageScreen extends StatelessWidget {
@@ -131,7 +132,14 @@ Widget profileActions(BuildContext context) {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const UbahPengaturanKantorScreen(),
+                ),
+              );
+            },
           ),
         ),
       ),
