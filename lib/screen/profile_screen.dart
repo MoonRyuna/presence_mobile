@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
+import 'package:presence_alpha/constant/color_constant.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
 import 'package:presence_alpha/screen/login_screen.dart';
 import 'package:presence_alpha/screen/ubah_password_screen.dart';
@@ -7,12 +8,33 @@ import 'package:presence_alpha/screen/ubah_profile_screen.dart';
 import 'package:presence_alpha/storage/app_storage.dart';
 import 'package:provider/provider.dart';
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({Key? key}) : super(key: key);
+
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String? accountType = null;
+
+  @override
+  void initState() {
+    super.initState();
+    // Call userProvider to get user data and update the userData variable
+    accountType =
+        Provider.of<UserProvider>(context, listen: false).user?.accountType;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: accountType == "admin" || accountType == "hrd"
+          ? AppBar(
+              title: const Text("Profile"),
+              backgroundColor: ColorConstant.lightPrimary,
+            )
+          : null,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(

@@ -38,6 +38,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
   String? _addressErrorText;
   String? _descriptionErrorText;
   File? _image;
+  String? _accountType;
 
   @override
   void initState() {
@@ -51,6 +52,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
       _addressController.text = user.address ?? '';
       _descriptionController.text = user.description ?? '';
       _canWfh = user.canWfh ?? false;
+      _accountType = user.accountType ?? '';
     }
   }
 
@@ -169,7 +171,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
         "started_work_at": user.startedWorkAt,
         "device_tracker": user.deviceTracker,
         "updated_by": user.id,
-        "can_wfh": user.canWfh,
+        "can_wfh": _canWfh,
       };
 
       UpdateProfileResponse response =
@@ -247,34 +249,9 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 4.0),
-                          Consumer<UserProvider>(
-                            builder: (context, userProvider, _) => Text(
-                              userProvider.user?.accountType ?? "N/A",
-                              style: TextStyle(
-                                fontSize: 14.0,
-                                color: Colors.grey.shade400,
-                                fontWeight: FontWeight.normal,
-                              ),
-                            ),
-                          ),
+                          const SizedBox(height: 16.0),
+                          profileInfo(context),
                           const SizedBox(height: 8.0),
-                          Consumer<UserProvider>(
-                            builder: (context, userProvider, _) => Text(
-                              userProvider.user?.startedWorkAt != null
-                                  ? DateFormat('yyyy-MM-dd').format(
-                                      DateTime.parse(
-                                        userProvider.user?.startedWorkAt ?? '',
-                                      ),
-                                    )
-                                  : '',
-                              style: TextStyle(
-                                fontSize: 14.0,
-                                color: Colors.grey.shade400,
-                                fontWeight: FontWeight.normal,
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                     ),
@@ -404,8 +381,16 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                     Row(
                       children: [
                         Checkbox(
+                          activeColor: ColorConstant.lightPrimary,
                           value: _canWfh,
-                          onChanged: (value) {},
+                          onChanged: (value) {
+                            if (_accountType == "admin" ||
+                                _accountType == "hrd") {
+                              setState(() {
+                                _canWfh = value ?? false;
+                              });
+                            }
+                          },
                         ),
                         const Text("Can work from home"),
                       ],
@@ -436,4 +421,29 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
       ),
     );
   }
+}
+
+Widget profileInfo(BuildContext context) {
+  const locale = Locale('id', 'ID');
+
+  return Consumer<UserProvider>(
+    builder: (context, userProvider, _) => Text(
+      (userProvider.user?.accountType ?? "N/A") +
+          (userProvider.user?.startedWorkAt != null
+              ? " sejak ${DateFormat(
+                  'd MMMM y',
+                  locale.toString(),
+                ).format(
+                  DateTime.parse(
+                    userProvider.user?.startedWorkAt ?? '',
+                  ),
+                )}"
+              : ""),
+      style: TextStyle(
+        fontSize: 14.0,
+        color: Colors.grey.shade400,
+        fontWeight: FontWeight.normal,
+      ),
+    ),
+  );
 }
