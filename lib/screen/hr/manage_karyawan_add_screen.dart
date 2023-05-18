@@ -119,7 +119,7 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
     final password = _passwordController.text.trim();
     final passwordConfirmation = _passwordConfirmationController.text.trim();
     final startedWorkAt = _startedWorkAtController.text.trim();
-    final deviceTracker = _deviceTracker ?? false;
+    final deviceTracker = _deviceTracker;
 
     if (username.isEmpty) {
       setState(() {
@@ -343,7 +343,7 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
                     const SizedBox(height: 20),
                     TextField(
                       controller: _passwordController,
-                      obscureText: _isObscure ?? true,
+                      obscureText: _isObscure,
                       decoration: InputDecoration(
                         labelText: 'Password',
                         errorText: _passwordErrorText,
@@ -353,7 +353,7 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _isObscure ?? true
+                            _isObscure
                                 ? Icons.visibility
                                 : Icons.visibility_off,
                             color: ColorConstant.lightPrimary,
@@ -376,7 +376,7 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
                     const SizedBox(height: 20),
                     TextField(
                       controller: _passwordConfirmationController,
-                      obscureText: _isObscureConfirmation ?? true,
+                      obscureText: _isObscureConfirmation,
                       decoration: InputDecoration(
                         labelText: 'Password Confirmation',
                         errorText: _passwordConfirmationErrorText,
