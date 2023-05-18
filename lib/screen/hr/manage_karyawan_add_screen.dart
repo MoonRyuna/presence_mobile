@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
 import 'package:presence_alpha/model/user_model.dart';
-import 'package:presence_alpha/payload/response/update_profile_response.dart';
+import 'package:presence_alpha/payload/response/create_user_response.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
 import 'package:presence_alpha/service/user_service.dart';
@@ -15,21 +15,35 @@ import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:provider/provider.dart';
 
-class UbahProfileScreen extends StatefulWidget {
-  const UbahProfileScreen({super.key});
+class ManageKaryawanAddScreen extends StatefulWidget {
+  const ManageKaryawanAddScreen({super.key});
 
   @override
-  State<UbahProfileScreen> createState() => _UbahProfileScreenState();
+  State<ManageKaryawanAddScreen> createState() =>
+      _ManageKaryawanAddScreenState();
 }
 
-class _UbahProfileScreenState extends State<UbahProfileScreen> {
+class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
   final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _passwordConfirmationController =
+      TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _startedWorkAtController =
+      TextEditingController();
+
   bool _canWfh = false;
+  bool _deviceTracker = false;
+  bool _isObscure = true;
+  bool _isObscureConfirmation = true;
+  String? _userId;
+  File? _image;
+  String? _accountType;
+  DateTime? _selectedDate;
 
   String? _usernameErrorText;
   String? _emailErrorText;
@@ -37,24 +51,10 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
   String? _nameErrorText;
   String? _addressErrorText;
   String? _descriptionErrorText;
-  File? _image;
-  String? _accountType;
-
-  @override
-  void initState() {
-    super.initState();
-    final user = Provider.of<UserProvider>(context, listen: false).user;
-    if (user != null) {
-      _usernameController.text = user.username ?? '';
-      _emailController.text = user.email ?? '';
-      _phoneNumberController.text = user.phoneNumber ?? '';
-      _nameController.text = user.name ?? '';
-      _addressController.text = user.address ?? '';
-      _descriptionController.text = user.description ?? '';
-      _canWfh = user.canWfh ?? false;
-      _accountType = user.accountType ?? '';
-    }
-  }
+  String? _accountTypeErrorText;
+  String? _startedWorkAtErrorText;
+  String? _passwordErrorText;
+  String? _passwordConfirmationErrorText;
 
   @override
   void dispose() {
@@ -78,7 +78,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
     });
   }
 
-  Future<void> onUbahProfile() async {
+  Future<void> onTambahKaryawan() async {
     LoadingUtility.show(null);
 
     int errorCount = 0;
@@ -87,6 +87,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
     final token = Provider.of<TokenProvider>(context, listen: false).token;
 
     if (user == null || user.id == null) {
+      if (!mounted) return;
       LoadingUtility.hide();
       Navigator.pushNamedAndRemoveUntil(
         context,
@@ -103,6 +104,9 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
       _nameErrorText = null;
       _addressErrorText = null;
       _descriptionErrorText = null;
+      _accountTypeErrorText = null;
+      _startedWorkAtErrorText = null;
+      _passwordErrorText = null;
     });
 
     final username = _usernameController.text.trim();
@@ -110,7 +114,12 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
     final phoneNumber = _phoneNumberController.text.trim();
     final name = _nameController.text.trim();
     final address = _addressController.text.trim();
+    final accountType = _accountType?.trim() ?? "karyawan";
     final description = _descriptionController.text.trim();
+    final password = _passwordController.text.trim();
+    final passwordConfirmation = _passwordConfirmationController.text.trim();
+    final startedWorkAt = _startedWorkAtController.text.trim();
+    final deviceTracker = _deviceTracker ?? false;
 
     if (username.isEmpty) {
       setState(() {
@@ -154,6 +163,41 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
       errorCount++;
     }
 
+    if (accountType.isEmpty) {
+      setState(() {
+        _accountTypeErrorText = "Tipe akun tidak boleh kosong";
+      });
+      errorCount++;
+    }
+
+    if (startedWorkAt.isEmpty) {
+      setState(() {
+        _startedWorkAtErrorText = "Tanggal mulai kerja tidak boleh kosong";
+      });
+      errorCount++;
+    }
+
+    if (password.isEmpty) {
+      setState(() {
+        _passwordErrorText = "Password tidak boleh kosong";
+      });
+      errorCount++;
+    }
+
+    if (passwordConfirmation.isEmpty) {
+      setState(() {
+        _passwordErrorText = "Konfirmasi password tidak boleh kosong";
+      });
+      errorCount++;
+    }
+
+    if (password != passwordConfirmation) {
+      setState(() {
+        _passwordErrorText = "Password dan konfirmasi password tidak sama";
+      });
+      errorCount++;
+    }
+
     if (errorCount > 0) {
       LoadingUtility.hide();
       return;
@@ -162,20 +206,23 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
     try {
       final requestData = {
         "username": username,
+        "password": password,
+        "password_confirmation": passwordConfirmation,
         "email": email,
         "phone_number": phoneNumber,
-        "account_type": user.accountType,
+        "account_type": accountType,
         "name": name,
         "address": address,
         "description": description,
-        "started_work_at": user.startedWorkAt,
-        "device_tracker": user.deviceTracker,
-        "updated_by": user.id,
+        "started_work_at": startedWorkAt,
+        "device_tracker": deviceTracker,
+        "created_by": user.id,
         "can_wfh": _canWfh,
+        "profile_picture": "images/default.png",
       };
 
-      UpdateProfileResponse response =
-          await UserService().updateProfile(requestData, user.id!, token);
+      CreateUserResponse response =
+          await UserService().createUser(requestData, token);
       if (!mounted) return;
 
       if (response.status != true || response.data == null) {
@@ -196,10 +243,6 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
         response.message!,
         TipType.COMPLETE,
       );
-
-      UserProvider? up = Provider.of<UserProvider>(context, listen: false);
-
-      up.user = response.data;
     } catch (e) {
       LoadingUtility.hide();
       AmessageUtility.show(
@@ -211,11 +254,28 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
     }
   }
 
+  Future<void> _selectDate(BuildContext context) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+    );
+
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+        _startedWorkAtController.text =
+            DateFormat('dd-MM-yyyy').format(_selectedDate!);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Ubah Profile"),
+        title: const Text("Tambah Karyawan"),
         backgroundColor: ColorConstant.lightPrimary,
       ),
       body: SafeArea(
@@ -226,7 +286,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                 alignment: Alignment.topCenter,
                 children: <Widget>[
                   SizedBox(
-                    height: 210.0,
+                    height: 180.0,
                     child: Padding(
                       padding: const EdgeInsets.all(32.0),
                       child: Column(
@@ -250,8 +310,6 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                             ),
                           ),
                           const SizedBox(height: 16.0),
-                          profileInfo(context),
-                          const SizedBox(height: 8.0),
                         ],
                       ),
                     ),
@@ -272,6 +330,72 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                         errorStyle: const TextStyle(color: Colors.red),
                         labelStyle: const TextStyle(
                           color: Colors.grey,
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: ColorConstant.lightPrimary,
+                          ),
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: _isObscure ?? true,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        errorText: _passwordErrorText,
+                        errorStyle: const TextStyle(color: Colors.red),
+                        labelStyle: const TextStyle(
+                          color: Colors.grey,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isObscure ?? true
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: ColorConstant.lightPrimary,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isObscure = !_isObscure;
+                            });
+                          },
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: ColorConstant.lightPrimary,
+                          ),
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _passwordConfirmationController,
+                      obscureText: _isObscureConfirmation ?? true,
+                      decoration: InputDecoration(
+                        labelText: 'Password Confirmation',
+                        errorText: _passwordConfirmationErrorText,
+                        errorStyle: const TextStyle(color: Colors.red),
+                        labelStyle: const TextStyle(
+                          color: Colors.grey,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isObscureConfirmation
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: ColorConstant.lightPrimary,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isObscureConfirmation = !_isObscureConfirmation;
+                            });
+                          },
                         ),
                         border: OutlineInputBorder(
                           borderSide: BorderSide(
@@ -378,21 +502,86 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Jabatan',
+                        errorText: _accountTypeErrorText,
+                        errorStyle: const TextStyle(color: Colors.red),
+                        labelStyle: const TextStyle(
+                          color: Colors.grey,
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: ColorConstant.lightPrimary,
+                          ),
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                      value: _accountType,
+                      items: ApiConstant.role
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? value) {
+                        setState(() {
+                          _accountType = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _startedWorkAtController,
+                      readOnly: true,
+                      onTap: () async {
+                        await _selectDate(context);
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Started Work At',
+                        errorText: _startedWorkAtErrorText,
+                        prefixIcon: const Icon(Icons.calendar_month),
+                        errorStyle: const TextStyle(color: Colors.red),
+                        labelStyle: const TextStyle(color: Colors.grey),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: ColorConstant.lightPrimary,
+                          ),
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     Row(
                       children: [
                         Checkbox(
                           activeColor: ColorConstant.lightPrimary,
                           value: _canWfh,
                           onChanged: (value) {
-                            if (_accountType == "admin" ||
-                                _accountType == "hrd") {
-                              setState(() {
-                                _canWfh = value ?? false;
-                              });
-                            }
+                            setState(() {
+                              _canWfh = value ?? false;
+                            });
                           },
                         ),
-                        const Text("Can work from home"),
+                        const Expanded(child: Text("Can work from home")),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Checkbox(
+                          activeColor: ColorConstant.lightPrimary,
+                          value: _deviceTracker,
+                          onChanged: (value) {
+                            setState(() {
+                              _deviceTracker = value ?? false;
+                            });
+                          },
+                        ),
+                        const Expanded(child: Text("Device Tracker")),
                       ],
                     ),
                     const SizedBox(height: 30),
@@ -405,10 +594,10 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                         ),
                       ),
                       onPressed: () async {
-                        await onUbahProfile();
+                        await onTambahKaryawan();
                       },
                       child: const Text(
-                        'Ubah profile',
+                        'Tambah Karyawan',
                         style: TextStyle(fontSize: 20),
                       ),
                     ),
@@ -421,24 +610,4 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
       ),
     );
   }
-}
-
-Widget profileInfo(BuildContext context) {
-  const locale = Locale('id', 'ID');
-
-  return Consumer<UserProvider>(
-    builder: (context, userProvider, _) => Text(
-      (userProvider.user?.accountType ?? "N/A") +
-          (userProvider.user?.startedWorkAt != null
-              ? " sejak ${DateFormat('d MMMM y', locale.toString()).format(
-                  DateTime.parse(userProvider.user?.startedWorkAt ?? ''),
-                )}"
-              : ""),
-      style: TextStyle(
-        fontSize: 14.0,
-        color: Colors.grey.shade400,
-        fontWeight: FontWeight.normal,
-      ),
-    ),
-  );
 }
