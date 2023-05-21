@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
+import 'package:presence_alpha/constant/color_constant.dart';
 import 'package:presence_alpha/payload/response/dashboard1_response.dart';
 import 'package:presence_alpha/payload/response/today_check_response.dart';
 import 'package:presence_alpha/provider/dashboard_provider.dart';
@@ -22,7 +23,6 @@ import 'package:presence_alpha/utility/common_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:presence_alpha/utility/maps_utility.dart';
 import 'package:provider/provider.dart';
-import 'package:presence_alpha/constant/color_constant.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -200,13 +200,8 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         ClipOval(
           child: Consumer<UserProvider>(
-            builder: (context, userProvider, _) => Image.network(
-              userProvider.user?.profilePicture != null
-                  ? "${ApiConstant.publicUrl}/${userProvider.user?.profilePicture}"
-                  : "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png",
-              width: 50,
-              height: 50,
-              fit: BoxFit.cover,
+            builder: (context, userProvider, _) => profilePicture(
+              userProvider.user?.profilePicture,
             ),
           ),
         ),
@@ -515,4 +510,23 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
+
+Widget profilePicture(String? imagePath) {
+  String profilePictureURI =
+      "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png";
+  if (imagePath != null) {
+    if (imagePath == "images/default.png") {
+      profilePictureURI = "${ApiConstant.publicUrl}/$imagePath";
+    } else {
+      profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
+    }
+  }
+
+  return Image.network(
+    profilePictureURI,
+    width: 50,
+    height: 50,
+    fit: BoxFit.cover,
+  );
 }

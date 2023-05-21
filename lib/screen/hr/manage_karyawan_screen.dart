@@ -115,13 +115,8 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ClipOval(
-                      child: Image.network(
-                        user?.profilePicture != null
-                            ? "${ApiConstant.publicUrl}/${user?.profilePicture}"
-                            : "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png",
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
+                      child: profilePicture(
+                        user?.profilePicture,
                       ),
                     ),
                     Expanded(
@@ -249,4 +244,23 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
       ),
     );
   }
+}
+
+Widget profilePicture(String? imagePath) {
+  String profilePictureURI =
+      "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png";
+  if (imagePath != null) {
+    if (imagePath == "images/default.png") {
+      profilePictureURI = "${ApiConstant.publicUrl}/$imagePath";
+    } else {
+      profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
+    }
+  }
+
+  return Image.network(
+    profilePictureURI,
+    width: 50,
+    height: 50,
+    fit: BoxFit.cover,
+  );
 }

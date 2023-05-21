@@ -2,14 +2,18 @@ import 'dart:io';
 
 import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
 import 'package:presence_alpha/model/user_model.dart';
 import 'package:presence_alpha/payload/response/update_profile_response.dart';
+import 'package:presence_alpha/payload/response/upload_response.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
+import 'package:presence_alpha/service/upload_service.dart';
 import 'package:presence_alpha/service/user_service.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
@@ -38,6 +42,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
   String? _addressErrorText;
   String? _descriptionErrorText;
   File? _image;
+  String? _imagePath;
   String? _accountType;
 
   @override
@@ -53,6 +58,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
       _descriptionController.text = user.description ?? '';
       _canWfh = user.canWfh ?? false;
       _accountType = user.accountType ?? '';
+      _imagePath = user.profilePicture;
     }
   }
 
@@ -72,10 +78,78 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
 
     final XFile? imagePicked =
         await imagePicker.pickImage(source: ImageSource.gallery);
-    final image = File(imagePicked!.path);
-    setState(() {
-      _image = image;
-    });
+
+    if (imagePicked != null) {
+      setState(() {
+        _image = File(imagePicked.path);
+      });
+    }
+
+    if (_image?.path != null) {
+      await uploadImage();
+    }
+  }
+
+  Future<void> uploadImage() async {
+    LoadingUtility.show("Melakukan Upload");
+    try {
+      final tp = Provider.of<TokenProvider>(
+        context,
+        listen: false,
+      );
+      String token = tp.token;
+
+      if (_image?.path == null) {
+        AmessageUtility.show(
+          context,
+          "Info",
+          "Tidak memilih file",
+          TipType.INFO,
+        );
+        return;
+      }
+
+      final mimeType = MediaType('image', 'jpeg');
+      MultipartFile file = await MultipartFile.fromPath(
+        'image',
+        _image!.path,
+        contentType: mimeType,
+      );
+
+      UploadResponse response = await UploadService().image(file, token);
+      if (!mounted) return;
+
+      if (response.data?.path == null) {
+        String msg = response.message ?? "melakukan upload ke server";
+
+        AmessageUtility.show(
+          context,
+          "Gagal",
+          msg,
+          TipType.ERROR,
+        );
+
+        setState(() {
+          _image = null;
+          _imagePath = null;
+        });
+        return;
+      } else {
+        if (response.data?.path != null) {
+          setState(() {
+            _imagePath = response.data!.path;
+          });
+        }
+
+        print("file upload $_imagePath");
+      }
+    } catch (error) {
+      print('Error: $error');
+
+      AmessageUtility.show(context, "Gagal", error.toString(), TipType.ERROR);
+    } finally {
+      LoadingUtility.hide();
+    }
   }
 
   Future<void> onUbahProfile() async {
@@ -172,6 +246,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
         "device_tracker": user.deviceTracker,
         "updated_by": user.id,
         "can_wfh": _canWfh,
+        "profile_picture": _imagePath,
       };
 
       UpdateProfileResponse response =
@@ -236,17 +311,14 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                               await pickImage();
                             },
                             child: ClipOval(
-                              child: Consumer<UserProvider>(
-                                builder: (context, userProvider, _) =>
-                                    Image.network(
-                                  userProvider.user?.profilePicture != null
-                                      ? "${ApiConstant.publicUrl}/${userProvider.user?.profilePicture}"
-                                      : "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png",
-                                  width: 100,
-                                  height: 100,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
+                              child: _imagePath != null
+                                  ? profilePicture(_imagePath)
+                                  : Consumer<UserProvider>(
+                                      builder: (context, userProvider, _) =>
+                                          profilePicture(
+                                        userProvider.user?.profilePicture,
+                                      ),
+                                    ),
                             ),
                           ),
                           const SizedBox(height: 16.0),
@@ -440,5 +512,24 @@ Widget profileInfo(BuildContext context) {
         fontWeight: FontWeight.normal,
       ),
     ),
+  );
+}
+
+Widget profilePicture(String? imagePath) {
+  String profilePictureURI =
+      "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png";
+  if (imagePath != null) {
+    if (imagePath == "images/default.png") {
+      profilePictureURI = "${ApiConstant.publicUrl}/$imagePath";
+    } else {
+      profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
+    }
+  }
+
+  return Image.network(
+    profilePictureURI,
+    width: 100,
+    height: 100,
+    fit: BoxFit.cover,
   );
 }

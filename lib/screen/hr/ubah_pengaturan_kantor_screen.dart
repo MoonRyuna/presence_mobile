@@ -2,16 +2,20 @@ import 'dart:io';
 
 import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
 import 'package:presence_alpha/model/office_config_model.dart';
 import 'package:presence_alpha/model/user_model.dart';
 import 'package:presence_alpha/payload/response/update_office_config_response.dart';
+import 'package:presence_alpha/payload/response/upload_response.dart';
 import 'package:presence_alpha/provider/office_config_provide.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
 import 'package:presence_alpha/service/office_config_service.dart';
+import 'package:presence_alpha/service/upload_service.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:provider/provider.dart';
@@ -48,6 +52,7 @@ class _UbahPengaturanKantorScreenState
   String? _themeErrorText;
 
   File? _image;
+  String? _imagePath;
 
   @override
   void initState() {
@@ -77,6 +82,8 @@ class _UbahPengaturanKantorScreenState
 
       _startTimeController.text = _formatTime(_startTime!);
       _endTimeController.text = _formatTime(_endTime!);
+
+      _imagePath = office.logo;
     }
   }
 
@@ -98,10 +105,78 @@ class _UbahPengaturanKantorScreenState
 
     final XFile? imagePicked =
         await imagePicker.pickImage(source: ImageSource.gallery);
-    final image = File(imagePicked!.path);
-    setState(() {
-      _image = image;
-    });
+
+    if (imagePicked != null) {
+      setState(() {
+        _image = File(imagePicked.path);
+      });
+    }
+
+    if (_image?.path != null) {
+      await uploadImage();
+    }
+  }
+
+  Future<void> uploadImage() async {
+    LoadingUtility.show("Melakukan Upload");
+    try {
+      final tp = Provider.of<TokenProvider>(
+        context,
+        listen: false,
+      );
+      String token = tp.token;
+
+      if (_image?.path == null) {
+        AmessageUtility.show(
+          context,
+          "Info",
+          "Tidak memilih file",
+          TipType.INFO,
+        );
+        return;
+      }
+
+      final mimeType = MediaType('image', 'jpeg');
+      MultipartFile file = await MultipartFile.fromPath(
+        'image',
+        _image!.path,
+        contentType: mimeType,
+      );
+
+      UploadResponse response = await UploadService().image(file, token);
+      if (!mounted) return;
+
+      if (response.data?.path == null) {
+        String msg = response.message ?? "melakukan upload ke server";
+
+        AmessageUtility.show(
+          context,
+          "Gagal",
+          msg,
+          TipType.ERROR,
+        );
+
+        setState(() {
+          _image = null;
+          _imagePath = null;
+        });
+        return;
+      } else {
+        if (response.data?.path != null) {
+          setState(() {
+            _imagePath = response.data!.path;
+          });
+        }
+
+        print("file upload $_imagePath");
+      }
+    } catch (error) {
+      print('Error: $error');
+
+      AmessageUtility.show(context, "Gagal", error.toString(), TipType.ERROR);
+    } finally {
+      LoadingUtility.hide();
+    }
   }
 
   Future<void> _selectStartTime(BuildContext context) async {
@@ -239,7 +314,7 @@ class _UbahPengaturanKantorScreenState
         "amount_of_annual_leave": amountOfAnnualLeave,
         "work_schedule": workSchedule,
         "theme": theme,
-        "logo": office.logo,
+        "logo": _imagePath ?? "images/default-logo.png",
         "latitude": office.latitude,
         "longitude": office.longitude,
         "updated_by": user.id,
@@ -300,19 +375,18 @@ class _UbahPengaturanKantorScreenState
                 height: 150.0,
                 child: Container(
                   padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
-                  child: GestureDetector(
-                    onTap: () async {
-                      await pickImage();
-                    },
-                    child: Expanded(
-                      child: Consumer<OfficeConfigProvider>(
-                        builder: (context, officeConfig, _) => Image.network(
-                          officeConfig.officeConfig?.logo != null
-                              ? "${ApiConstant.publicUrl}/${officeConfig.officeConfig?.logo}"
-                              : "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png",
-                          width: 200,
-                        ),
-                      ),
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () async {
+                        await pickImage();
+                      },
+                      child: _imagePath != null
+                          ? officeLogo(_imagePath)
+                          : Consumer<OfficeConfigProvider>(
+                              builder: (context, officeConfig, _) => officeLogo(
+                                officeConfig.officeConfig?.logo,
+                              ),
+                            ),
                     ),
                   ),
                 ),
@@ -505,4 +579,21 @@ class _UbahPengaturanKantorScreenState
       ),
     );
   }
+}
+
+Widget officeLogo(String? imagePath) {
+  String profilePictureURI =
+      "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png";
+  if (imagePath != null) {
+    if (imagePath == "images/default-logo.png") {
+      profilePictureURI = "${ApiConstant.publicUrl}/$imagePath";
+    } else {
+      profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
+    }
+  }
+
+  return Image.network(
+    profilePictureURI,
+    width: 200,
+  );
 }

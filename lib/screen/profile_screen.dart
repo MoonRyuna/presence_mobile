@@ -61,13 +61,8 @@ Widget profileInfo() {
             children: <Widget>[
               ClipOval(
                 child: Consumer<UserProvider>(
-                  builder: (context, userProvider, _) => Image.network(
-                    userProvider.user?.profilePicture != null
-                        ? "${ApiConstant.publicUrl}/${userProvider.user?.profilePicture}"
-                        : "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png",
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.cover,
+                  builder: (context, userProvider, _) => profilePicture(
+                    userProvider.user?.profilePicture,
                   ),
                 ),
               ),
@@ -197,5 +192,24 @@ Widget profileActions(BuildContext context) {
         ),
       ),
     ],
+  );
+}
+
+Widget profilePicture(String? imagePath) {
+  String profilePictureURI =
+      "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png";
+  if (imagePath != null) {
+    if (imagePath == "images/default.png") {
+      profilePictureURI = "${ApiConstant.publicUrl}/$imagePath";
+    } else {
+      profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
+    }
+  }
+
+  return Image.network(
+    profilePictureURI,
+    width: 100,
+    height: 100,
+    fit: BoxFit.cover,
   );
 }

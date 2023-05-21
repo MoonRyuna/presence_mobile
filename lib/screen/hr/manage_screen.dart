@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:presence_alpha/constant/api_constant.dart';
+import 'package:presence_alpha/provider/office_config_provide.dart';
 import 'package:presence_alpha/screen/hr/manage_karyawan_screen.dart';
 import 'package:presence_alpha/screen/hr/ubah_pengaturan_kantor_screen.dart';
 import 'package:presence_alpha/screen/profile_screen.dart';
+import 'package:provider/provider.dart';
 
 class ManageScreen extends StatelessWidget {
   const ManageScreen({super.key});
@@ -33,20 +36,21 @@ Widget profileInfo() {
           padding: const EdgeInsets.all(32.0),
           child: Column(
             children: <Widget>[
-              Expanded(
-                child: Center(
-                  child: Image.asset(
-                    "assets/images/default-logo.png",
-                    width: 200.0,
+              Center(
+                child: Consumer<OfficeConfigProvider>(
+                  builder: (context, officeConfig, _) => officeLogo(
+                    officeConfig.officeConfig?.logo,
                   ),
                 ),
               ),
               const SizedBox(height: 16.0),
-              const Text(
-                "Digital Amore Kriyanesia",
-                style: TextStyle(
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.bold,
+              Consumer<OfficeConfigProvider>(
+                builder: (context, officeConfig, _) => Text(
+                  officeConfig.officeConfig?.name ?? "Digital Amore Kriyanesia",
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -152,5 +156,23 @@ Widget profileActions(BuildContext context) {
         ),
       ),
     ],
+  );
+}
+
+Widget officeLogo(String? imagePath) {
+  String profilePictureURI =
+      "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png";
+  if (imagePath != null) {
+    if (imagePath == "images/default-logo.png") {
+      profilePictureURI = "${ApiConstant.publicUrl}/$imagePath";
+    } else {
+      profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
+    }
+  }
+
+  return Image.network(
+    profilePictureURI,
+    width: 200,
+    height: 120,
   );
 }
