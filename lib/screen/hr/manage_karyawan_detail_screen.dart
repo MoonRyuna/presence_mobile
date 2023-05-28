@@ -35,6 +35,8 @@ class _ManageKaryawanDetailScreenState
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _passwordChangeController =
+      TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _startedWorkAtController =
@@ -55,6 +57,7 @@ class _ManageKaryawanDetailScreenState
   String? _addressErrorText;
   String? _descriptionErrorText;
   String? _accountTypeErrorText;
+  String? _passwordChangeErrorText;
   String? _startedWorkAtErrorText;
 
   @override
@@ -82,6 +85,7 @@ class _ManageKaryawanDetailScreenState
   @override
   void dispose() {
     _usernameController.dispose();
+    _passwordChangeController.dispose();
     _emailController.dispose();
     _phoneNumberController.dispose();
     _nameController.dispose();
@@ -287,6 +291,7 @@ class _ManageKaryawanDetailScreenState
 
     setState(() {
       _usernameErrorText = null;
+      _passwordChangeErrorText = null;
       _emailErrorText = null;
       _phoneNumberErrorText = null;
       _nameErrorText = null;
@@ -298,6 +303,7 @@ class _ManageKaryawanDetailScreenState
     final email = _emailController.text.trim();
     final phoneNumber = _phoneNumberController.text.trim();
     final name = _nameController.text.trim();
+    final passwordChange = _passwordChangeController.text.trim();
     final address = _addressController.text.trim();
     final accountType = _accountType?.trim() ?? "karyawan";
     final description = _descriptionController.text.trim();
@@ -380,6 +386,11 @@ class _ManageKaryawanDetailScreenState
         "can_wfh": _canWfh,
         "profile_picture": _imagePath,
       };
+
+      // BUG: password change not working, check the api?
+      if (passwordChange.isNotEmpty) {
+        requestData["password"] = passwordChange;
+      }
 
       UpdateProfileResponse response =
           await UserService().updateProfile(requestData, _userId ?? "", token);
@@ -524,6 +535,26 @@ class _ManageKaryawanDetailScreenState
                       decoration: InputDecoration(
                         labelText: 'Username',
                         errorText: _usernameErrorText,
+                        errorStyle: const TextStyle(color: Colors.red),
+                        labelStyle: const TextStyle(
+                          color: Colors.grey,
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: ColorConstant.lightPrimary,
+                          ),
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _passwordChangeController,
+                      decoration: InputDecoration(
+                        labelText: 'Change Password',
+                        errorText: _passwordChangeErrorText,
+                        helperText: "Kosongkan jika tidak ingin mengubah",
                         errorStyle: const TextStyle(color: Colors.red),
                         labelStyle: const TextStyle(
                           color: Colors.grey,
