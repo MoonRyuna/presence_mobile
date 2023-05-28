@@ -35,10 +35,11 @@ class _UbahPengaturanKantorScreenState
   final TextEditingController _cutOffDateController = TextEditingController();
   final TextEditingController _amountOfAnnualLeaveController =
       TextEditingController();
+  final TextEditingController _latitudeController = TextEditingController();
+  final TextEditingController _longitudeController = TextEditingController();
   final TextEditingController _startTimeController = TextEditingController();
   final TextEditingController _endTimeController = TextEditingController();
-  final TextEditingController _themeController =
-      TextEditingController(); // select
+  final TextEditingController _themeController = TextEditingController();
 
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
@@ -47,6 +48,8 @@ class _UbahPengaturanKantorScreenState
   String? _radiusErrorText;
   String? _cutOffDateErrorText;
   String? _amountOfAnnualLeaveErrorText;
+  String? _latitudeErrorText;
+  String? _longitudeErrorText;
   String? _startTimeErrorText;
   String? _endTimeErrorText;
   String? _themeErrorText;
@@ -66,6 +69,8 @@ class _UbahPengaturanKantorScreenState
       _cutOffDateController.text = office.cutOffDate.toString();
       _amountOfAnnualLeaveController.text =
           office.amountOfAnnualLeave.toString();
+      _latitudeController.text = office.latitude.toString();
+      _longitudeController.text = office.longitude.toString();
       _themeController.text = office.theme ?? "";
 
       // split work schedule by "-" trim them and take the first as start time and the second as end time
@@ -93,6 +98,8 @@ class _UbahPengaturanKantorScreenState
     _radiusController.dispose();
     _cutOffDateController.dispose();
     _amountOfAnnualLeaveController.dispose();
+    _latitudeController.dispose();
+    _longitudeController.dispose();
     _startTimeController.dispose();
     _endTimeController.dispose();
     _themeController.dispose();
@@ -238,6 +245,8 @@ class _UbahPengaturanKantorScreenState
       _radiusErrorText = null;
       _cutOffDateErrorText = null;
       _amountOfAnnualLeaveErrorText = null;
+      _latitudeErrorText = null;
+      _longitudeErrorText = null;
       _startTimeErrorText = null;
       _endTimeErrorText = null;
       _themeErrorText = null;
@@ -247,6 +256,8 @@ class _UbahPengaturanKantorScreenState
     final radius = _radiusController.text.trim();
     final cutOffDate = _cutOffDateController.text.trim();
     final amountOfAnnualLeave = _amountOfAnnualLeaveController.text.trim();
+    final latitude = _latitudeController.text.trim();
+    final longitude = _longitudeController.text.trim();
     final startTime = _startTimeController.text.trim();
     final endTime = _endTimeController.text.trim();
     final workSchedule = "$startTime - $endTime";
@@ -276,6 +287,20 @@ class _UbahPengaturanKantorScreenState
     if (amountOfAnnualLeave.isEmpty) {
       setState(() {
         _amountOfAnnualLeaveErrorText = "Jumlah cuti tidak boleh kosong";
+      });
+      errorCount++;
+    }
+
+    if (latitude.isEmpty) {
+      setState(() {
+        _latitudeErrorText = "Latitude tidak boleh kosong";
+      });
+      errorCount++;
+    }
+
+    if (longitude.isEmpty) {
+      setState(() {
+        _longitudeErrorText = "Longitude tidak boleh kosong";
       });
       errorCount++;
     }
@@ -315,8 +340,8 @@ class _UbahPengaturanKantorScreenState
         "work_schedule": workSchedule,
         "theme": theme,
         "logo": _imagePath ?? "images/default-logo.png",
-        "latitude": office.latitude,
-        "longitude": office.longitude,
+        "latitude": latitude,
+        "longitude": longitude,
         "updated_by": user.id,
       };
 
@@ -417,26 +442,6 @@ class _UbahPengaturanKantorScreenState
                     ),
                     const SizedBox(height: 20),
                     TextField(
-                      controller: _radiusController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Radius (Meter)',
-                        errorText: _radiusErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
                       controller: _cutOffDateController,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
@@ -509,6 +514,72 @@ class _UbahPengaturanKantorScreenState
                             decoration: InputDecoration(
                               labelText: 'Jam Pulang',
                               errorText: _endTimeErrorText,
+                              errorStyle: const TextStyle(color: Colors.red),
+                              labelStyle: const TextStyle(
+                                color: Colors.grey,
+                              ),
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  width: 2,
+                                  color: ColorConstant.lightPrimary,
+                                ),
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _radiusController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Radius (Meter)',
+                        errorText: _radiusErrorText,
+                        errorStyle: const TextStyle(color: Colors.red),
+                        labelStyle: const TextStyle(
+                          color: Colors.grey,
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: ColorConstant.lightPrimary,
+                          ),
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _latitudeController,
+                            decoration: InputDecoration(
+                              labelText: 'Latitude',
+                              errorText: _latitudeErrorText,
+                              errorStyle: const TextStyle(color: Colors.red),
+                              labelStyle: const TextStyle(
+                                color: Colors.grey,
+                              ),
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  width: 2,
+                                  color: ColorConstant.lightPrimary,
+                                ),
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: TextField(
+                            controller: _longitudeController,
+                            decoration: InputDecoration(
+                              labelText: 'Longitude',
+                              errorText: _longitudeErrorText,
                               errorStyle: const TextStyle(color: Colors.red),
                               labelStyle: const TextStyle(
                                 color: Colors.grey,
