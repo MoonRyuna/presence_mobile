@@ -19,21 +19,36 @@ import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:provider/provider.dart';
 
-class UbahProfileScreen extends StatefulWidget {
-  const UbahProfileScreen({super.key});
+class ManageKaryawanDetailScreen extends StatefulWidget {
+  const ManageKaryawanDetailScreen({super.key, required this.user});
+
+  final UserModel user;
 
   @override
-  State<UbahProfileScreen> createState() => _UbahProfileScreenState();
+  State<ManageKaryawanDetailScreen> createState() =>
+      _ManageKaryawanDetailScreenState();
 }
 
-class _UbahProfileScreenState extends State<UbahProfileScreen> {
+class _ManageKaryawanDetailScreenState
+    extends State<ManageKaryawanDetailScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _passwordChangeController =
+      TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _startedWorkAtController =
+      TextEditingController();
+
   bool _canWfh = false;
+  bool _deviceTracker = false;
+  String? _userId;
+  File? _image;
+  String? _imagePath;
+  String? _accountType;
+  DateTime? _selectedDate;
 
   String? _usernameErrorText;
   String? _emailErrorText;
@@ -41,30 +56,36 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
   String? _nameErrorText;
   String? _addressErrorText;
   String? _descriptionErrorText;
-  File? _image;
-  String? _imagePath;
-  String? _accountType;
+  String? _accountTypeErrorText;
+  String? _passwordChangeErrorText;
+  String? _startedWorkAtErrorText;
 
   @override
   void initState() {
     super.initState();
-    final user = Provider.of<UserProvider>(context, listen: false).user;
-    if (user != null) {
-      _usernameController.text = user.username ?? '';
-      _emailController.text = user.email ?? '';
-      _phoneNumberController.text = user.phoneNumber ?? '';
-      _nameController.text = user.name ?? '';
-      _addressController.text = user.address ?? '';
-      _descriptionController.text = user.description ?? '';
-      _canWfh = user.canWfh ?? false;
-      _accountType = user.accountType ?? '';
-      _imagePath = user.profilePicture;
-    }
+    _userId = widget.user.id ?? "";
+    _usernameController.text = widget.user.username ?? '';
+    _emailController.text = widget.user.email ?? '';
+    _phoneNumberController.text = widget.user.phoneNumber ?? '';
+    _nameController.text = widget.user.name ?? '';
+    _addressController.text = widget.user.address ?? '';
+    _descriptionController.text = widget.user.description ?? '';
+    _startedWorkAtController.text = DateFormat("dd-MM-yyyy").format(
+      DateTime.parse(widget.user.startedWorkAt ?? ""),
+    );
+
+    _canWfh = widget.user.canWfh ?? false;
+    _deviceTracker = widget.user.deviceTracker ?? false;
+    _accountType = widget.user.accountType ?? '';
+    _selectedDate = DateTime.parse(widget.user.startedWorkAt ?? "");
+
+    _imagePath = widget.user.profilePicture;
   }
 
   @override
   void dispose() {
     _usernameController.dispose();
+    _passwordChangeController.dispose();
     _emailController.dispose();
     _phoneNumberController.dispose();
     _nameController.dispose();
@@ -152,7 +173,105 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
     }
   }
 
-  Future<void> onUbahProfile() async {
+  Future<void> onDeleteUser() async {
+    LoadingUtility.show(null);
+
+    final user = Provider.of<UserProvider>(context, listen: false).user;
+    final token = Provider.of<TokenProvider>(context, listen: false).token;
+
+    if (!mounted) return;
+    if (user == null || user.id == null) {
+      LoadingUtility.hide();
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/login',
+        (route) => false,
+      );
+      return;
+    }
+
+    try {
+      final requestData = {
+        "deleted_by": user.id,
+      };
+
+      final response =
+          await UserService().deleteUser(requestData, _userId ?? "", token);
+      if (!mounted) return;
+
+      if (response.status != true || response.data == null) {
+        LoadingUtility.hide();
+        AmessageUtility.show(
+          context,
+          "Gagal",
+          response.message!,
+          TipType.ERROR,
+        );
+        return;
+      }
+
+      LoadingUtility.hide();
+      AmessageUtility.show(
+        context,
+        "Berhasil",
+        response.message!,
+        TipType.COMPLETE,
+      );
+    } catch (e) {
+      LoadingUtility.hide();
+      AmessageUtility.show(
+        context,
+        "Gagal",
+        e.toString(),
+        TipType.ERROR,
+      );
+    }
+  }
+
+  Future<void> onResetImei() async {
+    LoadingUtility.show(null);
+
+    final token = Provider.of<TokenProvider>(context, listen: false).token;
+
+    if (!mounted) return;
+    try {
+      final requestData = {
+        "user_id": _userId!,
+      };
+
+      final response = await UserService().resetImei(requestData, token);
+      if (!mounted) return;
+
+      if (response.status != true || response.data == null) {
+        LoadingUtility.hide();
+        AmessageUtility.show(
+          context,
+          "Gagal",
+          response.message!,
+          TipType.ERROR,
+        );
+        return;
+      }
+
+      LoadingUtility.hide();
+      AmessageUtility.show(
+        context,
+        "Berhasil",
+        response.message!,
+        TipType.COMPLETE,
+      );
+    } catch (e) {
+      LoadingUtility.hide();
+      AmessageUtility.show(
+        context,
+        "Gagal",
+        e.toString(),
+        TipType.ERROR,
+      );
+    }
+  }
+
+  Future<void> onUbahData() async {
     LoadingUtility.show(null);
 
     int errorCount = 0;
@@ -172,6 +291,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
 
     setState(() {
       _usernameErrorText = null;
+      _passwordChangeErrorText = null;
       _emailErrorText = null;
       _phoneNumberErrorText = null;
       _nameErrorText = null;
@@ -183,8 +303,12 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
     final email = _emailController.text.trim();
     final phoneNumber = _phoneNumberController.text.trim();
     final name = _nameController.text.trim();
+    final passwordChange = _passwordChangeController.text.trim();
     final address = _addressController.text.trim();
+    final accountType = _accountType?.trim() ?? "karyawan";
     final description = _descriptionController.text.trim();
+    final startedWorkAt = _startedWorkAtController.text.trim();
+    final deviceTracker = _deviceTracker;
 
     if (username.isEmpty) {
       setState(() {
@@ -228,6 +352,20 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
       errorCount++;
     }
 
+    if (accountType.isEmpty) {
+      setState(() {
+        _accountTypeErrorText = "Tipe akun tidak boleh kosong";
+      });
+      errorCount++;
+    }
+
+    if (startedWorkAt.isEmpty) {
+      setState(() {
+        _startedWorkAtErrorText = "Tanggal mulai kerja tidak boleh kosong";
+      });
+      errorCount++;
+    }
+
     if (errorCount > 0) {
       LoadingUtility.hide();
       return;
@@ -238,19 +376,24 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
         "username": username,
         "email": email,
         "phone_number": phoneNumber,
-        "account_type": user.accountType,
+        "account_type": accountType,
         "name": name,
         "address": address,
         "description": description,
-        "started_work_at": user.startedWorkAt,
-        "device_tracker": user.deviceTracker,
+        "started_work_at": startedWorkAt,
+        "device_tracker": deviceTracker,
         "updated_by": user.id,
         "can_wfh": _canWfh,
         "profile_picture": _imagePath,
       };
 
+      // BUG: password change not working, check the api?
+      if (passwordChange.isNotEmpty) {
+        requestData["password"] = passwordChange;
+      }
+
       UpdateProfileResponse response =
-          await UserService().updateProfile(requestData, user.id!, token);
+          await UserService().updateProfile(requestData, _userId ?? "", token);
       if (!mounted) return;
 
       if (response.status != true || response.data == null) {
@@ -271,10 +414,6 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
         response.message!,
         TipType.COMPLETE,
       );
-
-      UserProvider? up = Provider.of<UserProvider>(context, listen: false);
-
-      up.user = response.data;
     } catch (e) {
       LoadingUtility.hide();
       AmessageUtility.show(
@@ -286,12 +425,69 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
     }
   }
 
+  Future<void> _selectDate(BuildContext context) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+    );
+
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+        _startedWorkAtController.text =
+            DateFormat('dd-MM-yyyy').format(_selectedDate!);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Ubah Profile"),
+        title: const Text("Detail Karyawan"),
         backgroundColor: ColorConstant.lightPrimary,
+        actions: [
+          PopupMenuButton(
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: "reset_imei",
+                child: Row(
+                  children: const [
+                    Icon(Icons.phone_android, color: Colors.grey),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text("Reset Imei"),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: "delete",
+                child: Row(
+                  children: const [
+                    Icon(Icons.delete, color: Colors.grey),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text("Delete"),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            onSelected: (String selected) async {
+              switch (selected) {
+                case ("delete"):
+                  await onDeleteUser();
+                  break;
+                case ("reset_imei"):
+                  await onResetImei();
+                  break;
+              }
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -301,7 +497,7 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                 alignment: Alignment.topCenter,
                 children: <Widget>[
                   SizedBox(
-                    height: 210.0,
+                    height: 180.0,
                     child: Padding(
                       padding: const EdgeInsets.all(32.0),
                       child: Column(
@@ -322,8 +518,6 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                             ),
                           ),
                           const SizedBox(height: 16.0),
-                          profileInfo(context),
-                          const SizedBox(height: 8.0),
                         ],
                       ),
                     ),
@@ -341,6 +535,26 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                       decoration: InputDecoration(
                         labelText: 'Username',
                         errorText: _usernameErrorText,
+                        errorStyle: const TextStyle(color: Colors.red),
+                        labelStyle: const TextStyle(
+                          color: Colors.grey,
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: ColorConstant.lightPrimary,
+                          ),
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _passwordChangeController,
+                      decoration: InputDecoration(
+                        labelText: 'Change Password',
+                        errorText: _passwordChangeErrorText,
+                        helperText: "Kosongkan jika tidak ingin mengubah",
                         errorStyle: const TextStyle(color: Colors.red),
                         labelStyle: const TextStyle(
                           color: Colors.grey,
@@ -450,21 +664,87 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Jabatan',
+                        errorText: _accountTypeErrorText,
+                        errorStyle: const TextStyle(color: Colors.red),
+                        labelStyle: const TextStyle(
+                          color: Colors.grey,
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: ColorConstant.lightPrimary,
+                          ),
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                      value: _accountType,
+                      items: ApiConstant.role
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? value) {
+                        setState(() {
+                          _accountType = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _startedWorkAtController,
+                      readOnly: true,
+                      onTap: () async {
+                        await _selectDate(context);
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Started Work At',
+                        errorText: _startedWorkAtErrorText,
+                        errorStyle: const TextStyle(color: Colors.red),
+                        labelStyle: const TextStyle(
+                          color: Colors.grey,
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: ColorConstant.lightPrimary,
+                          ),
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     Row(
                       children: [
                         Checkbox(
                           activeColor: ColorConstant.lightPrimary,
                           value: _canWfh,
                           onChanged: (value) {
-                            if (_accountType == "admin" ||
-                                _accountType == "hrd") {
-                              setState(() {
-                                _canWfh = value ?? false;
-                              });
-                            }
+                            setState(() {
+                              _canWfh = value ?? false;
+                            });
                           },
                         ),
-                        const Text("Can work from home"),
+                        const Expanded(child: Text("Can work from home")),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Checkbox(
+                          activeColor: ColorConstant.lightPrimary,
+                          value: _deviceTracker,
+                          onChanged: (value) {
+                            setState(() {
+                              _deviceTracker = value ?? false;
+                            });
+                          },
+                        ),
+                        const Expanded(child: Text("Device Tracker")),
                       ],
                     ),
                     const SizedBox(height: 30),
@@ -477,10 +757,10 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
                         ),
                       ),
                       onPressed: () async {
-                        await onUbahProfile();
+                        await onUbahData();
                       },
                       child: const Text(
-                        'Ubah profile',
+                        'Update Data',
                         style: TextStyle(fontSize: 20),
                       ),
                     ),
@@ -493,26 +773,6 @@ class _UbahProfileScreenState extends State<UbahProfileScreen> {
       ),
     );
   }
-}
-
-Widget profileInfo(BuildContext context) {
-  const locale = Locale('id', 'ID');
-
-  return Consumer<UserProvider>(
-    builder: (context, userProvider, _) => Text(
-      (userProvider.user?.accountType ?? "N/A") +
-          (userProvider.user?.startedWorkAt != null
-              ? " sejak ${DateFormat('d MMMM y', locale.toString()).format(
-                  DateTime.parse(userProvider.user?.startedWorkAt ?? ''),
-                )}"
-              : ""),
-      style: TextStyle(
-        fontSize: 14.0,
-        color: Colors.grey.shade400,
-        fontWeight: FontWeight.normal,
-      ),
-    ),
-  );
 }
 
 Widget profilePicture(String? imagePath) {

@@ -1,7 +1,5 @@
 // ignore_for_file: avoid_print
 
-import 'dart:convert';
-
 import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:device_information/device_information.dart';
 import 'package:flutter/material.dart';
@@ -11,13 +9,14 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
 import 'package:presence_alpha/model/user_auth_model.dart';
 import 'package:presence_alpha/payload/response/auth_response.dart';
+import 'package:presence_alpha/provider/token_provider.dart';
+import 'package:presence_alpha/screen/app.dart';
+import 'package:presence_alpha/screen/hr/app.dart' as hrApp;
 import 'package:presence_alpha/service/auth_service.dart';
 import 'package:presence_alpha/storage/app_storage.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:provider/provider.dart';
-import 'package:presence_alpha/provider/token_provider.dart';
-import 'package:presence_alpha/screen/app.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -129,6 +128,8 @@ class _LoginScreenState extends State<LoginScreen> {
             listen: false,
           );
 
+          final accountType = response.data!.accountType ?? null;
+
           if (response.data!.token != null) {
             tokenProvider.setToken(response.data!.token as String);
 
@@ -151,10 +152,28 @@ class _LoginScreenState extends State<LoginScreen> {
               TipType.COMPLETE,
             );
 
-            Navigator.of(context)
-                .pushReplacement(MaterialPageRoute(builder: (_) {
-              return const App();
-            }));
+            print("accountType $accountType");
+
+            if (accountType == "hrd" || accountType == "admin") {
+              Navigator.of(context)
+                  .pushReplacement(MaterialPageRoute(builder: (_) {
+                return const hrApp.App();
+              }));
+              return;
+            } else if (accountType == "karyawan") {
+              Navigator.of(context)
+                  .pushReplacement(MaterialPageRoute(builder: (_) {
+                return const App();
+              }));
+              return;
+            }
+
+            AmessageUtility.show(
+              context,
+              "Gagal",
+              "User group tidak diketahui",
+              TipType.ERROR,
+            );
           } else {
             AmessageUtility.show(
               context,

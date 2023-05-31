@@ -1,15 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/model/user_auth_model.dart';
+import 'package:presence_alpha/payload/response/auth_response.dart';
+import 'package:presence_alpha/provider/office_config_provide.dart';
+import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/screen/app.dart';
+import 'package:presence_alpha/screen/hr/app.dart' as hr_app;
 import 'package:presence_alpha/screen/login_screen.dart';
 import 'package:presence_alpha/screen/offline_screen.dart';
 import 'package:presence_alpha/service/auth_service.dart';
 import 'package:presence_alpha/storage/app_storage.dart';
 import 'package:provider/provider.dart';
-import 'package:presence_alpha/payload/response/auth_response.dart';
-import 'package:presence_alpha/provider/token_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -56,6 +60,8 @@ class _SplashScreenState extends State<SplashScreen> {
         if (response.data!.token != null) {
           tokenProvider.setToken(response.data!.token as String);
 
+          final accountType = response.data!.accountType;
+
           UserAuthModel userAuthModel = UserAuthModel(
             username: username,
             password: password,
@@ -69,9 +75,23 @@ class _SplashScreenState extends State<SplashScreen> {
 
           Duration duration = const Duration(seconds: 5);
           return Timer(duration, () {
+            if (accountType == "hrd" || accountType == "admin") {
+              Navigator.of(context)
+                  .pushReplacement(MaterialPageRoute(builder: (_) {
+                return const hr_app.App();
+              }));
+              return;
+            } else if (accountType == "karyawan") {
+              Navigator.of(context)
+                  .pushReplacement(MaterialPageRoute(builder: (_) {
+                return const App();
+              }));
+              return;
+            }
+
             Navigator.of(context)
                 .pushReplacement(MaterialPageRoute(builder: (_) {
-              return const App();
+              return const OfflineScreen();
             }));
           });
         } else {
@@ -110,9 +130,10 @@ class _SplashScreenState extends State<SplashScreen> {
         children: [
           Expanded(
             child: Center(
-              child: Image.asset(
-                "assets/images/default-logo.png",
-                width: 250.0,
+              child: Consumer<OfficeConfigProvider>(
+                builder: (context, officeConfig, _) => officeLogo(
+                  officeConfig.officeConfig?.logo,
+                ),
               ),
             ),
           ),
@@ -137,4 +158,21 @@ class _SplashScreenState extends State<SplashScreen> {
       ),
     );
   }
+}
+
+Widget officeLogo(String? imagePath) {
+  String profilePictureURI =
+      "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png";
+  if (imagePath != null) {
+    if (imagePath == "images/default-logo.png") {
+      profilePictureURI = "${ApiConstant.publicUrl}/$imagePath";
+    } else {
+      profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
+    }
+  }
+
+  return Image.network(
+    profilePictureURI,
+    width: 250,
+  );
 }

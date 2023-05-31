@@ -1,40 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
-import 'package:presence_alpha/constant/color_constant.dart';
-import 'package:presence_alpha/provider/user_provider.dart';
-import 'package:presence_alpha/screen/login_screen.dart';
-import 'package:presence_alpha/screen/ubah_password_screen.dart';
-import 'package:presence_alpha/screen/ubah_profile_screen.dart';
-import 'package:presence_alpha/storage/app_storage.dart';
+import 'package:presence_alpha/provider/office_config_provide.dart';
+import 'package:presence_alpha/screen/hr/manage_karyawan_screen.dart';
+import 'package:presence_alpha/screen/hr/manage_overtime_screen.dart';
+import 'package:presence_alpha/screen/hr/manage_presence_screen.dart';
+import 'package:presence_alpha/screen/hr/ubah_pengaturan_kantor_screen.dart';
+import 'package:presence_alpha/screen/profile_screen.dart';
 import 'package:provider/provider.dart';
 
-class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
-
-  @override
-  _ProfileScreenState createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  String? accountType = null;
-
-  @override
-  void initState() {
-    super.initState();
-    // Call userProvider to get user data and update the userData variable
-    accountType =
-        Provider.of<UserProvider>(context, listen: false).user?.accountType;
-  }
+class ManageScreen extends StatelessWidget {
+  const ManageScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: accountType == "admin" || accountType == "hrd"
-          ? AppBar(
-              title: const Text("Profile"),
-              backgroundColor: ColorConstant.lightPrimary,
-            )
-          : null,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -59,31 +38,20 @@ Widget profileInfo() {
           padding: const EdgeInsets.all(32.0),
           child: Column(
             children: <Widget>[
-              ClipOval(
-                child: Consumer<UserProvider>(
-                  builder: (context, userProvider, _) => profilePicture(
-                    userProvider.user?.profilePicture,
+              Center(
+                child: Consumer<OfficeConfigProvider>(
+                  builder: (context, officeConfig, _) => officeLogo(
+                    officeConfig.officeConfig?.logo,
                   ),
                 ),
               ),
               const SizedBox(height: 16.0),
-              Consumer<UserProvider>(
-                builder: (context, userProvider, _) => Text(
-                  userProvider.user?.name ?? "N/A",
+              Consumer<OfficeConfigProvider>(
+                builder: (context, officeConfig, _) => Text(
+                  officeConfig.officeConfig?.name ?? "Digital Amore Kriyanesia",
                   style: const TextStyle(
                     fontSize: 16.0,
                     fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8.0),
-              Consumer<UserProvider>(
-                builder: (context, userProvider, _) => Text(
-                  userProvider.user?.accountType ?? "N/A",
-                  style: TextStyle(
-                    fontSize: 14.0,
-                    color: Colors.grey.shade400,
-                    fontWeight: FontWeight.normal,
                   ),
                 ),
               ),
@@ -114,9 +82,103 @@ Widget profileActions(BuildContext context) {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: ListTile(
+            leading: const Icon(Icons.assignment),
+            title: const Text(
+              'Kehadiran',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ManagePresenceScreen(),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+      Container(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: Colors.grey.shade300,
+              width: 0.5,
+            ),
+            bottom: BorderSide(
+              color: Colors.grey.shade300,
+              width: 0.5,
+            ),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: ListTile(
+            leading: const Icon(Icons.access_time),
+            title: const Text(
+              'Lembur',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const ManageOvertimeScreen()),
+              );
+            },
+          ),
+        ),
+      ),
+      Container(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: Colors.grey.shade300,
+              width: 0.5,
+            ),
+            bottom: BorderSide(
+              color: Colors.grey.shade300,
+              width: 0.5,
+            ),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: ListTile(
+            leading: const Icon(Icons.group),
+            title: const Text(
+              'Manage Karyawan',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ManageKaryawanScreen(),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+      Container(
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: Colors.grey.shade300,
+              width: 0.5,
+            ),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: ListTile(
             leading: const Icon(Icons.person),
             title: const Text(
-              'Ubah Profile',
+              'Profil',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             trailing: const Icon(Icons.chevron_right),
@@ -124,7 +186,7 @@ Widget profileActions(BuildContext context) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const UbahProfileScreen(),
+                  builder: (context) => const ProfileScreen(),
                 ),
               );
             },
@@ -143,9 +205,9 @@ Widget profileActions(BuildContext context) {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: ListTile(
-            leading: const Icon(Icons.lock),
+            leading: const Icon(Icons.settings),
             title: const Text(
-              'Ubah Password',
+              'Pengaturan Kantor',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             trailing: const Icon(Icons.chevron_right),
@@ -153,39 +215,8 @@ Widget profileActions(BuildContext context) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const UbahPasswordScreen(),
+                  builder: (context) => const UbahPengaturanKantorScreen(),
                 ),
-              );
-            },
-          ),
-        ),
-      ),
-      Container(
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: Colors.grey.shade300,
-              width: 0.5,
-            ),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text(
-              'Keluar',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              AppStorage.localStorage.deleteItem("usr");
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const LoginScreen(),
-                ),
-                (route) => false,
               );
             },
           ),
@@ -195,11 +226,11 @@ Widget profileActions(BuildContext context) {
   );
 }
 
-Widget profilePicture(String? imagePath) {
+Widget officeLogo(String? imagePath) {
   String profilePictureURI =
       "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png";
   if (imagePath != null) {
-    if (imagePath == "images/default.png") {
+    if (imagePath == "images/default-logo.png") {
       profilePictureURI = "${ApiConstant.publicUrl}/$imagePath";
     } else {
       profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
@@ -208,8 +239,7 @@ Widget profilePicture(String? imagePath) {
 
   return Image.network(
     profilePictureURI,
-    width: 100,
-    height: 100,
-    fit: BoxFit.cover,
+    width: 200,
+    height: 120,
   );
 }

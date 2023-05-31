@@ -13,4 +13,10 @@ class ApiConstant {
 
   static String publicPath = "public";
   static String publicUrl = '$baseUrl/$publicPath';
+
+  static List<String> role = [
+    "karyawan",
+    "hrd",
+    "admin",
+  ];
 }

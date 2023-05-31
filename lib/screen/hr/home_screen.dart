@@ -200,8 +200,13 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         ClipOval(
           child: Consumer<UserProvider>(
-            builder: (context, userProvider, _) => profilePicture(
-              userProvider.user?.profilePicture,
+            builder: (context, userProvider, _) => Image.network(
+              userProvider.user?.profilePicture != null
+                  ? "${ApiConstant.publicUrl}/${userProvider.user?.profilePicture}"
+                  : "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png",
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
             ),
           ),
         ),
@@ -411,7 +416,7 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         gridButton(
           "Kehadiran",
-          Icons.history,
+          Icons.fingerprint,
           () => {
             Navigator.push(
               context,
@@ -457,8 +462,8 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Icon(icon, size: 34, color: Colors.grey[800]),
-            const SizedBox(height: 8),
+            Icon(icon, size: 35, color: Colors.grey[800]),
+            const SizedBox(height: 6),
             Text(text, style: const TextStyle(fontSize: 12)),
           ],
         ),
@@ -480,27 +485,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: <Widget>[
                     userInfo(),
                     const Padding(padding: EdgeInsets.all(10)),
-                    boxInfo("Karyawan"),
-                    const Padding(padding: EdgeInsets.all(10)),
-                    distanceLocation(distanceBetweenPoints),
-                    const Padding(padding: EdgeInsets.all(10)),
-                    SizedBox(
-                      width: double.infinity,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            "Menu Lainnya",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Padding(padding: EdgeInsets.all(5)),
-                    boxButton(),
+                    // boxInfo("Karyawan"),
+                    // const Padding(padding: EdgeInsets.all(10)),
+                    // distanceLocation(distanceBetweenPoints),
+                    // const Padding(padding: EdgeInsets.all(10)),
+                    // SizedBox(
+                    //   width: double.infinity,
+                    //   child: Column(
+                    //     crossAxisAlignment: CrossAxisAlignment.start,
+                    //     children: const [
+                    //       Text(
+                    //         "Menu",
+                    //         style: TextStyle(
+                    //           fontSize: 23,
+                    //           fontWeight: FontWeight.bold,
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
+                    // const Padding(padding: EdgeInsets.all(6)),
+                    // boxButton(),
                   ],
                 ),
               ),
@@ -510,23 +515,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
-
-Widget profilePicture(String? imagePath) {
-  String profilePictureURI =
-      "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png";
-  if (imagePath != null) {
-    if (imagePath == "images/default.png") {
-      profilePictureURI = "${ApiConstant.publicUrl}/$imagePath";
-    } else {
-      profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
-    }
-  }
-
-  return Image.network(
-    profilePictureURI,
-    width: 50,
-    height: 50,
-    fit: BoxFit.cover,
-  );
 }
