@@ -41,7 +41,6 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
       TextEditingController();
 
   bool _canWfh = false;
-  bool _deviceTracker = false;
   bool _isObscure = true;
   bool _isObscureConfirmation = true;
   File? _image;
@@ -138,12 +137,8 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
             _imagePath = response.data!.path;
           });
         }
-
-        print("file upload $_imagePath");
       }
     } catch (error) {
-      print('Error: $error');
-
       AmessageUtility.show(context, "Gagal", error.toString(), TipType.ERROR);
     } finally {
       LoadingUtility.hide();
@@ -191,7 +186,7 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
     final password = _passwordController.text.trim();
     final passwordConfirmation = _passwordConfirmationController.text.trim();
     final startedWorkAt = _startedWorkAtController.text.trim();
-    final deviceTracker = _deviceTracker;
+    const deviceTracker = true;
 
     if (username.isEmpty) {
       setState(() {
@@ -636,21 +631,6 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
                           },
                         ),
                         const Expanded(child: Text("Can work from home")),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Checkbox(
-                          activeColor: ColorConstant.lightPrimary,
-                          value: _deviceTracker,
-                          onChanged: (value) {
-                            setState(() {
-                              _deviceTracker = value ?? false;
-                            });
-                          },
-                        ),
-                        const Expanded(child: Text("Device Tracker")),
                       ],
                     ),
                     const SizedBox(height: 30),

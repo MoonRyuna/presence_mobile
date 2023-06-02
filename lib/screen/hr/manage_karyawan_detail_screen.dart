@@ -43,7 +43,6 @@ class _ManageKaryawanDetailScreenState
       TextEditingController();
 
   bool _canWfh = false;
-  bool _deviceTracker = false;
   String? _userId;
   File? _image;
   String? _imagePath;
@@ -75,7 +74,6 @@ class _ManageKaryawanDetailScreenState
     );
 
     _canWfh = widget.user.canWfh ?? false;
-    _deviceTracker = widget.user.deviceTracker ?? false;
     _accountType = widget.user.accountType ?? '';
     _selectedDate = DateTime.parse(widget.user.startedWorkAt ?? "");
 
@@ -161,12 +159,8 @@ class _ManageKaryawanDetailScreenState
             _imagePath = response.data!.path;
           });
         }
-
-        print("file upload $_imagePath");
       }
     } catch (error) {
-      print('Error: $error');
-
       AmessageUtility.show(context, "Gagal", error.toString(), TipType.ERROR);
     } finally {
       LoadingUtility.hide();
@@ -308,7 +302,7 @@ class _ManageKaryawanDetailScreenState
     final accountType = _accountType?.trim() ?? "karyawan";
     final description = _descriptionController.text.trim();
     final startedWorkAt = _startedWorkAtController.text.trim();
-    final deviceTracker = _deviceTracker;
+    final deviceTracker = widget.user.deviceTracker ?? true;
 
     if (username.isEmpty) {
       setState(() {
@@ -730,21 +724,6 @@ class _ManageKaryawanDetailScreenState
                           },
                         ),
                         const Expanded(child: Text("Can work from home")),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Checkbox(
-                          activeColor: ColorConstant.lightPrimary,
-                          value: _deviceTracker,
-                          onChanged: (value) {
-                            setState(() {
-                              _deviceTracker = value ?? false;
-                            });
-                          },
-                        ),
-                        const Expanded(child: Text("Device Tracker")),
                       ],
                     ),
                     const SizedBox(height: 30),
