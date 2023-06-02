@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
 import 'package:presence_alpha/model/user_model.dart';
@@ -25,6 +24,7 @@ class ManageKaryawanScreen extends StatefulWidget {
 class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
   final TextEditingController _searchController = TextEditingController();
   final UserService _userService = UserService();
+  final ScrollController _scrollController = ScrollController();
 
   UsersModel? _userList;
   bool _isLoading = false;
@@ -36,6 +36,12 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
   void initState() {
     super.initState();
     _loadUserList();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent) {
+        _loadUserList();
+      }
+    });
   }
 
   @override
@@ -57,13 +63,19 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
     UserListResponse response = await _userService.getUserList(
       name: _searchController.text,
       page: _currentPage,
+      limit: 10,
       token: token,
     );
 
     if (response.status!) {
       UsersModel users = response.data ?? UsersModel();
       setState(() {
-        _userList = users;
+        // concat user list
+        if (_userList != null) {
+          _userList!.result.addAll(users.result);
+        } else {
+          _userList = users;
+        }
         _currentPage++;
         _isLoading = false;
         _hasMore = (users.result.length == (response.data?.limit ?? 0));
@@ -94,82 +106,72 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
   }
 
   Widget _buildUserList() {
-    const locale = Locale('id', 'ID');
-
     return ListView.builder(
+      controller: _scrollController,
       itemCount: _userList != null ? _userList!.result.length + 1 : 0,
       itemBuilder: (BuildContext context, int index) {
         if (index < (_userList?.result.length ?? 0)) {
           UserModel? user = _userList?.result[index];
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: ColorConstant.bgOpt,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              margin: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 16.0, 0, 16.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipOval(
-                      child: profilePicture(
-                        user?.profilePicture,
-                      ),
-                    ),
-                    Expanded(
-                      child: ListTile(
-                        onTap: () {
-                          if (user != null) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ManageKaryawanDetailScreen(user: user),
-                              ),
-                            );
-                          } else {
-                            AmessageUtility.show(
-                              context,
-                              "Gagal",
-                              "Info user tidak diketahui",
-                              TipType.ERROR,
-                            );
-                          }
-                        },
-                        title: Text(
-                          user?.name ?? '',
-                          style: TextStyle(
-                              color: ColorConstant.lightPrimary,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 10),
-                            Text(
-                              (user?.accountType ?? "N/A") +
-                                  (user?.startedWorkAt != null
-                                      ? " sejak ${DateFormat('d MMMM y', locale.toString()).format(
-                                          DateTime.parse(
-                                              user?.startedWorkAt ?? ''),
-                                        )}"
-                                      : ""),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(user?.phoneNumber ?? ""),
-                            const SizedBox(height: 8),
-                            Text(user?.address ?? ""),
-                            const SizedBox(height: 8),
-                            Text(user?.canWfh ?? false ? 'WFH' : 'WFO'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.shade300,
+                  offset: const Offset(0.0, 0.5), //(x,y)
+                  blurRadius: 6.0,
                 ),
+              ],
+            ),
+            margin: const EdgeInsets.fromLTRB(0, 16, 0, 0),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 0, 16.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipOval(
+                    child: profilePicture(
+                      user?.profilePicture,
+                    ),
+                  ),
+                  Expanded(
+                    child: ListTile(
+                      onTap: () {
+                        if (user != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ManageKaryawanDetailScreen(user: user),
+                            ),
+                          );
+                        } else {
+                          AmessageUtility.show(
+                            context,
+                            "Gagal",
+                            "Info user tidak diketahui",
+                            TipType.ERROR,
+                          );
+                        }
+                      },
+                      title: Text(
+                        user?.name ?? '',
+                        style: TextStyle(
+                            color: ColorConstant.lightPrimary,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 8),
+                          Text(user?.phoneNumber ?? ""),
+                          const SizedBox(height: 8),
+                          Text(user?.address ?? ""),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -184,25 +186,14 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
           return const SizedBox();
         }
       },
-      // Implement infinite scroll
-      controller: ScrollController()..addListener(_scrollListener),
     );
-  }
-
-  void _scrollListener() {
-    if (!_isLoading && _hasMore) {
-      final ScrollController controller = ScrollController();
-      if (controller.position.pixels == controller.position.maxScrollExtent) {
-        _loadUserList();
-      }
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage Karyawan'),
+        title: const Text('Karyawan'),
         backgroundColor: ColorConstant.lightPrimary,
       ),
       floatingActionButton: FloatingActionButton(
@@ -216,31 +207,30 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
         backgroundColor: ColorConstant.lightPrimary,
         child: const Icon(Icons.add),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
+      body: Container(
+        decoration: BoxDecoration(
+          color: ColorConstant.bgOpt,
+        ),
+        child: Column(
+          children: [
+            TextField(
               controller: _searchController,
+              onChanged: _searchUser,
               decoration: const InputDecoration(
-                labelText: 'Search',
+                filled: true,
+                fillColor: Colors.white,
+                hintText: 'Cari nama karyawan',
                 prefixIcon: Icon(Icons.search),
-                contentPadding: EdgeInsets.symmetric(vertical: 2),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                  borderSide: BorderSide(
-                    color: Colors.grey,
-                    width: 1,
-                  ),
+                  borderSide: BorderSide.none,
                 ),
               ),
-              onChanged: _searchUser,
             ),
-          ),
-          Expanded(
-            child: _buildUserList(),
-          ),
-        ],
+            Expanded(
+              child: _buildUserList(),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -149,7 +149,7 @@ Widget profileActions(BuildContext context) {
           child: ListTile(
             leading: const Icon(Icons.group),
             title: const Text(
-              'Manage Karyawan',
+              'Karyawan',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             trailing: const Icon(Icons.chevron_right),
