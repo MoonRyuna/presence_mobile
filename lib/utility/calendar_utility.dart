@@ -34,4 +34,9 @@ class CalendarUtility {
     final formatter = DateFormat('d MMM y', 'id_ID');
     return formatter.format(date);
   }
+
+  static String getTime(DateTime date) {
+    final formatter = DateFormat('HH:mm:ss', 'id_ID');
+    return formatter.format(date);
+  }
 }

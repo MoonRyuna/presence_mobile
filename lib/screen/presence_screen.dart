@@ -9,6 +9,7 @@ import 'package:conditional_builder_null_safety/conditional_builder_null_safety.
 import 'package:presence_alpha/payload/response/presence/list_response.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
+import 'package:presence_alpha/screen/presence_detail_screen.dart';
 import 'package:presence_alpha/service/presence_service.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
@@ -273,7 +274,7 @@ class _PresenceScreenState extends State<PresenceScreen> {
                                     const SizedBox(height: 6.0),
                                     Text(
                                       CalendarUtility.formatDate(
-                                          DateTime.parse("2023-01-02")),
+                                          DateTime.parse(presence.checkIn!)),
                                       style: TextStyle(
                                         color: Colors.grey.shade900,
                                         fontWeight: FontWeight.w500,
@@ -282,8 +283,22 @@ class _PresenceScreenState extends State<PresenceScreen> {
                                     const SizedBox(height: 4.0),
                                     Row(
                                       children: [
+                                        Icon(
+                                          presence.type == "wfh"
+                                              ? Icons.home_work_outlined
+                                              : Icons.business,
+                                          size: 15,
+                                        ),
+                                        const SizedBox(width: 4.0),
+                                        Text(presence.type!)
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4.0),
+                                    Row(
+                                      children: [
                                         BsBadge(
-                                          text: "IN 08:00:00",
+                                          text:
+                                              "IN ${presence.checkIn != null ? CalendarUtility.getTime(DateTime.parse(presence.checkIn!)) : '-'}",
                                           textStyle: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             color: Colors.white,
@@ -297,7 +312,8 @@ class _PresenceScreenState extends State<PresenceScreen> {
                                         ),
                                         const SizedBox(width: 4.0),
                                         BsBadge(
-                                          text: "OUT -",
+                                          text:
+                                              "OUT ${presence.checkOut != null ? CalendarUtility.getTime(DateTime.parse(presence.checkOut!)) : '-'}",
                                           textStyle: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             color: Colors.white,
@@ -309,26 +325,58 @@ class _PresenceScreenState extends State<PresenceScreen> {
                                             vertical: 4.0,
                                           ),
                                         ),
+                                        if (presence.late == true)
+                                          const SizedBox(width: 4.0),
+                                        if (presence.late == true)
+                                          const BsBadge(
+                                            text: "TELAT",
+                                            textStyle: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                              fontSize: 11,
+                                            ),
+                                            backgroundColor: (Colors.orange),
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 8.0,
+                                              vertical: 4.0,
+                                            ),
+                                          ),
+                                        if (presence.overtime == true)
+                                          const SizedBox(width: 4.0),
+                                        if (presence.overtime == true)
+                                          const BsBadge(
+                                            text: "LEMBUR",
+                                            textStyle: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                              fontSize: 11,
+                                            ),
+                                            backgroundColor: (Colors.blue),
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 8.0,
+                                              vertical: 4.0,
+                                            ),
+                                          ),
                                       ],
-                                    )
+                                    ),
                                   ],
                                 ),
                                 trailing: PopupMenuButton(
                                   onSelected: (result) async {
                                     debugPrint(result);
                                     if (result == "detail") {
-                                      // bool result = await Navigator.push(
-                                      //   context,
-                                      //   MaterialPageRoute(
-                                      //     builder: (context) =>
-                                      //         PresenceDetailScreen(
-                                      //       id: presence.id.toString(),
-                                      //     ),
-                                      //   ),
-                                      // );
-                                      // if (result == true) {
-                                      //   _onRefresh();
-                                      // }
+                                      bool result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              PresenceDetailScreen(
+                                            id: presence.id.toString(),
+                                          ),
+                                        ),
+                                      );
+                                      if (result == true) {
+                                        _onRefresh();
+                                      }
                                     }
                                   },
                                   itemBuilder: (BuildContext context) =>
