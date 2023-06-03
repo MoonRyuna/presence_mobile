@@ -161,15 +161,14 @@ class _SplashScreenState extends State<SplashScreen> {
 }
 
 Widget officeLogo(String? imagePath) {
-  String profilePictureURI =
-      "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png";
-  if (imagePath != null) {
-    if (imagePath == "images/default-logo.png") {
-      profilePictureURI = "${ApiConstant.publicUrl}/$imagePath";
-    } else {
-      profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
-    }
+  if (imagePath == null) {
+    return Image.asset(
+      'assets/images/default-logo.png',
+      width: 250,
+    );
   }
+
+  String profilePictureURI = "${ApiConstant.publicUrl}/$imagePath";
 
   return Image.network(
     profilePictureURI,

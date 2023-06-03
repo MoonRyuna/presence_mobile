@@ -215,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontSize: 18,
               ),
             ),
-            const Padding(padding: EdgeInsets.all(2)),
+            const Padding(padding: EdgeInsets.all(3)),
             Consumer<UserProvider>(
               builder: (context, userProvider, _) => Text(
                 userProvider.user?.name ?? "N?A",
@@ -255,7 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (context, dateModel, child) => Text(
               CalendarUtility.formatBasic(dateModel.date),
               style: const TextStyle(
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
@@ -411,7 +411,7 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         gridButton(
           "Kehadiran",
-          Icons.history,
+          Icons.supervised_user_circle,
           () => {
             Navigator.push(
               context,
@@ -439,6 +439,16 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
         ),
+        gridButton(
+          "Rekapan",
+          Icons.data_thresholding_rounded,
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const OvertimeScreen()),
+            );
+          },
+        ),
       ],
     );
   }
@@ -448,6 +458,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: callback,
       child: Container(
         decoration: BoxDecoration(
+          // color: Colors.red.shade900.withOpacity(0.8),
           borderRadius: BorderRadius.circular(13),
           border: Border.all(
             color: const Color.fromRGBO(189, 189, 189, 1),
@@ -457,9 +468,18 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Icon(icon, size: 34, color: Colors.grey[800]),
+            // Icon(icon, size: 28, color: Colors.white),
+            Icon(icon, size: 28, color: Colors.grey),
             const SizedBox(height: 8),
-            Text(text, style: const TextStyle(fontSize: 12)),
+            Text(
+              text,
+              style: const TextStyle(
+                fontSize: 14,
+                // fontWeight: FontWeight.bold,
+                // color: Colors.white,
+                color: Colors.black,
+              ),
+            ),
           ],
         ),
       ),
@@ -478,28 +498,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 child: Column(
                   children: <Widget>[
+                    const Padding(padding: EdgeInsets.all(5)),
                     userInfo(),
-                    const Padding(padding: EdgeInsets.all(10)),
+                    const Padding(padding: EdgeInsets.all(15)),
                     boxInfo("Karyawan"),
                     const Padding(padding: EdgeInsets.all(10)),
                     distanceLocation(distanceBetweenPoints),
-                    const Padding(padding: EdgeInsets.all(10)),
+                    const Padding(padding: EdgeInsets.all(15)),
                     SizedBox(
                       width: double.infinity,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: const [
                           Text(
-                            "Menu Lainnya",
+                            "Menu",
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const Padding(padding: EdgeInsets.all(5)),
+                    const Padding(padding: EdgeInsets.all(8)),
                     boxButton(),
                   ],
                 ),
