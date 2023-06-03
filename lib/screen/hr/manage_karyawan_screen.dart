@@ -2,16 +2,20 @@ import 'dart:async';
 
 import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
 import 'package:presence_alpha/model/user_model.dart';
 import 'package:presence_alpha/model/users_model.dart';
 import 'package:presence_alpha/payload/response/user_list_response.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
+import 'package:presence_alpha/provider/user_provider.dart';
 import 'package:presence_alpha/screen/hr/manage_karyawan_add_screen.dart';
 import 'package:presence_alpha/screen/hr/manage_karyawan_detail_screen.dart';
+import 'package:presence_alpha/screen/hr/manage_karyawan_edit_screen.dart';
 import 'package:presence_alpha/service/user_service.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
+import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:provider/provider.dart';
 
 class ManageKaryawanScreen extends StatefulWidget {
@@ -105,6 +109,107 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
     });
   }
 
+  Future<void> _onResetImei(String id) async {
+    LoadingUtility.show(null);
+
+    final token = Provider.of<TokenProvider>(context, listen: false).token;
+
+    if (!mounted) return;
+    try {
+      final requestData = {
+        "user_id": id,
+      };
+
+      final response = await UserService().resetImei(requestData, token);
+      if (!mounted) return;
+
+      if (response.status != true || response.data == null) {
+        LoadingUtility.hide();
+        AmessageUtility.show(
+          context,
+          "Gagal",
+          response.message!,
+          TipType.ERROR,
+        );
+        return;
+      }
+
+      LoadingUtility.hide();
+      AmessageUtility.show(
+        context,
+        "Berhasil",
+        response.message!,
+        TipType.COMPLETE,
+      );
+    } catch (e) {
+      LoadingUtility.hide();
+      AmessageUtility.show(
+        context,
+        "Gagal",
+        e.toString(),
+        TipType.ERROR,
+      );
+    }
+  }
+
+  Future<void> _onDeleteUser(String id, int index) async {
+    LoadingUtility.show(null);
+
+    final user = Provider.of<UserProvider>(context, listen: false).user;
+    final token = Provider.of<TokenProvider>(context, listen: false).token;
+
+    if (!mounted) return;
+    if (user == null || user.id == null) {
+      LoadingUtility.hide();
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/login',
+        (route) => false,
+      );
+      return;
+    }
+
+    try {
+      final requestData = {
+        "deleted_by": user.id,
+      };
+
+      final response = await UserService().deleteUser(requestData, id, token);
+      if (!mounted) return;
+
+      if (response.status != true || response.data == null) {
+        LoadingUtility.hide();
+        AmessageUtility.show(
+          context,
+          "Gagal",
+          response.message!,
+          TipType.ERROR,
+        );
+        return;
+      }
+
+      LoadingUtility.hide();
+      AmessageUtility.show(
+        context,
+        "Berhasil",
+        response.message!,
+        TipType.COMPLETE,
+      );
+
+      setState(() {
+        _userList?.result.removeAt(index);
+      });
+    } catch (e) {
+      LoadingUtility.hide();
+      AmessageUtility.show(
+        context,
+        "Gagal",
+        e.toString(),
+        TipType.ERROR,
+      );
+    }
+  }
+
   Widget _buildUserList() {
     return ListView.builder(
       controller: _scrollController,
@@ -124,54 +229,146 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
               ],
             ),
             margin: const EdgeInsets.fromLTRB(0, 16, 0, 0),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 0, 16.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            child: Slidable(
+              startActionPane: ActionPane(
+                motion: const BehindMotion(),
                 children: [
-                  ClipOval(
-                    child: profilePicture(
-                      user?.profilePicture,
-                    ),
+                  SlidableAction(
+                    onPressed: (context) async {
+                      if (user != null && user.id != null) {
+                        await _onResetImei(user.id!);
+                      } else {
+                        AmessageUtility.show(
+                          context,
+                          "Gagal",
+                          "Info user tidak diketahui",
+                          TipType.ERROR,
+                        );
+                      }
+                    },
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    icon: Icons.refresh,
+                    label: 'Reset IMEI',
                   ),
-                  Expanded(
-                    child: ListTile(
-                      onTap: () {
-                        if (user != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ManageKaryawanDetailScreen(user: user),
-                            ),
-                          );
-                        } else {
-                          AmessageUtility.show(
-                            context,
-                            "Gagal",
-                            "Info user tidak diketahui",
-                            TipType.ERROR,
-                          );
+                  SlidableAction(
+                    onPressed: (context) async {
+                      if (user != null) {
+                        bool result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ManageKaryawanEditScreen(user: user),
+                          ),
+                        );
+
+                        if (result) {
+                          setState(() {
+                            _userList = null;
+                            _currentPage = 1;
+                            _hasMore = true;
+                          });
+
+                          await _loadUserList();
                         }
-                      },
-                      title: Text(
-                        user?.name ?? '',
-                        style: TextStyle(
-                            color: ColorConstant.lightPrimary,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 8),
-                          Text(user?.phoneNumber ?? ""),
-                          const SizedBox(height: 8),
-                          Text(user?.address ?? ""),
-                        ],
-                      ),
-                    ),
+                      } else {
+                        AmessageUtility.show(
+                          context,
+                          "Gagal",
+                          "Info user tidak diketahui",
+                          TipType.ERROR,
+                        );
+                      }
+                    },
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    icon: Icons.edit,
+                    label: 'Edit',
                   ),
                 ],
+              ),
+              endActionPane: ActionPane(
+                motion: const BehindMotion(),
+                children: [
+                  SlidableAction(
+                    onPressed: (context) async {
+                      if (user != null && user.id != null) {
+                        await _onDeleteUser(user.id!, index);
+                      } else {
+                        AmessageUtility.show(
+                          context,
+                          "Gagal",
+                          "Info user tidak diketahui",
+                          TipType.ERROR,
+                        );
+                      }
+                    },
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    icon: Icons.delete,
+                    label: 'Delete',
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16.0, 16.0, 0, 16.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ClipOval(
+                      child: profilePicture(
+                        user?.profilePicture,
+                      ),
+                    ),
+                    Expanded(
+                      child: ListTile(
+                        onTap: () async {
+                          if (user != null) {
+                            bool result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ManageKaryawanDetailScreen(user: user),
+                              ),
+                            );
+
+                            if (result) {
+                              setState(() {
+                                _userList = null;
+                                _currentPage = 1;
+                                _hasMore = true;
+                              });
+
+                              await _loadUserList();
+                            }
+                          } else {
+                            AmessageUtility.show(
+                              context,
+                              "Gagal",
+                              "Info user tidak diketahui",
+                              TipType.ERROR,
+                            );
+                          }
+                        },
+                        title: Text(
+                          user?.name ?? '',
+                          style: TextStyle(
+                              color: ColorConstant.lightPrimary,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
+                            Text(user?.phoneNumber ?? ""),
+                            const SizedBox(height: 8),
+                            Text(user?.address ?? ""),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
