@@ -223,7 +223,9 @@ class _AbsenceDetailScreenState extends State<AbsenceDetailScreen> {
                             child: Text(
                               'Riwayat Pengajuan',
                               style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                           Container(
