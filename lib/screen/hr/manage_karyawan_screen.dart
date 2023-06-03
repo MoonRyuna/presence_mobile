@@ -110,6 +110,31 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
   }
 
   Future<void> _onResetImei(String id) async {
+    bool? isConfirmed = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Konfirmasi"),
+          content: const Text(
+              "Apakah anda yakin ingin mereset imei perangkat karyawan ini?"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Batal"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("Ya"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (isConfirmed == null || isConfirmed == false) {
+      return;
+    }
+
     LoadingUtility.show(null);
 
     final token = Provider.of<TokenProvider>(context, listen: false).token;
@@ -153,6 +178,31 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
   }
 
   Future<void> _onDeleteUser(String id, int index) async {
+    bool? isConfirmed = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Konfirmasi"),
+          content:
+              const Text("Apakah anda yakin ingin menghapus karyawan ini?"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Batal"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("Ya"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (isConfirmed == null || isConfirmed == false) {
+      return;
+    }
+
     LoadingUtility.show(null);
 
     final user = Provider.of<UserProvider>(context, listen: false).user;

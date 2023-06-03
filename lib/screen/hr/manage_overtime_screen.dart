@@ -41,7 +41,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
   void _openDatePicker() async {
     final DateTime currentDate = DateTime.now();
     final DateTime firstDate =
-        currentDate.subtract(const Duration(days: 365 * 5));
+    currentDate.subtract(const Duration(days: 365 * 5));
     final DateTime lastDate = currentDate.add(const Duration(days: 365 * 5));
     final ThemeData theme = ThemeData.light().copyWith(
       colorScheme: const ColorScheme.light(
@@ -110,7 +110,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
       });
 
       ListSubmissionAdminResponse response =
-          await OvertimeService().listSubmissionAdmin(queryParams, token);
+      await OvertimeService().listSubmissionAdmin(queryParams, token);
       if (!mounted) return;
 
       if (response.status == true) {
@@ -143,7 +143,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
         firstLoadRunning = true;
       });
       ListSubmissionAdminResponse response =
-          await OvertimeService().listSubmissionAdmin(queryParams, token);
+      await OvertimeService().listSubmissionAdmin(queryParams, token);
       if (!mounted) return;
 
       if (response.status == true) {
@@ -173,6 +173,32 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
   }
 
   Future<void> _onApprove(int id) async {
+    bool? isConfirmed = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Konfirmasi"),
+          content: const Text(
+            "Apakah anda yakin ingin menyetujui lembur ini?",
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Batal"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("Ya"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (isConfirmed == null || isConfirmed == false) {
+      return;
+    }
+
     LoadingUtility.show(null);
 
     final tp = Provider.of<TokenProvider>(
@@ -180,7 +206,9 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
       listen: false,
     );
 
-    UserModel? user = Provider.of<UserProvider>(context, listen: false).user;
+    UserModel? user = Provider
+        .of<UserProvider>(context, listen: false)
+        .user;
     String token = tp.token;
 
     if (user == null || user.id == null) {
@@ -189,7 +217,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
       Navigator.pushNamedAndRemoveUntil(
         context,
         '/login',
-        (route) => false,
+            (route) => false,
       );
       return;
     }
@@ -232,6 +260,32 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
   }
 
   Future<void> _onReject(int id) async {
+    bool? isConfirmed = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Konfirmasi"),
+          content: const Text(
+            "Apakah anda yakin ingin menolak lembur ini?",
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Batal"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("Ya"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (isConfirmed == null || isConfirmed == false) {
+      return;
+    }
+
     LoadingUtility.show(null);
 
     final tp = Provider.of<TokenProvider>(
@@ -239,7 +293,9 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
       listen: false,
     );
 
-    UserModel? user = Provider.of<UserProvider>(context, listen: false).user;
+    UserModel? user = Provider
+        .of<UserProvider>(context, listen: false)
+        .user;
     String token = tp.token;
 
     if (user == null || user.id == null) {
@@ -248,7 +304,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
       Navigator.pushNamedAndRemoveUntil(
         context,
         '/login',
-        (route) => false,
+            (route) => false,
       );
       return;
     }
@@ -297,7 +353,8 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
     _endDate = DateTime.now();
 
     loadData();
-    _controller = ScrollController()..addListener(loadData);
+    _controller = ScrollController()
+      ..addListener(loadData);
   }
 
   @override
@@ -333,7 +390,9 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
                       const Icon(Icons.date_range),
                       const SizedBox(width: 5),
                       Text(
-                        '${DateFormat('dd/MM/yyyy').format(_startDate)} - ${DateFormat('dd/MM/yyyy').format(_endDate)}',
+                        '${DateFormat('dd/MM/yyyy').format(
+                            _startDate)} - ${DateFormat('dd/MM/yyyy').format(
+                            _endDate)}',
                         style: const TextStyle(fontSize: 16.0),
                       ),
                     ],
@@ -344,155 +403,158 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
             Expanded(
               child: firstLoadRunning
                   ? const Center(
-                      child: CircularProgressIndicator(),
-                    )
+                child: CircularProgressIndicator(),
+              )
                   : ConditionalBuilder(
-                      condition: overtimes.isNotEmpty,
-                      builder: (context) => ListView.builder(
-                        padding: const EdgeInsets.only(top: 7.0),
-                        controller: _controller,
-                        itemCount: overtimes.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          final overtime = overtimes[index];
-                          final overtimeStatusText = {
-                            "0": "Pending",
-                            "1": "Approved",
-                            "2": "Rejected",
-                            "3": "Canceled",
-                            "4": "Expired",
-                          }[overtime.submissionStatus];
+                condition: overtimes.isNotEmpty,
+                builder: (context) =>
+                    ListView.builder(
+                      padding: const EdgeInsets.only(top: 7.0),
+                      controller: _controller,
+                      itemCount: overtimes.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final overtime = overtimes[index];
+                        final overtimeStatusText = {
+                          "0": "Pending",
+                          "1": "Approved",
+                          "2": "Rejected",
+                          "3": "Canceled",
+                          "4": "Expired",
+                        }[overtime.submissionStatus];
 
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 7, horizontal: 0),
-                            child: Slidable(
-                              startActionPane: ActionPane(
-                                motion: const BehindMotion(),
-                                children: [
-                                  SlidableAction(
-                                    onPressed: (context) async {
-                                      await _onApprove(overtime.id!);
-                                    },
-                                    backgroundColor: Colors.green,
-                                    foregroundColor: Colors.white,
-                                    icon: Icons.check,
-                                    label: 'Approve',
-                                  ),
-                                  SlidableAction(
-                                    onPressed: (context) async {
-                                      await _onReject(overtime.id!);
-                                    },
-                                    backgroundColor: Colors.red,
-                                    foregroundColor: Colors.white,
-                                    icon: Icons.close,
-                                    label: 'Reject',
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 7, horizontal: 0),
+                          child: Slidable(
+                            startActionPane: ActionPane(
+                              motion: const BehindMotion(),
+                              children: [
+                                SlidableAction(
+                                  onPressed: (context) async {
+                                    await _onApprove(overtime.id!);
+                                  },
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.white,
+                                  icon: Icons.check,
+                                  label: 'Approve',
+                                ),
+                                SlidableAction(
+                                  onPressed: (context) async {
+                                    await _onReject(overtime.id!);
+                                  },
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                  icon: Icons.close,
+                                  label: 'Reject',
+                                ),
+                              ],
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 8.0,
+                                horizontal: 0,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.shade300,
+                                    offset: const Offset(0.0, 0.5), //(x,y)
+                                    blurRadius: 6.0,
                                   ),
                                 ],
                               ),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8.0,
-                                  horizontal: 0,
+                              child: ListTile(
+                                onTap: () async {
+                                  bool result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          OvertimeDetailScreen(
+                                            id: overtime.id.toString(),
+                                          ),
+                                    ),
+                                  );
+                                  if (result == true) {
+                                    _onRefresh();
+                                  }
+                                },
+                                title: Text(
+                                  overtime.name!,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.shade300,
-                                      offset: const Offset(0.0, 0.5), //(x,y)
-                                      blurRadius: 6.0,
+                                subtitle: Column(
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 2.0),
+                                    Text(
+                                      overtime.description != null &&
+                                          overtime.description!.length >
+                                              35
+                                          ? '${overtime.description!.substring(
+                                          0, 35)}...'
+                                          : overtime.description ?? '',
+                                      style: const TextStyle(fontSize: 16.0),
+                                    ),
+                                    const SizedBox(height: 6.0),
+                                    Text(
+                                      CalendarUtility.formatDate(
+                                          DateTime.parse(
+                                              overtime.overtimeAt!)),
+                                      style: TextStyle(
+                                        color: Colors.grey.shade900,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4.0),
+                                    BsBadge(
+                                      text: overtimeStatusText!.toUpperCase(),
+                                      textStyle: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                      ),
+                                      backgroundColor: (overtime
+                                          .submissionStatus! ==
+                                          "0"
+                                          ? Colors.blue
+                                          : overtime.submissionStatus! == "1"
+                                          ? Colors.green
+                                          : (overtime.submissionStatus! ==
+                                          "2" ||
+                                          overtime.submissionStatus! ==
+                                              "3")
+                                          ? Colors.red
+                                          : Colors.grey),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                        vertical: 4.0,
+                                      ),
                                     ),
                                   ],
                                 ),
-                                child: ListTile(
-                                  onTap: () async {
-                                    bool result = await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            OvertimeDetailScreen(
-                                          id: overtime.id.toString(),
-                                        ),
-                                      ),
-                                    );
-                                    if (result == true) {
-                                      _onRefresh();
-                                    }
-                                  },
-                                  title: Text(
-                                    overtime.name!,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const SizedBox(height: 2.0),
-                                      Text(
-                                        overtime.description != null &&
-                                                overtime.description!.length >
-                                                    35
-                                            ? '${overtime.description!.substring(0, 35)}...'
-                                            : overtime.description ?? '',
-                                        style: const TextStyle(fontSize: 16.0),
-                                      ),
-                                      const SizedBox(height: 6.0),
-                                      Text(
-                                        CalendarUtility.formatDate(
-                                            DateTime.parse(
-                                                overtime.overtimeAt!)),
-                                        style: TextStyle(
-                                          color: Colors.grey.shade900,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4.0),
-                                      BsBadge(
-                                        text: overtimeStatusText!.toUpperCase(),
-                                        textStyle: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                          fontSize: 11,
-                                        ),
-                                        backgroundColor: (overtime
-                                                    .submissionStatus! ==
-                                                "0"
-                                            ? Colors.blue
-                                            : overtime.submissionStatus! == "1"
-                                                ? Colors.green
-                                                : (overtime.submissionStatus! ==
-                                                            "2" ||
-                                                        overtime.submissionStatus! ==
-                                                            "3")
-                                                    ? Colors.red
-                                                    : Colors.grey),
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8.0,
-                                          vertical: 4.0,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
                               ),
                             ),
-                          );
-                        },
-                      ),
-                      fallback: (context) => Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.air, size: 80),
-                          SizedBox(height: 16),
-                          Text(
-                            "Belum Ada Data",
-                            style: TextStyle(fontSize: 16),
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
+                fallback: (context) =>
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.air, size: 80),
+                        SizedBox(height: 16),
+                        Text(
+                          "Belum Ada Data",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+              ),
             ),
             if (loadMoreRunning == true)
               const Padding(

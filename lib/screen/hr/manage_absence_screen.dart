@@ -173,6 +173,31 @@ class _ManageAbsenceScreenState extends State<ManageAbsenceScreen> {
   }
 
   Future<void> _onApprove(int id) async {
+    bool? isConfirmed = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Konfirmasi"),
+          content: const Text(
+              "Apakah anda yakin ingin menyetujui pengajuan absensi ini?"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Batal"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("Ya"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (isConfirmed == null || isConfirmed == false) {
+      return;
+    }
+
     LoadingUtility.show(null);
 
     final tp = Provider.of<TokenProvider>(
@@ -232,6 +257,31 @@ class _ManageAbsenceScreenState extends State<ManageAbsenceScreen> {
   }
 
   Future<void> _onReject(int id) async {
+    bool? isConfirmed = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Konfirmasi"),
+          content: const Text(
+              "Apakah anda yakin ingin menolak pengajuan absensi ini?"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Batal"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("Ya"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (isConfirmed == null || isConfirmed == false) {
+      return;
+    }
+
     LoadingUtility.show(null);
 
     final tp = Provider.of<TokenProvider>(
