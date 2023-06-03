@@ -2,13 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:http/http.dart' as http;
+import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/payload/response/absence/cancel_response.dart';
 import 'package:presence_alpha/payload/response/absence/detail_response.dart';
 import 'package:presence_alpha/payload/response/absence/list_response.dart';
 import 'package:presence_alpha/payload/response/absence/list_submission.dart';
+import 'package:presence_alpha/payload/response/absence/list_submission_admin_response.dart';
 import 'package:presence_alpha/payload/response/absence/submission_response.dart';
+import 'package:presence_alpha/payload/response/base_response.dart';
 
 class AbsenceService {
   Future<ListResponse> list(
@@ -213,12 +215,168 @@ class AbsenceService {
     }
   }
 
+  Future<ListSubmissionAdminResponse> listSubmissionAdmin(
+      Map<String, dynamic> queryParams, String token) async {
+    print('GET: absence - list_submission_admin');
+
+    String target = '${ApiConstant.baseApi}/absence/list/submission';
+    final queryParameters = Uri(queryParameters: queryParams).queryParameters;
+
+    final queryString = Uri(queryParameters: queryParameters).query;
+
+    print('target: ${Uri.parse("$target?$queryString")}');
+
+    try {
+      final response = await http.get(
+        Uri.parse("$target?$queryString"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+      ).timeout(Duration(seconds: ApiConstant.timeout));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        return ListSubmissionAdminResponse.fromJson(responseData);
+      } else {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        return ListSubmissionAdminResponse(
+          status: false,
+          message: responseData['message'] ?? 'Unable to fetch data',
+        );
+      }
+    } on TimeoutException catch (e) {
+      return ListSubmissionAdminResponse(
+        status: false,
+        message: 'Connection timed out',
+      );
+    } on SocketException catch (e) {
+      return ListSubmissionAdminResponse(
+        status: false,
+        message: e.message,
+      );
+    } on Exception catch (e) {
+      return ListSubmissionAdminResponse(
+        status: false,
+        message: 'Failed to connect to server',
+      );
+    } catch (e) {
+      return ListSubmissionAdminResponse(
+        status: false,
+        message: e.toString(),
+      );
+    }
+  }
+
+  Future<BaseResponse> approve(
+      Map<String, dynamic> requestData, String token) async {
+    print('POST: approve absence');
+
+    String target = '${ApiConstant.baseApi}/absence/approve';
+    print('json" ${jsonEncode(json.encode(requestData))}');
+
+    try {
+      final response = await http
+          .post(
+            Uri.parse(target),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token'
+            },
+            body: json.encode(requestData),
+          )
+          .timeout(Duration(seconds: ApiConstant.timeout));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        return BaseResponse.fromJson(responseData);
+      } else {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        return BaseResponse(
+          status: false,
+          message: responseData['message'] ?? 'Unable to fetch data',
+        );
+      }
+    } on TimeoutException catch (e) {
+      return BaseResponse(
+        status: false,
+        message: 'Connection timed out',
+      );
+    } on SocketException catch (e) {
+      return BaseResponse(
+        status: false,
+        message: e.message,
+      );
+    } on Exception catch (e) {
+      return BaseResponse(
+        status: false,
+        message: 'Failed to connect to server',
+      );
+    } catch (e) {
+      return BaseResponse(
+        status: false,
+        message: e.toString(),
+      );
+    }
+  }
+
+  Future<BaseResponse> reject(
+      Map<String, dynamic> requestData, String token) async {
+    print('POST: reject absence');
+
+    String target = '${ApiConstant.baseApi}/absence/reject';
+    print('json" ${jsonEncode(json.encode(requestData))}');
+
+    try {
+      final response = await http
+          .post(
+            Uri.parse(target),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token'
+            },
+            body: json.encode(requestData),
+          )
+          .timeout(Duration(seconds: ApiConstant.timeout));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        return BaseResponse.fromJson(responseData);
+      } else {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        return BaseResponse(
+          status: false,
+          message: responseData['message'] ?? 'Unable to fetch data',
+        );
+      }
+    } on TimeoutException catch (e) {
+      return BaseResponse(
+        status: false,
+        message: 'Connection timed out',
+      );
+    } on SocketException catch (e) {
+      return BaseResponse(
+        status: false,
+        message: e.message,
+      );
+    } on Exception catch (e) {
+      return BaseResponse(
+        status: false,
+        message: 'Failed to connect to server',
+      );
+    } catch (e) {
+      return BaseResponse(
+        status: false,
+        message: e.toString(),
+      );
+    }
+  }
+
   Future<CancelResponse> cancel(
       Map<String, dynamic> requestData, String token) async {
     print('POST: cancel');
 
     String target = '${ApiConstant.baseApi}/absence/cancel';
-    print('target: $target');
     print('json" ${jsonEncode(json.encode(requestData))}');
 
     try {

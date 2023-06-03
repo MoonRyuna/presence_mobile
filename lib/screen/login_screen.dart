@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 // import 'package:flutter_statusbarcolor_ns/flutter_statusbarcolor_ns.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
+import 'package:presence_alpha/model/office_config_model.dart';
 import 'package:presence_alpha/model/user_auth_model.dart';
 import 'package:presence_alpha/payload/response/auth_response.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
@@ -35,10 +36,13 @@ class _LoginScreenState extends State<LoginScreen> {
   late String imei = "";
   bool _isObscure = true;
 
+  String? officeName;
+
   @override
   void initState() {
     super.initState();
     setImei();
+    getConfig();
   }
 
   @override
@@ -65,6 +69,20 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       imei = gImei;
     });
+  }
+
+  Future<void> getConfig() async {
+    final Map<String, dynamic>? officeJson =
+        await AppStorage.localStorage.getItem('ocp');
+
+    if (officeJson != null) {
+      OfficeConfigModel ocp = OfficeConfigModel.fromJson(officeJson);
+      if (ocp.name != null) {
+        setState(() {
+          officeName = ocp.name;
+        });
+      }
+    }
   }
 
   void onLogin() async {
@@ -223,9 +241,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const Padding(padding: EdgeInsets.all(3)),
-                    const Text(
-                      "PT. Digital Amore Kriyanesia",
-                      style: TextStyle(
+                    Text(
+                      (officeName ?? "PT. Digital Amore Kriyanesia"),
+                      style: const TextStyle(
                         fontSize: 18,
                         color: Colors.white,
                       ),

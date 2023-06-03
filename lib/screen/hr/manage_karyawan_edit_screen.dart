@@ -9,7 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
 import 'package:presence_alpha/model/user_model.dart';
-import 'package:presence_alpha/payload/response/create_user_response.dart';
+import 'package:presence_alpha/payload/response/update_profile_response.dart';
 import 'package:presence_alpha/payload/response/upload_response.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
@@ -19,30 +19,30 @@ import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:provider/provider.dart';
 
-class ManageKaryawanAddScreen extends StatefulWidget {
-  const ManageKaryawanAddScreen({super.key});
+class ManageKaryawanEditScreen extends StatefulWidget {
+  const ManageKaryawanEditScreen({super.key, required this.user});
+
+  final UserModel user;
 
   @override
-  State<ManageKaryawanAddScreen> createState() =>
-      _ManageKaryawanAddScreenState();
+  State<ManageKaryawanEditScreen> createState() =>
+      _ManageKaryawanEditScreenState();
 }
 
-class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
+class _ManageKaryawanEditScreenState extends State<ManageKaryawanEditScreen> {
   final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _passwordConfirmationController =
-      TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _passwordChangeController =
+      TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _startedWorkAtController =
       TextEditingController();
 
   bool _canWfh = false;
-  bool _isObscure = true;
-  bool _isObscureConfirmation = true;
+  String? _userId;
   File? _image;
   String? _imagePath;
   String? _accountType;
@@ -55,13 +55,34 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
   String? _addressErrorText;
   String? _descriptionErrorText;
   String? _accountTypeErrorText;
+  String? _passwordChangeErrorText;
   String? _startedWorkAtErrorText;
-  String? _passwordErrorText;
-  String? _passwordConfirmationErrorText;
+
+  @override
+  void initState() {
+    super.initState();
+    _userId = widget.user.id ?? "";
+    _usernameController.text = widget.user.username ?? '';
+    _emailController.text = widget.user.email ?? '';
+    _phoneNumberController.text = widget.user.phoneNumber ?? '';
+    _nameController.text = widget.user.name ?? '';
+    _addressController.text = widget.user.address ?? '';
+    _descriptionController.text = widget.user.description ?? '';
+    _startedWorkAtController.text = DateFormat("dd-MM-yyyy").format(
+      DateTime.parse(widget.user.startedWorkAt ?? ""),
+    );
+
+    _canWfh = widget.user.canWfh ?? false;
+    _accountType = widget.user.accountType ?? '';
+    _selectedDate = DateTime.parse(widget.user.startedWorkAt ?? "");
+
+    _imagePath = widget.user.profilePicture;
+  }
 
   @override
   void dispose() {
     _usernameController.dispose();
+    _passwordChangeController.dispose();
     _emailController.dispose();
     _phoneNumberController.dispose();
     _nameController.dispose();
@@ -145,7 +166,105 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
     }
   }
 
-  Future<void> onTambahKaryawan() async {
+  Future<void> onDeleteUser() async {
+    LoadingUtility.show(null);
+
+    final user = Provider.of<UserProvider>(context, listen: false).user;
+    final token = Provider.of<TokenProvider>(context, listen: false).token;
+
+    if (!mounted) return;
+    if (user == null || user.id == null) {
+      LoadingUtility.hide();
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/login',
+        (route) => false,
+      );
+      return;
+    }
+
+    try {
+      final requestData = {
+        "deleted_by": user.id,
+      };
+
+      final response =
+          await UserService().deleteUser(requestData, _userId ?? "", token);
+      if (!mounted) return;
+
+      if (response.status != true || response.data == null) {
+        LoadingUtility.hide();
+        AmessageUtility.show(
+          context,
+          "Gagal",
+          response.message!,
+          TipType.ERROR,
+        );
+        return;
+      }
+
+      LoadingUtility.hide();
+      AmessageUtility.show(
+        context,
+        "Berhasil",
+        response.message!,
+        TipType.COMPLETE,
+      );
+    } catch (e) {
+      LoadingUtility.hide();
+      AmessageUtility.show(
+        context,
+        "Gagal",
+        e.toString(),
+        TipType.ERROR,
+      );
+    }
+  }
+
+  Future<void> onResetImei() async {
+    LoadingUtility.show(null);
+
+    final token = Provider.of<TokenProvider>(context, listen: false).token;
+
+    if (!mounted) return;
+    try {
+      final requestData = {
+        "user_id": _userId!,
+      };
+
+      final response = await UserService().resetImei(requestData, token);
+      if (!mounted) return;
+
+      if (response.status != true || response.data == null) {
+        LoadingUtility.hide();
+        AmessageUtility.show(
+          context,
+          "Gagal",
+          response.message!,
+          TipType.ERROR,
+        );
+        return;
+      }
+
+      LoadingUtility.hide();
+      AmessageUtility.show(
+        context,
+        "Berhasil",
+        response.message!,
+        TipType.COMPLETE,
+      );
+    } catch (e) {
+      LoadingUtility.hide();
+      AmessageUtility.show(
+        context,
+        "Gagal",
+        e.toString(),
+        TipType.ERROR,
+      );
+    }
+  }
+
+  Future<void> onUbahData() async {
     LoadingUtility.show(null);
 
     int errorCount = 0;
@@ -154,7 +273,6 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
     final token = Provider.of<TokenProvider>(context, listen: false).token;
 
     if (user == null || user.id == null) {
-      if (!mounted) return;
       LoadingUtility.hide();
       Navigator.pushNamedAndRemoveUntil(
         context,
@@ -166,27 +284,24 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
 
     setState(() {
       _usernameErrorText = null;
+      _passwordChangeErrorText = null;
       _emailErrorText = null;
       _phoneNumberErrorText = null;
       _nameErrorText = null;
       _addressErrorText = null;
       _descriptionErrorText = null;
-      _accountTypeErrorText = null;
-      _startedWorkAtErrorText = null;
-      _passwordErrorText = null;
     });
 
     final username = _usernameController.text.trim();
     final email = _emailController.text.trim();
     final phoneNumber = _phoneNumberController.text.trim();
     final name = _nameController.text.trim();
+    final passwordChange = _passwordChangeController.text.trim();
     final address = _addressController.text.trim();
     final accountType = _accountType?.trim() ?? "karyawan";
     final description = _descriptionController.text.trim();
-    final password = _passwordController.text.trim();
-    final passwordConfirmation = _passwordConfirmationController.text.trim();
     final startedWorkAt = _startedWorkAtController.text.trim();
-    const deviceTracker = true;
+    final deviceTracker = widget.user.deviceTracker ?? true;
 
     if (username.isEmpty) {
       setState(() {
@@ -244,27 +359,6 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
       errorCount++;
     }
 
-    if (password.isEmpty) {
-      setState(() {
-        _passwordErrorText = "Password tidak boleh kosong";
-      });
-      errorCount++;
-    }
-
-    if (passwordConfirmation.isEmpty) {
-      setState(() {
-        _passwordErrorText = "Konfirmasi password tidak boleh kosong";
-      });
-      errorCount++;
-    }
-
-    if (password != passwordConfirmation) {
-      setState(() {
-        _passwordErrorText = "Password dan konfirmasi password tidak sama";
-      });
-      errorCount++;
-    }
-
     if (errorCount > 0) {
       LoadingUtility.hide();
       return;
@@ -273,8 +367,6 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
     try {
       final requestData = {
         "username": username,
-        "password": password,
-        "password_confirmation": passwordConfirmation,
         "email": email,
         "phone_number": phoneNumber,
         "account_type": accountType,
@@ -283,13 +375,18 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
         "description": description,
         "started_work_at": startedWorkAt,
         "device_tracker": deviceTracker,
-        "created_by": user.id,
+        "updated_by": user.id,
         "can_wfh": _canWfh,
-        "profile_picture": _imagePath ?? "images/default.png",
+        "profile_picture": _imagePath,
       };
 
-      CreateUserResponse response =
-          await UserService().createUser(requestData, token);
+      // BUG: password change not working, check the api?
+      if (passwordChange.isNotEmpty) {
+        requestData["password"] = passwordChange;
+      }
+
+      UpdateProfileResponse response =
+          await UserService().updateProfile(requestData, _userId ?? "", token);
       if (!mounted) return;
 
       if (response.status != true || response.data == null) {
@@ -342,7 +439,7 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Tambah Karyawan"),
+        title: const Text("Edit Karyawan"),
         backgroundColor: ColorConstant.lightPrimary,
       ),
       body: SafeArea(
@@ -406,60 +503,14 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
                     ),
                     const SizedBox(height: 20),
                     TextField(
-                      controller: _passwordController,
-                      obscureText: _isObscure,
+                      controller: _passwordChangeController,
                       decoration: InputDecoration(
-                        labelText: 'Password',
-                        errorText: _passwordErrorText,
+                        labelText: 'Change Password',
+                        errorText: _passwordChangeErrorText,
+                        helperText: "Kosongkan jika tidak ingin mengubah",
                         errorStyle: const TextStyle(color: Colors.red),
                         labelStyle: const TextStyle(
                           color: Colors.grey,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isObscure
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isObscure = !_isObscure;
-                            });
-                          },
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _passwordConfirmationController,
-                      obscureText: _isObscureConfirmation,
-                      decoration: InputDecoration(
-                        labelText: 'Password Confirmation',
-                        errorText: _passwordConfirmationErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isObscureConfirmation
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isObscureConfirmation = !_isObscureConfirmation;
-                            });
-                          },
                         ),
                         border: OutlineInputBorder(
                           borderSide: BorderSide(
@@ -606,9 +657,10 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
                       decoration: InputDecoration(
                         labelText: 'Started Work At',
                         errorText: _startedWorkAtErrorText,
-                        prefixIcon: const Icon(Icons.calendar_month),
                         errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(color: Colors.grey),
+                        labelStyle: const TextStyle(
+                          color: Colors.grey,
+                        ),
                         border: OutlineInputBorder(
                           borderSide: BorderSide(
                             width: 2,
@@ -643,10 +695,10 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
                         ),
                       ),
                       onPressed: () async {
-                        await onTambahKaryawan();
+                        await onUbahData();
                       },
                       child: const Text(
-                        'Tambah Karyawan',
+                        'Update Data',
                         style: TextStyle(fontSize: 20),
                       ),
                     ),

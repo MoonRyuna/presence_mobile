@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/provider/office_config_provide.dart';
+import 'package:presence_alpha/screen/hr/manage_absence_screen.dart';
 import 'package:presence_alpha/screen/hr/manage_karyawan_screen.dart';
 import 'package:presence_alpha/screen/hr/manage_overtime_screen.dart';
-import 'package:presence_alpha/screen/hr/manage_presence_screen.dart';
 import 'package:presence_alpha/screen/hr/ubah_pengaturan_kantor_screen.dart';
 import 'package:presence_alpha/screen/profile_screen.dart';
 import 'package:provider/provider.dart';
@@ -84,7 +84,7 @@ Widget profileActions(BuildContext context) {
           child: ListTile(
             leading: const Icon(Icons.assignment),
             title: const Text(
-              'Kehadiran',
+              'Pesetujuan Izin',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             trailing: const Icon(Icons.chevron_right),
@@ -92,7 +92,7 @@ Widget profileActions(BuildContext context) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const ManagePresenceScreen(),
+                  builder: (context) => const ManageAbsenceScreen(),
                 ),
               );
             },
@@ -102,10 +102,6 @@ Widget profileActions(BuildContext context) {
       Container(
         decoration: BoxDecoration(
           border: Border(
-            top: BorderSide(
-              color: Colors.grey.shade300,
-              width: 0.5,
-            ),
             bottom: BorderSide(
               color: Colors.grey.shade300,
               width: 0.5,
@@ -117,7 +113,7 @@ Widget profileActions(BuildContext context) {
           child: ListTile(
             leading: const Icon(Icons.access_time),
             title: const Text(
-              'Lembur',
+              'Persetujuan Lembur',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             trailing: const Icon(Icons.chevron_right),
@@ -134,10 +130,6 @@ Widget profileActions(BuildContext context) {
       Container(
         decoration: BoxDecoration(
           border: Border(
-            top: BorderSide(
-              color: Colors.grey.shade300,
-              width: 0.5,
-            ),
             bottom: BorderSide(
               color: Colors.grey.shade300,
               width: 0.5,
@@ -149,7 +141,7 @@ Widget profileActions(BuildContext context) {
           child: ListTile(
             leading: const Icon(Icons.group),
             title: const Text(
-              'Manage Karyawan',
+              'Karyawan',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             trailing: const Icon(Icons.chevron_right),

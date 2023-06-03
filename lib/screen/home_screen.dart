@@ -18,6 +18,7 @@ import 'package:presence_alpha/screen/absence_screen.dart';
 import 'package:presence_alpha/screen/overtime_screen.dart';
 import 'package:presence_alpha/screen/presence_screen.dart';
 import 'package:presence_alpha/service/user_service.dart';
+import 'package:presence_alpha/storage/app_storage.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
 import 'package:presence_alpha/utility/common_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
@@ -113,6 +114,11 @@ class _HomeScreenState extends State<HomeScreen> {
         dp.lembur = response.data!.lembur;
         dp.presensi = response.data!.presensi;
         ocp.officeConfig = response.data!.officeConfig;
+
+        await AppStorage.localStorage.setItem(
+          "ocp",
+          response.data!.officeConfig,
+        );
 
         double latOffice = -7.01147799042147;
         double lngOffice = 107.55234770202203;
@@ -411,7 +417,7 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         gridButton(
           "Kehadiran",
-          Icons.supervised_user_circle,
+          Icons.work_outline,
           () => {
             Navigator.push(
               context,
@@ -421,7 +427,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         gridButton(
           "Izin",
-          Icons.assignment,
+          Icons.assignment_outlined,
           () => {
             Navigator.push(
               context,
@@ -431,7 +437,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         gridButton(
           "Lembur",
-          Icons.timer,
+          Icons.access_time,
           () {
             Navigator.push(
               context,
@@ -441,7 +447,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         gridButton(
           "Rekapan",
-          Icons.data_thresholding_rounded,
+          Icons.data_thresholding_outlined,
           () {
             Navigator.push(
               context,
@@ -469,7 +475,7 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             // Icon(icon, size: 28, color: Colors.white),
-            Icon(icon, size: 28, color: Colors.grey),
+            Icon(icon, size: 28, color: Colors.grey.shade700),
             const SizedBox(height: 8),
             Text(
               text,

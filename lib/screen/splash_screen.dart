@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
+import 'package:presence_alpha/model/office_config_model.dart';
 import 'package:presence_alpha/model/user_auth_model.dart';
 import 'package:presence_alpha/payload/response/auth_response.dart';
 import 'package:presence_alpha/provider/office_config_provide.dart';
@@ -23,6 +24,8 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  String? pathLogo;
+
   @override
   void initState() {
     super.initState();
@@ -32,6 +35,18 @@ class _SplashScreenState extends State<SplashScreen> {
   startSplashScreen() async {
     final Map<String, dynamic>? usrJson =
         await AppStorage.localStorage.getItem('usr');
+
+    final Map<String, dynamic>? officeJson =
+        await AppStorage.localStorage.getItem('ocp');
+
+    if (officeJson != null) {
+      OfficeConfigModel ocp = OfficeConfigModel.fromJson(officeJson);
+      if (ocp.logo != null) {
+        setState(() {
+          pathLogo = ocp.logo;
+        });
+      }
+    }
 
     if (usrJson != null) {
       UserAuthModel userAuthModel = UserAuthModel.fromJson(usrJson);
@@ -93,6 +108,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 .pushReplacement(MaterialPageRoute(builder: (_) {
               return const OfflineScreen();
             }));
+            return;
           });
         } else {
           Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) {
@@ -130,11 +146,7 @@ class _SplashScreenState extends State<SplashScreen> {
         children: [
           Expanded(
             child: Center(
-              child: Consumer<OfficeConfigProvider>(
-                builder: (context, officeConfig, _) => officeLogo(
-                  officeConfig.officeConfig?.logo,
-                ),
-              ),
+              child: officeLogo(),
             ),
           ),
           Container(
@@ -158,20 +170,22 @@ class _SplashScreenState extends State<SplashScreen> {
       ),
     );
   }
-}
 
-Widget officeLogo(String? imagePath) {
-  if (imagePath == null) {
-    return Image.asset(
-      'assets/images/default-logo.png',
+  Widget officeLogo() {
+    print("logo $pathLogo");
+
+    if (pathLogo == null) {
+      return Image.asset(
+        'assets/images/default-logo.png',
+        width: 250,
+      );
+    }
+
+    String profilePictureURI = "${ApiConstant.publicUrl}/$pathLogo";
+
+    return Image.network(
+      profilePictureURI,
       width: 250,
     );
   }
-
-  String profilePictureURI = "${ApiConstant.publicUrl}/$imagePath";
-
-  return Image.network(
-    profilePictureURI,
-    width: 250,
-  );
 }

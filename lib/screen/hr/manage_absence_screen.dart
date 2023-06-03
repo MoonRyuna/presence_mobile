@@ -9,25 +9,25 @@ import 'package:presence_alpha/model/user_model.dart';
 import 'package:presence_alpha/payload/response/absence/list_submission_admin_response.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
-import 'package:presence_alpha/screen/overtime_detail_screen.dart';
-import 'package:presence_alpha/service/overtime_service.dart';
+import 'package:presence_alpha/screen/absence_detail_screen.dart';
+import 'package:presence_alpha/service/absence_service.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:presence_alpha/widget/bs_badge.dart';
 import 'package:provider/provider.dart';
 
-class ManageOvertimeScreen extends StatefulWidget {
-  const ManageOvertimeScreen({super.key});
+class ManageAbsenceScreen extends StatefulWidget {
+  const ManageAbsenceScreen({super.key});
 
   @override
-  State<ManageOvertimeScreen> createState() => _ManageOvertimeScreenState();
+  State<ManageAbsenceScreen> createState() => _ManageAbsenceScreenState();
 }
 
-class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
+class _ManageAbsenceScreenState extends State<ManageAbsenceScreen> {
   late DateTime _startDate;
   late DateTime _endDate;
-  List<SubmissionAdminModel> overtimes = List<SubmissionAdminModel>.empty();
+  List<SubmissionAdminModel> absences = List<SubmissionAdminModel>.empty();
 
   int limit = 10;
   int page = 1;
@@ -45,8 +45,8 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
     final DateTime lastDate = currentDate.add(const Duration(days: 365 * 5));
     final ThemeData theme = ThemeData.light().copyWith(
       colorScheme: const ColorScheme.light(
-        primary: Color.fromRGBO(183, 28, 28, 1),
-        onPrimary: Colors.white,
+        primary: Color.fromRGBO(183, 28, 28, 1), // ubah warna header
+        onPrimary: Colors.white, // ubah warna teks header
       ),
     );
 
@@ -67,7 +67,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
       setState(() {
         _startDate = pickedDateRange.start;
         _endDate = pickedDateRange.end;
-        overtimes = List<SubmissionAdminModel>.empty();
+        absences = List<SubmissionAdminModel>.empty();
         page = 1;
         firstLoad = true;
         endOfList = false;
@@ -78,7 +78,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
 
   void _onRefresh() async {
     setState(() {
-      overtimes = List<SubmissionAdminModel>.empty();
+      absences = List<SubmissionAdminModel>.empty();
       page = 1;
       firstLoad = true;
       endOfList = false;
@@ -110,13 +110,13 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
       });
 
       ListSubmissionAdminResponse response =
-          await OvertimeService().listSubmissionAdmin(queryParams, token);
+          await AbsenceService().listSubmissionAdmin(queryParams, token);
       if (!mounted) return;
 
       if (response.status == true) {
         setState(() {
           if (response.data?.result != null) {
-            overtimes = [...overtimes, ...?response.data?.result];
+            absences = [...absences, ...?response.data?.result];
           }
 
           if (response.data!.nextPage == null || response.data!.nextPage == 0) {
@@ -143,13 +143,13 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
         firstLoadRunning = true;
       });
       ListSubmissionAdminResponse response =
-          await OvertimeService().listSubmissionAdmin(queryParams, token);
+          await AbsenceService().listSubmissionAdmin(queryParams, token);
       if (!mounted) return;
 
       if (response.status == true) {
         setState(() {
           if (response.data?.result != null) {
-            overtimes = response.data!.result;
+            absences = response.data!.result;
           }
 
           if (response.data!.nextPage == null || response.data!.nextPage == 0) {
@@ -179,8 +179,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
         return AlertDialog(
           title: const Text("Konfirmasi"),
           content: const Text(
-            "Apakah anda yakin ingin menyetujui lembur ini?",
-          ),
+              "Apakah anda yakin ingin menyetujui pengajuan absensi ini?"),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -226,7 +225,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
         "authorization_by": user.id
       };
 
-      final response = await OvertimeService().approve(queryParams, token);
+      final response = await AbsenceService().approve(queryParams, token);
       if (!mounted) return;
 
       if (response.status == true) {
@@ -264,8 +263,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
         return AlertDialog(
           title: const Text("Konfirmasi"),
           content: const Text(
-            "Apakah anda yakin ingin menolak lembur ini?",
-          ),
+              "Apakah anda yakin ingin menolak pengajuan absensi ini?"),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -311,7 +309,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
         "authorization_by": user.id
       };
 
-      final response = await OvertimeService().reject(queryParams, token);
+      final response = await AbsenceService().reject(queryParams, token);
       if (!mounted) return;
 
       if (response.status == true) {
@@ -356,7 +354,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Persetujuan Lembur'),
+        title: const Text('Persetujuan Izin'),
         centerTitle: true,
         backgroundColor: ColorConstant.lightPrimary,
         elevation: 0,
@@ -399,31 +397,31 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
                       child: CircularProgressIndicator(),
                     )
                   : ConditionalBuilder(
-                      condition: overtimes.isNotEmpty,
+                      condition: absences.isNotEmpty,
                       builder: (context) => ListView.builder(
                         padding: const EdgeInsets.only(top: 7.0),
                         controller: _controller,
-                        itemCount: overtimes.length,
+                        itemCount: absences.length,
                         itemBuilder: (BuildContext context, int index) {
-                          final overtime = overtimes[index];
+                          final absence = absences[index];
                           final submissionStatusText = {
                             "0": "Pending",
                             "1": "Approved",
                             "2": "Rejected",
                             "4": "Expired",
-                          }[overtime.submissionStatus];
+                          }[absence.submissionStatus];
 
                           return Padding(
                             padding: const EdgeInsets.symmetric(
                                 vertical: 7, horizontal: 0),
                             child: Slidable(
-                              enabled: overtime.submissionStatus == "0",
+                              enabled: absence.submissionStatus == "0",
                               startActionPane: ActionPane(
                                 motion: const BehindMotion(),
                                 children: [
                                   SlidableAction(
                                     onPressed: (context) async {
-                                      await _onApprove(overtime.id!);
+                                      await _onApprove(absence.id!);
                                     },
                                     backgroundColor: Colors.green,
                                     foregroundColor: Colors.white,
@@ -432,7 +430,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
                                   ),
                                   SlidableAction(
                                     onPressed: (context) async {
-                                      await _onReject(overtime.id!);
+                                      await _onReject(absence.id!);
                                     },
                                     backgroundColor: Colors.red,
                                     foregroundColor: Colors.white,
@@ -455,8 +453,8 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
-                                            OvertimeDetailScreen(
-                                          id: overtime.submissionRefId
+                                            AbsenceDetailScreen(
+                                          id: absence.submissionRefId
                                               .toString(),
                                         ),
                                       ),
@@ -466,7 +464,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
                                     }
                                   },
                                   title: Text(
-                                    overtime.name!,
+                                    absence.name!,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -477,18 +475,24 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
                                     children: [
                                       const SizedBox(height: 2.0),
                                       Text(
-                                        overtime.description != null &&
-                                                overtime.description!.length >
-                                                    35
-                                            ? '${overtime.description!.substring(0, 35)}...'
-                                            : overtime.description ?? '',
+                                        absence.description != null &&
+                                                absence.description!.length > 35
+                                            ? '${absence.description!.substring(0, 35)}...'
+                                            : absence.description ?? '',
                                         style: const TextStyle(fontSize: 16.0),
                                       ),
                                       const SizedBox(height: 6.0),
                                       Text(
+                                        absence.absenceType!,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.red.withOpacity(0.8),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6.0),
+                                      Text(
                                         CalendarUtility.formatDate(
-                                            DateTime.parse(
-                                                overtime.overtimeAt!)),
+                                            DateTime.parse(absence.absenceAt!)),
                                         style: TextStyle(
                                           color: Colors.grey.shade900,
                                           fontWeight: FontWeight.w500,
@@ -496,7 +500,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
                                       ),
                                       const SizedBox(height: 4.0),
                                       Text(
-                                        "Tanggal Pengajuan: ${CalendarUtility.formatDate(DateTime.parse(overtime.submissionAt!))}",
+                                        "Tanggal Pengajuan: ${CalendarUtility.formatDate(DateTime.parse(absence.submissionAt!))}",
                                         style: TextStyle(
                                           color: Colors.grey.shade900,
                                           fontWeight: FontWeight.w500,
@@ -506,24 +510,24 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
                                       Row(
                                         children: [
                                           BsBadge(
-                                            text: (overtime.submissionType ==
-                                                        "new"
-                                                    ? "pengajuan"
-                                                    : "pembatalan")
-                                                .toUpperCase(),
+                                            text:
+                                                (absence.submissionType == "new"
+                                                        ? "pengajuan"
+                                                        : "pembatalan")
+                                                    .toUpperCase(),
                                             textStyle: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: Colors.white,
                                               fontSize: 11,
                                             ),
-                                            backgroundColor: (overtime
-                                                        .submissionType! ==
-                                                    "new"
-                                                ? Colors.green
-                                                : overtime.submissionType! ==
-                                                        "cancel"
-                                                    ? Colors.red
-                                                    : Colors.grey),
+                                            backgroundColor:
+                                                (absence.submissionType! ==
+                                                        "new"
+                                                    ? Colors.green
+                                                    : absence.submissionType! ==
+                                                            "cancel"
+                                                        ? Colors.red
+                                                        : Colors.grey),
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 8.0,
                                               vertical: 4.0,
@@ -538,16 +542,16 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
                                               color: Colors.white,
                                               fontSize: 11,
                                             ),
-                                            backgroundColor: (overtime
+                                            backgroundColor: (absence
                                                         .submissionStatus! ==
                                                     "0"
                                                 ? Colors.blue
-                                                : overtime.submissionStatus! ==
+                                                : absence.submissionStatus! ==
                                                         "1"
                                                     ? Colors.green
-                                                    : (overtime.submissionStatus! ==
+                                                    : (absence.submissionStatus! ==
                                                                 "2" ||
-                                                            overtime.submissionStatus! ==
+                                                            absence.submissionStatus! ==
                                                                 "3")
                                                         ? Colors.red
                                                         : Colors.grey),

@@ -16,6 +16,7 @@ import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
 import 'package:presence_alpha/service/office_config_service.dart';
 import 'package:presence_alpha/service/upload_service.dart';
+import 'package:presence_alpha/storage/app_storage.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:provider/provider.dart';
@@ -373,6 +374,11 @@ class _UbahPengaturanKantorScreenState
           Provider.of<OfficeConfigProvider>(context, listen: false);
 
       up.officeConfig = response.data;
+
+      await AppStorage.localStorage.setItem(
+        "ocp",
+        response.data,
+      );
     } catch (e) {
       LoadingUtility.hide();
       AmessageUtility.show(
