@@ -36,7 +36,32 @@ class CalendarUtility {
   }
 
   static String getTime(DateTime date) {
-    final formatter = DateFormat('HH:mm:ss', 'id_ID');
+    final formatter = DateFormat('HH:mm', 'id_ID');
     return formatter.format(date);
+  }
+
+  static String getIntervalDate(DateTime start, DateTime end) {
+    Duration duration = end.difference(start);
+    int minutes = duration.inMinutes;
+    int hours = duration.inHours;
+
+    // Mengembalikan selisih waktu dalam menit dan jam
+    if (minutes < 60) {
+      return '$minutes menit';
+    } else {
+      return '$hours jam';
+    }
+  }
+
+  static String formatOvertimeInterval(
+      String? overtimeStartAt, String? overtimeEndAt) {
+    if (overtimeStartAt != null && overtimeEndAt != null) {
+      DateTime start = DateTime.parse(overtimeStartAt).toLocal();
+      DateTime end = DateTime.parse(overtimeEndAt).toLocal();
+      String interval = getIntervalDate(start, end);
+      return "($interval)";
+    } else {
+      return "";
+    }
   }
 }

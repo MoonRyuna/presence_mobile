@@ -274,7 +274,8 @@ class _PresenceScreenState extends State<PresenceScreen> {
                                     const SizedBox(height: 6.0),
                                     Text(
                                       CalendarUtility.formatDate(
-                                          DateTime.parse(presence.checkIn!)),
+                                          DateTime.parse(presence.checkIn!)
+                                              .toLocal()),
                                       style: TextStyle(
                                         color: Colors.grey.shade900,
                                         fontWeight: FontWeight.w500,
@@ -290,7 +291,9 @@ class _PresenceScreenState extends State<PresenceScreen> {
                                           size: 15,
                                         ),
                                         const SizedBox(width: 4.0),
-                                        Text(presence.type!)
+                                        Text(presence.type! == "wfo"
+                                            ? "wfo (kantor)"
+                                            : "wfh (jarak jauh)")
                                       ],
                                     ),
                                     const SizedBox(height: 4.0),
@@ -298,7 +301,7 @@ class _PresenceScreenState extends State<PresenceScreen> {
                                       children: [
                                         BsBadge(
                                           text:
-                                              "IN ${presence.checkIn != null ? CalendarUtility.getTime(DateTime.parse(presence.checkIn!)) : '-'}",
+                                              "In ${presence.checkIn != null ? CalendarUtility.getTime(DateTime.parse(presence.checkIn!).toLocal()) : '?'}",
                                           textStyle: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             color: Colors.white,
@@ -313,13 +316,13 @@ class _PresenceScreenState extends State<PresenceScreen> {
                                         const SizedBox(width: 4.0),
                                         BsBadge(
                                           text:
-                                              "OUT ${presence.checkOut != null ? CalendarUtility.getTime(DateTime.parse(presence.checkOut!)) : '-'}",
+                                              "Out ${presence.checkOut != null ? CalendarUtility.getTime(DateTime.parse(presence.checkOut!).toLocal()) : '?'}",
                                           textStyle: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             color: Colors.white,
                                             fontSize: 11,
                                           ),
-                                          backgroundColor: (Colors.red),
+                                          backgroundColor: (Colors.green),
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 8.0,
                                             vertical: 4.0,
@@ -329,7 +332,7 @@ class _PresenceScreenState extends State<PresenceScreen> {
                                           const SizedBox(width: 4.0),
                                         if (presence.late == true)
                                           const BsBadge(
-                                            text: "TELAT",
+                                            text: "Telat",
                                             textStyle: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: Colors.white,
@@ -345,7 +348,7 @@ class _PresenceScreenState extends State<PresenceScreen> {
                                           const SizedBox(width: 4.0),
                                         if (presence.overtime == true)
                                           const BsBadge(
-                                            text: "LEMBUR",
+                                            text: "Lembur",
                                             textStyle: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: Colors.white,

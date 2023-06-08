@@ -1,6 +1,6 @@
 class ApiConstant {
   // static String baseUrl = "http://149.28.151.15:3000";
-  static String baseUrl = "http://192.168.1.4:3000";
+  static String baseUrl = "http://192.168.1.6:3000";
   static String path = "api/v1";
   static String baseApi = '$baseUrl/$path';
   static int timeout = 10;

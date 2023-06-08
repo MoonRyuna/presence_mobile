@@ -69,12 +69,12 @@ class _ManageKaryawanEditScreenState extends State<ManageKaryawanEditScreen> {
     _addressController.text = widget.user.address ?? '';
     _descriptionController.text = widget.user.description ?? '';
     _startedWorkAtController.text = DateFormat("dd-MM-yyyy").format(
-      DateTime.parse(widget.user.startedWorkAt ?? ""),
+      DateTime.parse(widget.user.startedWorkAt ?? "").toLocal(),
     );
 
     _canWfh = widget.user.canWfh ?? false;
     _accountType = widget.user.accountType ?? '';
-    _selectedDate = DateTime.parse(widget.user.startedWorkAt ?? "");
+    _selectedDate = DateTime.parse(widget.user.startedWorkAt ?? "").toLocal();
 
     _imagePath = widget.user.profilePicture;
   }

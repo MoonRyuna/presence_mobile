@@ -163,7 +163,8 @@ class _AbsenceDetailScreenState extends State<AbsenceDetailScreen> {
                             const SizedBox(height: 4.0),
                             Text(
                               CalendarUtility.formatDate(
-                                  DateTime.parse(absenceData!.absenceAt!)),
+                                  DateTime.parse(absenceData!.absenceAt!)
+                                      .toLocal()),
                               style: TextStyle(
                                 color: Colors.grey.shade900,
                                 fontWeight: FontWeight.w500,
@@ -198,7 +199,7 @@ class _AbsenceDetailScreenState extends State<AbsenceDetailScreen> {
                               height: 10,
                             ),
                             const Text(
-                              "Bukti Harus Izin Dari Atasan/PIC",
+                              "Bukti Izin",
                               style: TextStyle(
                                 fontSize: 14.0,
                                 fontWeight: FontWeight.bold,
@@ -280,7 +281,7 @@ class _AbsenceDetailScreenState extends State<AbsenceDetailScreen> {
                                           ),
                                           const SizedBox(height: 8),
                                           Text(
-                                              'Tanggal Pengajuan: ${CalendarUtility.formatDate(DateTime.parse(submission.submissionAt!))}'),
+                                              'Tanggal Pengajuan: ${CalendarUtility.formatDate(DateTime.parse(submission.submissionAt!).toLocal())}'),
                                           Text(
                                               'Status: ${submissionStatusText[submission.submissionStatus]!}'),
                                           const SizedBox(height: 2),
@@ -288,7 +289,7 @@ class _AbsenceDetailScreenState extends State<AbsenceDetailScreen> {
                                           if (submission.authorizationAt !=
                                               null)
                                             Text(
-                                                'Disetujui pada: ${CalendarUtility.formatDate(DateTime.parse(submission.authorizationAt!))}'),
+                                                'Disetujui pada: ${CalendarUtility.formatDate(DateTime.parse(submission.authorizationAt!).toLocal())}'),
                                           if (submission.authorizer?.name !=
                                               null)
                                             Text(

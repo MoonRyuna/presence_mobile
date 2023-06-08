@@ -432,7 +432,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
             AmessageUtility.show(
               context,
               "Info",
-              "Anda Diluar Kantor",
+              "Anda berada diluar area kantor",
               TipType.WARN,
             );
             return;

@@ -60,6 +60,7 @@ dependencies:
   timeline_tile: ^2.0.0
   dropdown_search: ^5.0.6
   flutter_slidable: ^3.0.0
+  webview_flutter: ^3.0.0
 
 dev_dependencies:
   flutter_test:

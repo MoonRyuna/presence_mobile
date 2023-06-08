@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
+import 'package:presence_alpha/model/location_model.dart';
 import 'package:presence_alpha/model/presence_model.dart';
 import 'package:presence_alpha/model/submission_model.dart';
 import 'package:presence_alpha/payload/response/presence/detail_response.dart';
@@ -10,6 +13,7 @@ import 'package:presence_alpha/service/presence_service.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
 import 'package:presence_alpha/widget/bs_badge.dart';
+import 'package:presence_alpha/widget/my_map_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 
@@ -25,6 +29,10 @@ class PresenceDetailScreen extends StatefulWidget {
 class _PresenceDetailScreenState extends State<PresenceDetailScreen> {
   PresenceModel? presenceData;
   bool loading = true;
+  LocationModel positionCheckIn =
+      LocationModel(address: "", lat: "0", lng: "0");
+  LocationModel positionCheckOut =
+      LocationModel(address: "", lat: "0", lng: "0");
 
   @override
   void initState() {
@@ -51,6 +59,22 @@ class _PresenceDetailScreenState extends State<PresenceDetailScreen> {
     if (res1.status == true) {
       setState(() {
         presenceData = res1.data;
+        if (presenceData!.positionCheckIn != null) {
+          positionCheckIn = LocationModel.fromJson(
+              jsonDecode(presenceData!.positionCheckIn!));
+        }
+
+        if (presenceData!.positionCheckOut != null) {
+          positionCheckOut = LocationModel.fromJson(
+              jsonDecode(presenceData!.positionCheckOut!));
+        }
+
+        print("check in address: ${positionCheckIn.address}");
+        print("check in lat: ${positionCheckIn.lat}");
+        print("check in lng: ${positionCheckIn.lng}");
+        print("check out address: ${positionCheckOut.address}");
+        print("check out lat: ${positionCheckOut.lat}");
+        print("check out lng: ${positionCheckOut.lng}");
       });
     }
 
@@ -113,22 +137,15 @@ class _PresenceDetailScreenState extends State<PresenceDetailScreen> {
                             Text(
                               presenceData!.user!.name!,
                               style: const TextStyle(
-                                fontSize: 16.0,
+                                fontSize: 17.0,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(height: 2.0),
-                            Text(
-                              presenceData!.description!,
-                              style: TextStyle(
-                                fontSize: 16.0,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                            const SizedBox(height: 6.0),
+                            const SizedBox(height: 3.0),
                             Text(
                               CalendarUtility.formatDate(
-                                  DateTime.parse(presenceData!.checkIn!)),
+                                  DateTime.parse(presenceData!.checkIn!)
+                                      .toLocal()),
                               style: TextStyle(
                                 color: Colors.grey.shade900,
                                 fontWeight: FontWeight.w500,
@@ -142,17 +159,23 @@ class _PresenceDetailScreenState extends State<PresenceDetailScreen> {
                                       ? Icons.home_work_outlined
                                       : Icons.business,
                                   size: 15,
+                                  color: Colors.grey.shade600,
                                 ),
                                 const SizedBox(width: 4.0),
-                                Text(presenceData!.type!)
+                                Text(
+                                  presenceData!.type! == "wfo"
+                                      ? "wfo (kantor)"
+                                      : "wfh (jarak jauh)",
+                                  style: TextStyle(color: Colors.grey.shade600),
+                                )
                               ],
                             ),
-                            const SizedBox(height: 4.0),
+                            const SizedBox(height: 10.0),
                             Row(
                               children: [
                                 BsBadge(
                                   text:
-                                      "IN ${presenceData!.checkIn != null ? CalendarUtility.getTime(DateTime.parse(presenceData!.checkIn!)) : '-'}",
+                                      "${presenceData!.checkIn != null ? CalendarUtility.getTime(DateTime.parse(presenceData!.checkIn!).toLocal()) : '?'} - ${presenceData!.checkOut != null ? CalendarUtility.getTime(DateTime.parse(presenceData!.checkOut!).toLocal()) : '?'}",
                                   textStyle: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
@@ -164,32 +187,92 @@ class _PresenceDetailScreenState extends State<PresenceDetailScreen> {
                                     vertical: 4.0,
                                   ),
                                 ),
-                                const SizedBox(width: 4.0),
-                                BsBadge(
-                                  text:
-                                      "OUT ${presenceData!.checkOut != null ? CalendarUtility.getTime(DateTime.parse(presenceData!.checkOut!)) : '-'}",
-                                  textStyle: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                  ),
-                                  backgroundColor: (Colors.red),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8.0,
-                                    vertical: 4.0,
-                                  ),
-                                ),
-                                if (presenceData!.late == true)
+                                if (presenceData!.checkIn != null &&
+                                    presenceData!.checkOut != null)
                                   const SizedBox(width: 4.0),
+                                if (presenceData!.checkIn != null &&
+                                    presenceData!.checkOut != null)
+                                  BsBadge(
+                                    text:
+                                        CalendarUtility.formatOvertimeInterval(
+                                            presenceData!.checkIn!,
+                                            presenceData!.checkOut!),
+                                    textStyle: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                    ),
+                                    backgroundColor: (Colors.green),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0,
+                                      vertical: 4.0,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 6.0),
+                            Row(
+                              children: [
                                 if (presenceData!.late == true)
-                                  const BsBadge(
-                                    text: "TELAT",
-                                    textStyle: TextStyle(
+                                  BsBadge(
+                                    text:
+                                        "Telat ${(presenceData!.lateAmount! < 60 ? "${presenceData!.lateAmount!} menit" : "${(presenceData!.lateAmount! / 60).round()} jam")}",
+                                    textStyle: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                       fontSize: 11,
                                     ),
                                     backgroundColor: (Colors.orange),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0,
+                                      vertical: 4.0,
+                                    ),
+                                  ),
+                                const SizedBox(width: 4.0),
+                                if (presenceData!.fullTime == true)
+                                  const BsBadge(
+                                    text: "Fulltime",
+                                    textStyle: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                    ),
+                                    backgroundColor: (Colors.purple),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 8.0,
+                                      vertical: 4.0,
+                                    ),
+                                  ),
+                                if (presenceData!.fullTime == false)
+                                  BsBadge(
+                                    text: (presenceData!.remainingHour! < 60
+                                        ? "Tidak Fulltime (sisa ${presenceData!.remainingHour!} menit)"
+                                        : "Tidak Fulltime (sisa ${(presenceData!.remainingHour! / 60).round()} jam)"),
+                                    textStyle: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                    ),
+                                    backgroundColor: (Colors.purple),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0,
+                                      vertical: 4.0,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 6.0),
+                            Row(
+                              children: [
+                                if (presenceData!.overtime == true)
+                                  const BsBadge(
+                                    text: "Lembur",
+                                    textStyle: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                    ),
+                                    backgroundColor: (Colors.lightBlue),
                                     padding: EdgeInsets.symmetric(
                                       horizontal: 8.0,
                                       vertical: 4.0,
@@ -198,15 +281,16 @@ class _PresenceDetailScreenState extends State<PresenceDetailScreen> {
                                 if (presenceData!.overtime == true)
                                   const SizedBox(width: 4.0),
                                 if (presenceData!.overtime == true)
-                                  const BsBadge(
-                                    text: "LEMBUR",
-                                    textStyle: TextStyle(
+                                  BsBadge(
+                                    text:
+                                        "${CalendarUtility.getTime(DateTime.parse(presenceData!.overtimeStartAt!).toLocal())} - ${CalendarUtility.getTime(DateTime.parse(presenceData!.overtimeEndAt!).toLocal())}  ${presenceData!.overtimeStartAt != null && presenceData!.overtimeEndAt != null ? CalendarUtility.formatOvertimeInterval(presenceData!.overtimeStartAt!, presenceData!.overtimeEndAt!) : ""}",
+                                    textStyle: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                       fontSize: 11,
                                     ),
-                                    backgroundColor: (Colors.blue),
-                                    padding: EdgeInsets.symmetric(
+                                    backgroundColor: (Colors.lightBlue),
+                                    padding: const EdgeInsets.symmetric(
                                       horizontal: 8.0,
                                       vertical: 4.0,
                                     ),
@@ -217,6 +301,102 @@ class _PresenceDetailScreenState extends State<PresenceDetailScreen> {
                         ),
                       ),
                       const Divider(),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
+                            child: Text(
+                              'Catatan Harian: ',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                            child: Text(
+                              presenceData!.description != null
+                                  ? presenceData!.description!
+                                  : "",
+                              style: TextStyle(
+                                fontSize: 14.0,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                      const Divider(),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 10.0),
+                            child: Text(
+                              'Posisi Check In',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          if (positionCheckIn.lat != null &&
+                              positionCheckIn.lng != null)
+                            MyMapWidget(
+                              latitude:
+                                  double.parse(positionCheckIn.lat ?? "0.0"),
+                              longitude:
+                                  double.parse(positionCheckIn.lng ?? "0.0"),
+                              label: "check in",
+                            ),
+                          Padding(
+                            padding:
+                                const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
+                            child: Text(positionCheckIn.address!),
+                          )
+                        ],
+                      ),
+                      const Divider(),
+                      if (positionCheckOut.lat != "0" &&
+                          positionCheckOut.lng != "0")
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(
+                              padding:
+                                  EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 10.0),
+                              child: Text(
+                                'Posisi Check Out',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            if (positionCheckOut.lat != "0" &&
+                                positionCheckOut.lng != "0")
+                              MyMapWidget(
+                                latitude:
+                                    double.parse(positionCheckOut.lat ?? "0.0"),
+                                longitude:
+                                    double.parse(positionCheckOut.lng ?? "0.0"),
+                                label: "check out",
+                              ),
+                            if (positionCheckOut.lat != "0" &&
+                                positionCheckOut.lng != "0")
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0),
+                                child: Text(positionCheckOut.address!),
+                              )
+                          ],
+                        ),
+                      if (positionCheckOut.lat != "0" &&
+                          positionCheckOut.lng != "0")
+                        const Divider(),
+                      const SizedBox(height: 16.0)
                     ],
                   ),
                 ),

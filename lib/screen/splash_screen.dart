@@ -186,6 +186,12 @@ class _SplashScreenState extends State<SplashScreen> {
     return Image.network(
       profilePictureURI,
       width: 250,
+      errorBuilder: (context, error, stackTrace) {
+        return Image.asset(
+          'assets/images/default-logo.png',
+          width: 250,
+        );
+      },
     );
   }
 }

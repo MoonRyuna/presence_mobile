@@ -364,16 +364,17 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
                                     ),
                                     const SizedBox(height: 6.0),
                                     Text(
-                                      absence.absenceType!.name!,
+                                      "${absence.absenceType!.name!} ${absence.cutAnnualLeave! ? "( potong cuti )" : ""}",
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.red.withOpacity(0.8),
+                                        color: Colors.blue.withOpacity(0.8),
                                       ),
                                     ),
                                     const SizedBox(height: 4.0),
                                     Text(
                                       CalendarUtility.formatDate(
-                                          DateTime.parse(absence.absenceAt!)),
+                                          DateTime.parse(absence.absenceAt!)
+                                              .toLocal()),
                                       style: TextStyle(
                                         color: Colors.grey.shade900,
                                         fontWeight: FontWeight.w500,

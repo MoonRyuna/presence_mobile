@@ -17,12 +17,14 @@ import 'package:presence_alpha/provider/user_provider.dart';
 import 'package:presence_alpha/screen/absence_screen.dart';
 import 'package:presence_alpha/screen/overtime_screen.dart';
 import 'package:presence_alpha/screen/presence_screen.dart';
+import 'package:presence_alpha/screen/rekap_karyawan_screen.dart';
 import 'package:presence_alpha/service/user_service.dart';
 import 'package:presence_alpha/storage/app_storage.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
 import 'package:presence_alpha/utility/common_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:presence_alpha/utility/maps_utility.dart';
+import 'package:presence_alpha/widget/bs_alert.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -445,15 +447,19 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
         ),
-        gridButton(
-          "Rekapan",
-          Icons.data_thresholding_outlined,
-          () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const OvertimeScreen()),
-            );
-          },
+        Consumer<UserProvider>(
+          builder: (context, userProvider, _) => gridButton(
+            "Rekapan",
+            Icons.data_thresholding_outlined,
+            () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        RekapKaryawanScreen(id: userProvider.user!.id!)),
+              );
+            },
+          ),
         ),
       ],
     );
@@ -510,7 +516,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     boxInfo("Karyawan"),
                     const Padding(padding: EdgeInsets.all(10)),
                     distanceLocation(distanceBetweenPoints),
-                    const Padding(padding: EdgeInsets.all(15)),
+                    const SizedBox(height: 20),
+                    Consumer<OfficeConfigProvider>(
+                      builder: (context, ofc, _) => BsAlert(
+                        icon: Icons.info_outline,
+                        title: 'Jam Kerja',
+                        message: ofc.officeConfig != null &&
+                                ofc.officeConfig!.workSchedule != null
+                            ? ofc.officeConfig!.workSchedule!
+                            : "-",
+                        type: BsAlertType.info,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
                       child: Column(
