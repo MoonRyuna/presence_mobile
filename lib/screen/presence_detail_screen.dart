@@ -320,10 +320,7 @@ class _PresenceDetailScreenState extends State<PresenceDetailScreen> {
                               presenceData!.description != null
                                   ? presenceData!.description!
                                   : "",
-                              style: TextStyle(
-                                fontSize: 14.0,
-                                color: Colors.grey.shade600,
-                              ),
+                              style: const TextStyle(fontSize: 14.0),
                             ),
                           )
                         ],

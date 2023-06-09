@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:presence_alpha/model/month_option.dart';
+import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:presence_alpha/constant/api_constant.dart';
@@ -20,7 +21,7 @@ class RekapKaryawanScreen extends StatefulWidget {
 }
 
 class _RekapKaryawanScreenState extends State<RekapKaryawanScreen> {
-  Future<String>? _htmlData;
+  WebViewController? _webViewController;
 
   List<MonthOption> monthOptions = [
     MonthOption('1', 'Januari'),
@@ -87,7 +88,6 @@ class _RekapKaryawanScreenState extends State<RekapKaryawanScreen> {
                   onChanged: (String? newValue) {
                     setState(() {
                       selectedMonth = newValue!;
-                      _htmlData = null;
                     });
                     fetchHtmlData(widget.id);
                   },
@@ -104,7 +104,6 @@ class _RekapKaryawanScreenState extends State<RekapKaryawanScreen> {
                   onChanged: (String? newValue) {
                     setState(() {
                       selectedYear = newValue!;
-                      _htmlData = null;
                     });
                     fetchHtmlData(widget.id);
                   },
@@ -120,32 +119,14 @@ class _RekapKaryawanScreenState extends State<RekapKaryawanScreen> {
           ),
           SizedBox(
             width: MediaQuery.of(context).size.width,
-            height: (MediaQuery.of(context).size.height - 150),
-            child: FutureBuilder<String>(
-              future: _htmlData,
-              builder: (context, snapshot) {
-                if (_htmlData == null) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                } else if (snapshot.hasData) {
-                  return WebView(
-                    initialUrl: Uri.dataFromString(
-                      snapshot.data!,
-                      mimeType: 'text/html',
-                      encoding: Encoding.getByName('utf-8'),
-                    ).toString(),
-                    javascriptMode: JavascriptMode.unrestricted,
-                  );
-                } else if (snapshot.hasError) {
-                  return Center(
-                    child: Text('Error: ${snapshot.error}'),
-                  );
-                }
-
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
+            height: (MediaQuery.of(context).size.height - 135),
+            child: WebView(
+              gestureNavigationEnabled: false,
+              zoomEnabled: false,
+              backgroundColor: Colors.white,
+              javascriptMode: JavascriptMode.unrestricted,
+              onWebViewCreated: (WebViewController webViewController) {
+                _webViewController = webViewController;
               },
             ),
           ),
@@ -155,6 +136,7 @@ class _RekapKaryawanScreenState extends State<RekapKaryawanScreen> {
   }
 
   fetchHtmlData(String id) async {
+    LoadingUtility.show("Memuat Rekap");
     final tp = Provider.of<TokenProvider>(
       context,
       listen: false,
@@ -184,18 +166,12 @@ class _RekapKaryawanScreenState extends State<RekapKaryawanScreen> {
     print("response status ${response.statusCode}");
 
     if (response.statusCode == 200) {
-      setState(() {
-        _htmlData = null;
-      });
-
-      print(response.body);
-      Future.delayed(const Duration(seconds: 10)).then((_) async {
-        setState(() {
-          _htmlData = Future<String>.value(response.body);
-        });
-      });
+      await _webViewController?.loadHtmlString(response.body);
+      LoadingUtility.hide();
     } else {
-      throw Exception('Failed to fetch HTML data');
+      await _webViewController?.loadHtmlString(
+          '<h1 style="text-align: center;">Gagal mendapatkan data rekap</h1>');
+      LoadingUtility.hide();
     }
   }
 }
