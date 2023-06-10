@@ -285,15 +285,17 @@ class _PresenceScreenState extends State<PresenceScreen> {
                                     Row(
                                       children: [
                                         Icon(
-                                          presence.type == "wfh"
-                                              ? Icons.home_work_outlined
-                                              : Icons.business,
+                                          presence.type == "wfo"
+                                              ? Icons.business
+                                              : Icons.home_work_outlined,
                                           size: 15,
                                         ),
                                         const SizedBox(width: 4.0),
-                                        Text(presence.type! == "wfo"
-                                            ? "wfo (kantor)"
-                                            : "wfh (jarak jauh)")
+                                        Text(presence.type != null
+                                            ? presence.type == "wfo"
+                                                ? "wfo (kantor)"
+                                                : "wfh (jarak jauh)"
+                                            : "lembur hari libur")
                                       ],
                                     ),
                                     const SizedBox(height: 4.0),

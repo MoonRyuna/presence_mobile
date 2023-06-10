@@ -155,17 +155,19 @@ class _PresenceDetailScreenState extends State<PresenceDetailScreen> {
                             Row(
                               children: [
                                 Icon(
-                                  presenceData!.type == "wfh"
-                                      ? Icons.home_work_outlined
-                                      : Icons.business,
+                                  presenceData!.type == "wfo"
+                                      ? Icons.business
+                                      : Icons.home_work_outlined,
                                   size: 15,
                                   color: Colors.grey.shade600,
                                 ),
                                 const SizedBox(width: 4.0),
                                 Text(
-                                  presenceData!.type! == "wfo"
-                                      ? "wfo (kantor)"
-                                      : "wfh (jarak jauh)",
+                                  presenceData!.type != null
+                                      ? presenceData!.type == "wfo"
+                                          ? "wfo (kantor)"
+                                          : "wfh (jarak jauh)"
+                                      : "lembur hari libur",
                                   style: TextStyle(color: Colors.grey.shade600),
                                 )
                               ],
@@ -304,43 +306,49 @@ class _PresenceDetailScreenState extends State<PresenceDetailScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Padding(
-                            padding: EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
-                            child: Text(
-                              'Catatan Harian: ',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                          if (presenceData!.description != null)
+                            const Padding(
+                              padding:
+                                  EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
+                              child: Text(
+                                'Catatan Harian ',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                            child: Text(
-                              presenceData!.description != null
-                                  ? presenceData!.description!
-                                  : "",
-                              style: const TextStyle(fontSize: 14.0),
-                            ),
-                          )
+                          if (presenceData!.description != null)
+                            Container(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                              child: Text(
+                                presenceData!.description != null
+                                    ? presenceData!.description!
+                                    : "",
+                                style: const TextStyle(fontSize: 14.0),
+                              ),
+                            )
                         ],
                       ),
-                      const Divider(),
+                      if (presenceData!.description != null) const Divider(),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Padding(
-                            padding: EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 10.0),
-                            child: Text(
-                              'Posisi Check In',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                          if (positionCheckIn.lat != "0" &&
+                              positionCheckIn.lng != "0")
+                            const Padding(
+                              padding:
+                                  EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 10.0),
+                              child: Text(
+                                'Posisi Check In',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                          ),
-                          if (positionCheckIn.lat != null &&
-                              positionCheckIn.lng != null)
+                          if (positionCheckIn.lat != "0" &&
+                              positionCheckIn.lng != "0")
                             MyMapWidget(
                               latitude:
                                   double.parse(positionCheckIn.lat ?? "0.0"),
@@ -355,7 +363,9 @@ class _PresenceDetailScreenState extends State<PresenceDetailScreen> {
                           )
                         ],
                       ),
-                      const Divider(),
+                      if (positionCheckIn.lat != "0" &&
+                          positionCheckIn.lng != "0")
+                        const Divider(),
                       if (positionCheckOut.lat != "0" &&
                           positionCheckOut.lng != "0")
                         Column(
