@@ -7,6 +7,7 @@ import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
 import 'package:presence_alpha/model/month_option.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
+import 'package:presence_alpha/screen/rekap_detail_karyawan_screen.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -74,6 +75,63 @@ class _RekapKaryawanScreenState extends State<RekapKaryawanScreen> {
         centerTitle: true,
         backgroundColor: ColorConstant.lightPrimary,
         elevation: 0,
+        actions: [
+          PopupMenuButton(
+            onSelected: (value) {
+              switch (value) {
+                case "detail":
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RekapDetailKaryawanScreen(
+                        id: widget.id,
+                        month: selectedMonth,
+                        year: selectedYear,
+                      ),
+                    ),
+                  );
+                  break;
+                case "refetch":
+                  fetchHtmlData(widget.id);
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: "detail",
+                child: Row(
+                  children: const [
+                    Icon(
+                      Icons.list,
+                      color: Colors.black,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      "Rekap Detail",
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: "refetch",
+                child: Row(
+                  children: const [
+                    Icon(
+                      Icons.refresh,
+                      color: Colors.black,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      "Refresh",
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       backgroundColor: Colors.white,
       body: Column(
