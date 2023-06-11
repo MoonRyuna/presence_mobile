@@ -248,19 +248,24 @@ Widget profileActions(BuildContext context) {
 }
 
 Widget officeLogo(String? imagePath) {
-  String profilePictureURI =
-      "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png";
-  if (imagePath != null) {
-    if (imagePath == "images/default-logo.png") {
-      profilePictureURI = "${ApiConstant.publicUrl}/$imagePath";
-    } else {
-      profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
-    }
+  if (imagePath == null) {
+    return Image.asset(
+      'assets/images/default.png',
+      width: 200,
+      height: 120,
+    );
   }
+
+  String profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
 
   return Image.network(
     profilePictureURI,
     width: 200,
     height: 120,
+    errorBuilder: (context, error, stackTrace) => Image.asset(
+      'assets/images/default.png',
+      width: 200,
+      height: 120,
+    ),
   );
 }
