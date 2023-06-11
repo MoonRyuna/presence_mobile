@@ -102,6 +102,8 @@ class ManageKaryawanDetailScreen extends StatelessWidget {
       return Image.asset(
         'assets/images/default.png',
         width: 100,
+        height: 100,
+        fit: BoxFit.cover,
       );
     }
 

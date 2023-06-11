@@ -345,6 +345,8 @@ class _HomeScreenState extends State<HomeScreen> {
       return Image.asset(
         'assets/images/default.png',
         width: 50,
+        height: 50,
+        fit: BoxFit.cover,
       );
     }
 

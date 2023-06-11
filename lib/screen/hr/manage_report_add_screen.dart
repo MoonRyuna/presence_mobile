@@ -289,22 +289,3 @@ class _ManageReportAddScreenState extends State<ManageReportAddScreen> {
     );
   }
 }
-
-Widget profilePicture(String? imagePath) {
-  String profilePictureURI =
-      "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png";
-  if (imagePath != null) {
-    if (imagePath == "images/default.png") {
-      profilePictureURI = "${ApiConstant.publicUrl}/$imagePath";
-    } else {
-      profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
-    }
-  }
-
-  return Image.network(
-    profilePictureURI,
-    width: 100,
-    height: 100,
-    fit: BoxFit.cover,
-  );
-}
