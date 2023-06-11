@@ -4,6 +4,7 @@ import 'package:presence_alpha/provider/office_config_provide.dart';
 import 'package:presence_alpha/screen/hr/manage_absence_screen.dart';
 import 'package:presence_alpha/screen/hr/manage_karyawan_screen.dart';
 import 'package:presence_alpha/screen/hr/manage_overtime_screen.dart';
+import 'package:presence_alpha/screen/hr/manage_report_screen.dart';
 import 'package:presence_alpha/screen/hr/ubah_pengaturan_kantor_screen.dart';
 import 'package:presence_alpha/screen/profile_screen.dart';
 import 'package:provider/provider.dart';
@@ -122,6 +123,34 @@ Widget profileActions(BuildContext context) {
                 context,
                 MaterialPageRoute(
                     builder: (context) => const ManageOvertimeScreen()),
+              );
+            },
+          ),
+        ),
+      ),
+      Container(
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: Colors.grey.shade300,
+              width: 0.5,
+            ),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: ListTile(
+            leading: const Icon(Icons.summarize),
+            title: const Text(
+              'Report Bulanan',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const ManageReportScreen()),
               );
             },
           ),
