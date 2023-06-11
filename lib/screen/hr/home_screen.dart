@@ -424,6 +424,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       return Container();
                     }),
                     const Padding(padding: EdgeInsets.all(10)),
+                    Consumer<PropertiesProvider>(builder: (context, pp, child) {
+                      
+                    }),
+                    
                   ],
                 ),
               ),
