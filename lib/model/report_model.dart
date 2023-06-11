@@ -7,7 +7,7 @@ class ReportModel {
   String? title;
   String? startDate;
   String? endDate;
-  String? totalEmployee;
+  int? totalEmployee;
   String? generatedBy;
   String? generatedAt;
   UserModel? generater;
