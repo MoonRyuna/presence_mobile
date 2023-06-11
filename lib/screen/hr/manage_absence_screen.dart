@@ -486,7 +486,7 @@ class _ManageAbsenceScreenState extends State<ManageAbsenceScreen> {
                                         absence.absenceType!,
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.red.withOpacity(0.8),
+                                          color: Colors.blue.withOpacity(0.8),
                                         ),
                                       ),
                                       const SizedBox(height: 6.0),

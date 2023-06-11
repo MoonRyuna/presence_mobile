@@ -181,7 +181,7 @@ class _SplashScreenState extends State<SplashScreen> {
       );
     }
 
-    String profilePictureURI = "${ApiConstant.publicUrl}/$pathLogo";
+    String profilePictureURI = "${ApiConstant.baseUrl}/$pathLogo";
 
     return Image.network(
       profilePictureURI,

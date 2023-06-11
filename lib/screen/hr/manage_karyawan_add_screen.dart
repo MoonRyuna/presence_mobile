@@ -285,7 +285,7 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
         "device_tracker": deviceTracker,
         "created_by": user.id,
         "can_wfh": _canWfh,
-        "profile_picture": _imagePath ?? "images/default.png",
+        "profile_picture": _imagePath ?? "public/images/default.png",
       };
 
       CreateUserResponse response =
@@ -340,320 +340,326 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Tambah Karyawan"),
-        backgroundColor: ColorConstant.lightPrimary,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              Stack(
-                alignment: Alignment.topCenter,
-                children: <Widget>[
-                  SizedBox(
-                    height: 180.0,
-                    child: Padding(
-                      padding: const EdgeInsets.all(32.0),
-                      child: Column(
-                        children: <Widget>[
-                          GestureDetector(
-                            onTap: () async {
-                              await pickImage();
-                            },
-                            child: ClipOval(
-                              child: _imagePath != null
-                                  ? profilePicture(_imagePath)
-                                  : Consumer<UserProvider>(
-                                      builder: (context, userProvider, _) =>
-                                          profilePicture(
-                                        userProvider.user?.profilePicture,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                          const SizedBox(height: 16.0),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pop(context, true);
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context, true);
+            },
+          ),
+          title: const Text("Tambah Karyawan"),
+          backgroundColor: ColorConstant.lightPrimary,
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                Stack(
+                  alignment: Alignment.topCenter,
                   children: <Widget>[
-                    TextField(
-                      controller: _usernameController,
-                      decoration: InputDecoration(
-                        labelText: 'Username',
-                        errorText: _usernameErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
+                    SizedBox(
+                      height: 180.0,
+                      child: Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Column(
+                          children: <Widget>[
+                            GestureDetector(
+                              onTap: () async {
+                                await pickImage();
+                              },
+                              child: ClipOval(
+                                child: profilePicture(_imagePath),
+                              ),
+                            ),
+                            const SizedBox(height: 16.0),
+                          ],
                         ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: _isObscure,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        errorText: _passwordErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isObscure
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isObscure = !_isObscure;
-                            });
-                          },
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _passwordConfirmationController,
-                      obscureText: _isObscureConfirmation,
-                      decoration: InputDecoration(
-                        labelText: 'Password Confirmation',
-                        errorText: _passwordConfirmationErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isObscureConfirmation
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isObscureConfirmation = !_isObscureConfirmation;
-                            });
-                          },
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        errorText: _emailErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _phoneNumberController,
-                      decoration: InputDecoration(
-                        labelText: 'Phone number',
-                        errorText: _phoneNumberErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _nameController,
-                      decoration: InputDecoration(
-                        labelText: 'Name',
-                        errorText: _nameErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _addressController,
-                      decoration: InputDecoration(
-                        labelText: 'Address',
-                        errorText: _addressErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _descriptionController,
-                      decoration: InputDecoration(
-                        labelText: 'Description',
-                        errorText: _descriptionErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'Jabatan',
-                        errorText: _accountTypeErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                      value: _accountType,
-                      items: ApiConstant.role
-                          .map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                      onChanged: (String? value) {
-                        setState(() {
-                          _accountType = value;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _startedWorkAtController,
-                      readOnly: true,
-                      onTap: () async {
-                        await _selectDate(context);
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'Started Work At',
-                        errorText: _startedWorkAtErrorText,
-                        prefixIcon: const Icon(Icons.calendar_month),
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(color: Colors.grey),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Checkbox(
-                          activeColor: ColorConstant.lightPrimary,
-                          value: _canWfh,
-                          onChanged: (value) {
-                            setState(() {
-                              _canWfh = value ?? false;
-                            });
-                          },
-                        ),
-                        const Expanded(child: Text("Can work from home")),
-                      ],
-                    ),
-                    const SizedBox(height: 30),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: ColorConstant.lightPrimary,
-                        minimumSize: const Size.fromHeight(50), // NEW
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                      onPressed: () async {
-                        await onTambahKaryawan();
-                      },
-                      child: const Text(
-                        'Tambah Karyawan',
-                        style: TextStyle(fontSize: 20),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      TextField(
+                        controller: _usernameController,
+                        decoration: InputDecoration(
+                          labelText: 'Username',
+                          errorText: _usernameErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: _isObscure,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          errorText: _passwordErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isObscure
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isObscure = !_isObscure;
+                              });
+                            },
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _passwordConfirmationController,
+                        obscureText: _isObscureConfirmation,
+                        decoration: InputDecoration(
+                          labelText: 'Password Confirmation',
+                          errorText: _passwordConfirmationErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isObscureConfirmation
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isObscureConfirmation =
+                                    !_isObscureConfirmation;
+                              });
+                            },
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _emailController,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          errorText: _emailErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _phoneNumberController,
+                        decoration: InputDecoration(
+                          labelText: 'Phone number',
+                          errorText: _phoneNumberErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _nameController,
+                        decoration: InputDecoration(
+                          labelText: 'Name',
+                          errorText: _nameErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _addressController,
+                        decoration: InputDecoration(
+                          labelText: 'Address',
+                          errorText: _addressErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _descriptionController,
+                        decoration: InputDecoration(
+                          labelText: 'Description',
+                          errorText: _descriptionErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: 'Jabatan',
+                          errorText: _accountTypeErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        value: _accountType,
+                        items: ApiConstant.role
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? value) {
+                          setState(() {
+                            _accountType = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _startedWorkAtController,
+                        readOnly: true,
+                        onTap: () async {
+                          await _selectDate(context);
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Started Work At',
+                          errorText: _startedWorkAtErrorText,
+                          prefixIcon: const Icon(Icons.calendar_month),
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(color: Colors.grey),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Checkbox(
+                            activeColor: ColorConstant.lightPrimary,
+                            value: _canWfh,
+                            onChanged: (value) {
+                              setState(() {
+                                _canWfh = value ?? false;
+                              });
+                            },
+                          ),
+                          const Expanded(child: Text("Can work from home")),
+                        ],
+                      ),
+                      const SizedBox(height: 30),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ColorConstant.lightPrimary,
+                          minimumSize: const Size.fromHeight(50), // NEW
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        onPressed: () async {
+                          await onTambahKaryawan();
+                        },
+                        child: const Text(
+                          'Tambah Karyawan',
+                          style: TextStyle(fontSize: 20),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -662,20 +668,27 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
 }
 
 Widget profilePicture(String? imagePath) {
-  String profilePictureURI =
-      "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png";
-  if (imagePath != null) {
-    if (imagePath == "images/default.png") {
-      profilePictureURI = "${ApiConstant.publicUrl}/$imagePath";
-    } else {
-      profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
-    }
+  if (imagePath == null) {
+    return Image.asset(
+      'assets/images/default.png',
+      width: 100,
+    );
   }
+
+  String profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
 
   return Image.network(
     profilePictureURI,
     width: 100,
     height: 100,
     fit: BoxFit.cover,
+    errorBuilder: (context, error, stackTrace) {
+      return Image.asset(
+        'assets/images/default.png',
+        width: 100,
+        height: 100,
+        fit: BoxFit.cover,
+      );
+    },
   );
 }

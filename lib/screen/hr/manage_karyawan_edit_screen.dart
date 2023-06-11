@@ -437,275 +437,287 @@ class _ManageKaryawanEditScreenState extends State<ManageKaryawanEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Edit Karyawan"),
-        backgroundColor: ColorConstant.lightPrimary,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              Stack(
-                alignment: Alignment.topCenter,
-                children: <Widget>[
-                  SizedBox(
-                    height: 180.0,
-                    child: Padding(
-                      padding: const EdgeInsets.all(32.0),
-                      child: Column(
-                        children: <Widget>[
-                          GestureDetector(
-                            onTap: () async {
-                              await pickImage();
-                            },
-                            child: ClipOval(
-                              child: _imagePath != null
-                                  ? profilePicture(_imagePath)
-                                  : Consumer<UserProvider>(
-                                      builder: (context, userProvider, _) =>
-                                          profilePicture(
-                                        userProvider.user?.profilePicture,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                          const SizedBox(height: 16.0),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pop(context, true);
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context, true);
+            },
+          ),
+          title: const Text("Edit Karyawan"),
+          backgroundColor: ColorConstant.lightPrimary,
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                Stack(
+                  alignment: Alignment.topCenter,
                   children: <Widget>[
-                    TextField(
-                      controller: _usernameController,
-                      decoration: InputDecoration(
-                        labelText: 'Username',
-                        errorText: _usernameErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
+                    SizedBox(
+                      height: 180.0,
+                      child: Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Column(
+                          children: <Widget>[
+                            GestureDetector(
+                              onTap: () async {
+                                await pickImage();
+                              },
+                              child: ClipOval(
+                                child: _imagePath != null
+                                    ? profilePicture(_imagePath)
+                                    : Consumer<UserProvider>(
+                                        builder: (context, userProvider, _) =>
+                                            profilePicture(
+                                          userProvider.user?.profilePicture,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: 16.0),
+                          ],
                         ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _passwordChangeController,
-                      decoration: InputDecoration(
-                        labelText: 'Change Password',
-                        errorText: _passwordChangeErrorText,
-                        helperText: "Kosongkan jika tidak ingin mengubah",
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        errorText: _emailErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _phoneNumberController,
-                      decoration: InputDecoration(
-                        labelText: 'Phone number',
-                        errorText: _phoneNumberErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _nameController,
-                      decoration: InputDecoration(
-                        labelText: 'Name',
-                        errorText: _nameErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _addressController,
-                      decoration: InputDecoration(
-                        labelText: 'Address',
-                        errorText: _addressErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _descriptionController,
-                      decoration: InputDecoration(
-                        labelText: 'Description',
-                        errorText: _descriptionErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'Jabatan',
-                        errorText: _accountTypeErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                      value: _accountType,
-                      items: ApiConstant.role
-                          .map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                      onChanged: (String? value) {
-                        setState(() {
-                          _accountType = value;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _startedWorkAtController,
-                      readOnly: true,
-                      onTap: () async {
-                        await _selectDate(context);
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'Started Work At',
-                        errorText: _startedWorkAtErrorText,
-                        errorStyle: const TextStyle(color: Colors.red),
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: ColorConstant.lightPrimary,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Checkbox(
-                          activeColor: ColorConstant.lightPrimary,
-                          value: _canWfh,
-                          onChanged: (value) {
-                            setState(() {
-                              _canWfh = value ?? false;
-                            });
-                          },
-                        ),
-                        const Expanded(child: Text("Can work from home")),
-                      ],
-                    ),
-                    const SizedBox(height: 30),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: ColorConstant.lightPrimary,
-                        minimumSize: const Size.fromHeight(50), // NEW
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                      onPressed: () async {
-                        await onUbahData();
-                      },
-                      child: const Text(
-                        'Update Data',
-                        style: TextStyle(fontSize: 20),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      TextField(
+                        controller: _usernameController,
+                        decoration: InputDecoration(
+                          labelText: 'Username',
+                          errorText: _usernameErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _passwordChangeController,
+                        decoration: InputDecoration(
+                          labelText: 'Change Password',
+                          errorText: _passwordChangeErrorText,
+                          helperText: "Kosongkan jika tidak ingin mengubah",
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _emailController,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          errorText: _emailErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _phoneNumberController,
+                        decoration: InputDecoration(
+                          labelText: 'Phone number',
+                          errorText: _phoneNumberErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _nameController,
+                        decoration: InputDecoration(
+                          labelText: 'Name',
+                          errorText: _nameErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _addressController,
+                        decoration: InputDecoration(
+                          labelText: 'Address',
+                          errorText: _addressErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _descriptionController,
+                        decoration: InputDecoration(
+                          labelText: 'Description',
+                          errorText: _descriptionErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: 'Jabatan',
+                          errorText: _accountTypeErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        value: _accountType,
+                        items: ApiConstant.role
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? value) {
+                          setState(() {
+                            _accountType = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _startedWorkAtController,
+                        readOnly: true,
+                        onTap: () async {
+                          await _selectDate(context);
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Started Work At',
+                          errorText: _startedWorkAtErrorText,
+                          errorStyle: const TextStyle(color: Colors.red),
+                          labelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: ColorConstant.lightPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Checkbox(
+                            activeColor: ColorConstant.lightPrimary,
+                            value: _canWfh,
+                            onChanged: (value) {
+                              setState(() {
+                                _canWfh = value ?? false;
+                              });
+                            },
+                          ),
+                          const Expanded(child: Text("Can work from home")),
+                        ],
+                      ),
+                      const SizedBox(height: 30),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ColorConstant.lightPrimary,
+                          minimumSize: const Size.fromHeight(50), // NEW
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        onPressed: () async {
+                          await onUbahData();
+                        },
+                        child: const Text(
+                          'Update Data',
+                          style: TextStyle(fontSize: 20),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

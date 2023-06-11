@@ -13,6 +13,7 @@ import 'package:presence_alpha/provider/user_provider.dart';
 import 'package:presence_alpha/screen/hr/manage_karyawan_add_screen.dart';
 import 'package:presence_alpha/screen/hr/manage_karyawan_detail_screen.dart';
 import 'package:presence_alpha/screen/hr/manage_karyawan_edit_screen.dart';
+import 'package:presence_alpha/screen/rekap_karyawan_screen.dart';
 import 'package:presence_alpha/service/user_service.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
@@ -358,6 +359,30 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
                     icon: Icons.delete,
                     label: 'Delete',
                   ),
+                  SlidableAction(
+                    onPressed: (context) async {
+                      if (user != null && user.id != null) {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                RekapKaryawanScreen(id: user.id!),
+                          ),
+                        );
+                      } else {
+                        AmessageUtility.show(
+                          context,
+                          "Gagal",
+                          "Info user tidak diketahui",
+                          TipType.ERROR,
+                        );
+                      }
+                    },
+                    backgroundColor: Colors.purple,
+                    foregroundColor: Colors.white,
+                    icon: Icons.data_thresholding_outlined,
+                    label: 'Rekap',
+                  ),
                 ],
               ),
               child: Padding(
@@ -443,16 +468,48 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
         title: const Text('Karyawan'),
         backgroundColor: ColorConstant.lightPrimary,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const ManageKaryawanAddScreen()),
-          );
-        },
-        backgroundColor: ColorConstant.lightPrimary,
-        child: const Icon(Icons.add),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: () async {
+              bool result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ManageKaryawanAddScreen(),
+                ),
+              );
+
+              if (result) {
+                setState(() {
+                  _userList = null;
+                  _currentPage = 1;
+                  _hasMore = true;
+                });
+
+                await _loadUserList();
+              }
+            },
+            backgroundColor: ColorConstant.lightPrimary,
+            child: const Icon(Icons.add),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: () async {
+              setState(() {
+                _userList = null;
+                _currentPage = 1;
+                _hasMore = true;
+              });
+
+              await _loadUserList();
+            },
+            heroTag: "btnRefresh",
+            backgroundColor: ColorConstant.lightPrimary,
+            child: const Icon(Icons.refresh),
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -484,20 +541,27 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
 }
 
 Widget profilePicture(String? imagePath) {
-  String profilePictureURI =
-      "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png";
-  if (imagePath != null) {
-    if (imagePath == "images/default.png") {
-      profilePictureURI = "${ApiConstant.publicUrl}/$imagePath";
-    } else {
-      profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
-    }
+  if (imagePath == null) {
+    return Image.asset(
+      'assets/images/default.png',
+      width: 50,
+    );
   }
+
+  String profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
 
   return Image.network(
     profilePictureURI,
     width: 50,
     height: 50,
     fit: BoxFit.cover,
+    errorBuilder: (context, error, stackTrace) {
+      return Image.asset(
+        'assets/images/default.png',
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+      );
+    },
   );
 }

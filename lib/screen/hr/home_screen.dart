@@ -18,10 +18,12 @@ import 'package:presence_alpha/screen/absence_screen.dart';
 import 'package:presence_alpha/screen/overtime_screen.dart';
 import 'package:presence_alpha/screen/presence_screen.dart';
 import 'package:presence_alpha/service/user_service.dart';
+import 'package:presence_alpha/storage/app_storage.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
 import 'package:presence_alpha/utility/common_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:presence_alpha/utility/maps_utility.dart';
+import 'package:presence_alpha/widget/bs_alert.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -33,16 +35,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Timer _timer;
-
-  late String distanceBetweenPoints = "-";
-  late Position _currentPosition;
   late LocationPermission locationPermission;
-
-  CameraPosition _kOffice = const CameraPosition(
-      target: LatLng(-7.011477899042147, 107.55234770202203), zoom: 17);
-
-  CameraPosition _kCurrentPosition =
-      const CameraPosition(target: LatLng(-6.9147444, 107.6098106), zoom: 17);
 
   void getLocation() async {}
 
@@ -114,22 +107,10 @@ class _HomeScreenState extends State<HomeScreen> {
         dp.presensi = response.data!.presensi;
         ocp.officeConfig = response.data!.officeConfig;
 
-        double latOffice = -7.01147799042147;
-        double lngOffice = 107.55234770202203;
-
-        if (response.data?.officeConfig?.latitude != null) {
-          latOffice = response.data?.officeConfig?.latitude as double;
-        }
-        if (response.data?.officeConfig?.longitude != null) {
-          lngOffice = response.data?.officeConfig?.longitude as double;
-        }
-
-        setState(() {
-          _kOffice = CameraPosition(
-            target: LatLng(latOffice, lngOffice),
-            zoom: 17,
-          );
-        });
+        await AppStorage.localStorage.setItem(
+          "ocp",
+          response.data!.officeConfig,
+        );
       }
     }
 
@@ -152,45 +133,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> getCurrentLocation() async {
-    try {
-      await checkLocationPermission();
-      _currentPosition = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-    } catch (e) {
-      // ignore: avoid_print
-      print(e);
-    }
-  }
-
   Future<void> _getLocation() async {
     await loadData();
-    await getCurrentLocation();
-    setState(() {
-      _kCurrentPosition = CameraPosition(
-        target: LatLng(_currentPosition.latitude, _currentPosition.longitude),
-        zoom: 17,
-      );
-    });
-    calculateDistance();
-  }
-
-  Future<void> calculateDistance() async {
-    double distance = MapsUtility.calculateDistance(
-        _kOffice.target.latitude,
-        _kOffice.target.longitude,
-        _kCurrentPosition.target.latitude,
-        _kCurrentPosition.target.longitude);
-
-    String dstring;
-    if (distance >= 1) {
-      dstring = "${distance.round()} KM";
-    } else {
-      dstring = "${(distance * 1000).round()} M";
-    }
-    setState(() {
-      distanceBetweenPoints = dstring;
-    });
+    await checkLocationPermission();
   }
 
   Widget userInfo() {
@@ -200,13 +145,8 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         ClipOval(
           child: Consumer<UserProvider>(
-            builder: (context, userProvider, _) => Image.network(
-              userProvider.user?.profilePicture != null
-                  ? "${ApiConstant.publicUrl}/${userProvider.user?.profilePicture}"
-                  : "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png",
-              width: 50,
-              height: 50,
-              fit: BoxFit.cover,
+            builder: (context, userProvider, _) => profilePicture(
+              userProvider.user?.profilePicture,
             ),
           ),
         ),
@@ -220,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontSize: 18,
               ),
             ),
-            const Padding(padding: EdgeInsets.all(2)),
+            const Padding(padding: EdgeInsets.all(3)),
             Consumer<UserProvider>(
               builder: (context, userProvider, _) => Text(
                 userProvider.user?.name ?? "N?A",
@@ -267,78 +207,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const Padding(padding: EdgeInsets.only(top: 10)),
-          Container(
-            padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: Color.fromARGB(100, 110, 110, 110),
-              borderRadius: BorderRadius.all(Radius.circular(13)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Column(
-                  children: [
-                    const Text(
-                      "check-in",
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontStyle: FontStyle.italic,
-                          color: Colors.white),
-                    ),
-                    Consumer<DashboardProvider>(
-                      builder: (context, dashboardProvider, child) => Text(
-                        dashboardProvider.presensi?.checkIn != null
-                            ? DateFormat('HH:mm:ss').format(
-                                DateFormat("yyyy-MM-dd HH:mm:ss").parse(
-                                    dashboardProvider.presensi!.checkIn!),
-                              )
-                            : "-",
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  width: 1,
-                  height: 50,
-                  color: Colors.white,
-                  alignment: Alignment.topCenter,
-                ),
-                Column(
-                  children: [
-                    const Text(
-                      "check-out",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontStyle: FontStyle.italic,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Consumer<DashboardProvider>(
-                      builder: (context, dashboardProvider, child) => Text(
-                        dashboardProvider.presensi?.checkOut != null
-                            ? DateFormat('HH:mm:ss').format(
-                                DateFormat("yyyy-MM-dd HH:mm:ss").parse(
-                                    dashboardProvider.presensi!.checkOut!),
-                              )
-                            : "-",
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -471,6 +339,33 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget profilePicture(String? imagePath) {
+    print("ini woy $imagePath");
+    if (imagePath == null) {
+      return Image.asset(
+        'assets/images/default.png',
+        width: 50,
+      );
+    }
+
+    String profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
+
+    return Image.network(
+      profilePictureURI,
+      width: 50,
+      height: 50,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Image.asset(
+          'assets/images/default.png',
+          width: 50,
+          height: 50,
+          fit: BoxFit.cover,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -483,29 +378,52 @@ class _HomeScreenState extends State<HomeScreen> {
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 child: Column(
                   children: <Widget>[
+                    const Padding(padding: EdgeInsets.all(5)),
                     userInfo(),
                     const Padding(padding: EdgeInsets.all(10)),
-                    // boxInfo("Karyawan"),
-                    // const Padding(padding: EdgeInsets.all(10)),
-                    // distanceLocation(distanceBetweenPoints),
-                    // const Padding(padding: EdgeInsets.all(10)),
-                    // SizedBox(
-                    //   width: double.infinity,
-                    //   child: Column(
-                    //     crossAxisAlignment: CrossAxisAlignment.start,
-                    //     children: const [
-                    //       Text(
-                    //         "Menu",
-                    //         style: TextStyle(
-                    //           fontSize: 23,
-                    //           fontWeight: FontWeight.bold,
-                    //         ),
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
-                    // const Padding(padding: EdgeInsets.all(6)),
-                    // boxButton(),
+                    boxInfo("HRD"),
+                    const SizedBox(height: 20),
+                    Consumer<PropertiesProvider>(builder: (context, pp, child) {
+                      if (pp.todayCheckData?.isWorkday == true) {
+                        return Consumer<OfficeConfigProvider>(
+                          builder: (context, ofc, _) => BsAlert(
+                            icon: Icons.info_outline,
+                            title: 'Jam Kerja',
+                            message: ofc.officeConfig != null &&
+                                    ofc.officeConfig!.workSchedule != null
+                                ? ofc.officeConfig!.workSchedule!
+                                : "-",
+                            type: BsAlertType.info,
+                          ),
+                        );
+                      } else if (pp.todayCheckData?.isAbsence == true) {
+                        return const BsAlert(
+                          icon: Icons.info_outline,
+                          title: 'Anda Sedang Cuti',
+                          message: "Gunakan Waktu Sebaik Mungkin",
+                          type: BsAlertType.info,
+                        );
+                      } else if (pp.todayCheckData?.isWeekend == true) {
+                        return const BsAlert(
+                          icon: Icons.info_outline,
+                          title: 'Akhir Pekan',
+                          message: "Selamat Menikmati Akhir Pekan",
+                          type: BsAlertType.info,
+                        );
+                      } else if (pp.todayCheckData?.isHoliday == true) {
+                        return BsAlert(
+                          icon: Icons.info_outline,
+                          title: 'Hari Libur',
+                          message: pp.todayCheckData != null &&
+                                  pp.todayCheckData!.holidayTitle != null
+                              ? pp.todayCheckData!.holidayTitle!.join(", ")
+                              : "-",
+                          type: BsAlertType.info,
+                        );
+                      }
+                      return Container();
+                    }),
+                    const Padding(padding: EdgeInsets.all(10)),
                   ],
                 ),
               ),

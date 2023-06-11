@@ -517,17 +517,46 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Padding(padding: EdgeInsets.all(10)),
                     distanceLocation(distanceBetweenPoints),
                     const SizedBox(height: 20),
-                    Consumer<OfficeConfigProvider>(
-                      builder: (context, ofc, _) => BsAlert(
-                        icon: Icons.info_outline,
-                        title: 'Jam Kerja',
-                        message: ofc.officeConfig != null &&
-                                ofc.officeConfig!.workSchedule != null
-                            ? ofc.officeConfig!.workSchedule!
-                            : "-",
-                        type: BsAlertType.info,
-                      ),
-                    ),
+                    Consumer<PropertiesProvider>(builder: (context, pp, child) {
+                      if (pp.todayCheckData?.isWorkday == true) {
+                        return Consumer<OfficeConfigProvider>(
+                          builder: (context, ofc, _) => BsAlert(
+                            icon: Icons.info_outline,
+                            title: 'Jam Kerja',
+                            message: ofc.officeConfig != null &&
+                                    ofc.officeConfig!.workSchedule != null
+                                ? ofc.officeConfig!.workSchedule!
+                                : "-",
+                            type: BsAlertType.info,
+                          ),
+                        );
+                      } else if (pp.todayCheckData?.isAbsence == true) {
+                        return const BsAlert(
+                          icon: Icons.info_outline,
+                          title: 'Anda Sedang Cuti',
+                          message: "Gunakan Waktu Sebaik Mungkin",
+                          type: BsAlertType.info,
+                        );
+                      } else if (pp.todayCheckData?.isWeekend == true) {
+                        return const BsAlert(
+                          icon: Icons.info_outline,
+                          title: 'Akhir Pekan',
+                          message: "Selamat Menikmati Akhir Pekan",
+                          type: BsAlertType.info,
+                        );
+                      } else if (pp.todayCheckData?.isHoliday == true) {
+                        return BsAlert(
+                          icon: Icons.info_outline,
+                          title: 'Hari Libur',
+                          message: pp.todayCheckData != null &&
+                                  pp.todayCheckData!.holidayTitle != null
+                              ? pp.todayCheckData!.holidayTitle!.join(", ")
+                              : "-",
+                          type: BsAlertType.info,
+                        );
+                      }
+                      return Container();
+                    }),
                     const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
@@ -558,20 +587,27 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 Widget profilePicture(String? imagePath) {
-  String profilePictureURI =
-      "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png";
-  if (imagePath != null) {
-    if (imagePath == "images/default.png") {
-      profilePictureURI = "${ApiConstant.publicUrl}/$imagePath";
-    } else {
-      profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
-    }
+  if (imagePath == null) {
+    return Image.asset(
+      'assets/images/default.png',
+      width: 50,
+    );
   }
+
+  String profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
 
   return Image.network(
     profilePictureURI,
     width: 50,
     height: 50,
     fit: BoxFit.cover,
+    errorBuilder: (context, error, stackTrace) {
+      return Image.asset(
+        'assets/images/default.png',
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+      );
+    },
   );
 }
