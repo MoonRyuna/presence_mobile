@@ -178,15 +178,42 @@ Widget profileActions(BuildContext context) {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              AppStorage.localStorage.deleteItem("usr");
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const LoginScreen(),
-                ),
-                (route) => false,
+            onTap: () async {
+              bool? isConfirmed = await showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text("Konfirmasi"),
+                    content: const Text(
+                        "Apakah anda yakin untuk mengeluarkan akun?"),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text("Batal"),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text("Ya"),
+                      ),
+                    ],
+                  );
+                },
               );
+
+              if (isConfirmed == null || isConfirmed == false) {
+                return;
+              }
+
+              if (isConfirmed) {
+                AppStorage.localStorage.deleteItem("usr");
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LoginScreen(),
+                  ),
+                  (route) => false,
+                );
+              }
             },
           ),
         ),

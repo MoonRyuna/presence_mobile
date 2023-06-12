@@ -157,7 +157,7 @@ class _AbsenceDetailScreenState extends State<AbsenceDetailScreen> {
                               absenceData!.absenceType!.name!,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.red.withOpacity(0.8),
+                                color: Colors.blue.withOpacity(0.8),
                               ),
                             ),
                             const SizedBox(height: 4.0),
@@ -173,8 +173,7 @@ class _AbsenceDetailScreenState extends State<AbsenceDetailScreen> {
                             const SizedBox(height: 4.0),
                             BsBadge(
                               text: absenceStatusText[
-                                      absenceData!.absenceStatus!]!
-                                  .toUpperCase(),
+                                  absenceData!.absenceStatus!]!,
                               textStyle: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,

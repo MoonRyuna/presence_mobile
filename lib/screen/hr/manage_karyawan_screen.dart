@@ -60,15 +60,21 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
     if (_isLoading) return;
 
     final token = Provider.of<TokenProvider>(context, listen: false).token;
+    String? uAccountType =
+        Provider.of<UserProvider>(context, listen: false).user?.accountType;
 
     setState(() {
       _isLoading = true;
     });
 
+    String accountType = "";
+    if (uAccountType != null && uAccountType == "hrd") accountType = "karyawan";
+
     UserListResponse response = await _userService.getUserList(
       name: _searchController.text,
       page: _currentPage,
       limit: 10,
+      accountType: accountType,
       token: token,
     );
 

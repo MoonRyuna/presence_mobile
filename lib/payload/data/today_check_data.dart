@@ -14,21 +14,26 @@ class TodayCheckData {
   bool? alreadyOvertimeEnded;
   int? countKaryawanActive;
   int? countKaryawanInactive;
+  int? submissionPendingAbsence;
+  int? submissionPendingOvertime;
 
-  TodayCheckData(
-      {this.date,
-      this.isWeekend,
-      this.isHoliday,
-      this.holidayTitle,
-      this.isWorkday,
-      this.alreadyCheckIn,
-      this.alreadyCheckOut,
-      this.isAbsence,
-      this.haveOvertime,
-      this.alreadyOvertimeStarted,
-      this.alreadyOvertimeEnded,
-      this.countKaryawanActive,
-      this.countKaryawanInactive});
+  TodayCheckData({
+    this.date,
+    this.isWeekend,
+    this.isHoliday,
+    this.holidayTitle,
+    this.isWorkday,
+    this.alreadyCheckIn,
+    this.alreadyCheckOut,
+    this.isAbsence,
+    this.haveOvertime,
+    this.alreadyOvertimeStarted,
+    this.alreadyOvertimeEnded,
+    this.countKaryawanActive,
+    this.countKaryawanInactive,
+    this.submissionPendingAbsence,
+    this.submissionPendingOvertime,
+  });
 
   factory TodayCheckData.fromJson(Map<String, dynamic> json) {
     return TodayCheckData(
@@ -46,7 +51,9 @@ class TodayCheckData {
       alreadyOvertimeStarted: json['already_overtime_started'],
       alreadyOvertimeEnded: json['already_overtime_ended'],
       countKaryawanActive: json['count_karyawan_active'],
-      countKaryawanInactive: json['count_karayawan_inactive'],
+      countKaryawanInactive: json['count_karyawan_inactive'],
+      submissionPendingAbsence: json['submission_pending_absence'],
+      submissionPendingOvertime: json['submission_pending_overtime'],
     );
   }
 
@@ -64,7 +71,9 @@ class TodayCheckData {
     data['already_overtime_started'] = alreadyOvertimeStarted;
     data['already_overtime_ended'] = alreadyOvertimeEnded;
     data['count_karyawan_active'] = countKaryawanActive;
-    data['count_karayawan_inactive'] = countKaryawanInactive;
+    data['count_karyawan_inactive'] = countKaryawanInactive;
+    data['submission_pending_absence'] = submissionPendingAbsence;
+    data['submission_pending_overtime'] = submissionPendingOvertime;
     return data;
   }
 

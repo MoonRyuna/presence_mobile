@@ -37,7 +37,6 @@ dependencies:
   provider: ^6.0.5
   ai_awesome_message: ^3.0.0
   animated_bottom_navigation_bar: ^1.2.0
-  ionicons: ^0.2.2
   intl: ^0.18.0
   google_fonts: ^4.0.3
   location: ^5.0.0-dev.8
@@ -45,7 +44,6 @@ dependencies:
   geolocator: ^9.0.2
   geocoding: ^2.1.0
   localstorage: ^4.0.1+2
-  flutter_statusbarcolor_ns: ^0.5.0
   http: ^0.13.5
   device_information: ^0.0.4
   permission_handler: ^10.2.0
@@ -60,7 +58,10 @@ dependencies:
   timeline_tile: ^2.0.0
   dropdown_search: ^5.0.6
   flutter_slidable: ^3.0.0
-  webview_flutter: ^3.0.0
+  webview_flutter: ^4.0.0
+  workmanager: ^0.5.1
+  shared_preferences: ^2.1.2
+  supabase_flutter: ^1.10.2
 
 dev_dependencies:
   flutter_test:

@@ -364,7 +364,7 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
                                     ),
                                     const SizedBox(height: 6.0),
                                     Text(
-                                      "${absence.absenceType!.name!} ${absence.cutAnnualLeave! ? "( potong cuti )" : ""}",
+                                      "${absence.absenceType!.name!} ${absence.cutAnnualLeave! ? "(potong cuti)" : ""}",
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Colors.blue.withOpacity(0.8),
@@ -382,7 +382,7 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
                                     ),
                                     const SizedBox(height: 4.0),
                                     BsBadge(
-                                      text: absenceStatusText!.toUpperCase(),
+                                      text: absenceStatusText!,
                                       textStyle: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,

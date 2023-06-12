@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:presence_alpha/constant/env_constant.dart';
 import 'package:presence_alpha/provider/dashboard_provider.dart';
 import 'package:presence_alpha/provider/date_provider.dart';
 import 'package:presence_alpha/provider/hr_navbar_provider.dart';
@@ -13,11 +14,17 @@ import 'package:presence_alpha/screen/splash_screen.dart';
 import 'package:presence_alpha/storage/app_storage.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppStorage.init();
   await CalendarUtility.init();
+
+  await Supabase.initialize(
+    url: EnvConstant.supabaseUrl,
+    anonKey: EnvConstant.supabaseKey,
+  );
 
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider<NavbarProvider>(create: (_) => NavbarProvider()),

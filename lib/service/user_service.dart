@@ -423,6 +423,7 @@ class UserService {
   Future<UserListResponse> getUserList(
       {String? name,
       String? userCode,
+      String? accountType,
       bool deleted = false,
       int page = 1,
       int limit = 10,
@@ -436,11 +437,13 @@ class UserService {
     Map<String, dynamic> queryParams = {
       'page': page.toString(),
       'limit': limit.toString(),
+      'account_type': accountType.toString(),
       'deleted': deleted.toString(),
     };
 
     if (name != null) queryParams['name'] = name;
     if (userCode != null) queryParams['user_code'] = userCode;
+    if (accountType != null) queryParams['account_type'] = accountType;
     if (order != null) queryParams['order'] = order;
 
     String queryString = Uri(queryParameters: queryParams).query;

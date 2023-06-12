@@ -26,6 +26,23 @@ import 'package:presence_alpha/utility/maps_utility.dart';
 import 'package:presence_alpha/widget/bs_alert.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
+
+import 'package:workmanager/workmanager.dart';
+
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) {
+    print("Native called background task: $task");
+    return Future.value(true);
+  });
+}
+
+void startTracking() {
+  Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
+  Workmanager().registerPeriodicTask("task-identifier", "simpleTask",
+      frequency: const Duration(minutes: 16));
+}
 
 class PresenceActionScreen extends StatefulWidget {
   const PresenceActionScreen({super.key});
@@ -323,6 +340,35 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
           isKeyboardVisible = visible;
         });
       });
+    }
+  }
+
+  void sendLocationToSupabase() async {
+    try {
+      String userId = Provider.of<UserProvider>(
+        context,
+        listen: false,
+      ).user!.id!;
+
+      String cAddress = address;
+      String cLatitude = _currentPosition.latitude.toString();
+      String cLongitude = _currentPosition.longitude.toString();
+
+      await Supabase.instance.client.from('user_location').upsert({
+        'user_id': userId,
+        'lat': cLatitude,
+        'lng': cLongitude,
+        'address': cAddress
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Saved the Task'),
+      ));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Error saving task'),
+        backgroundColor: Colors.red,
+      ));
     }
   }
 
@@ -682,6 +728,18 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                     radius: 30,
                     child:
                         const Icon(Icons.business_center, color: Colors.white),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                FloatingActionButton(
+                  heroTag: "btnToSupabase",
+                  onPressed: () {
+                    sendLocationToSupabase();
+                  },
+                  child: CircleAvatar(
+                    backgroundColor: ColorConstant.lightPrimary,
+                    radius: 30,
+                    child: const Icon(Icons.flash_on, color: Colors.white),
                   ),
                 ),
                 const SizedBox(height: 16),
