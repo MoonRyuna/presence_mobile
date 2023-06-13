@@ -18,6 +18,7 @@ import 'package:presence_alpha/storage/app_storage.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:provider/provider.dart';
+import 'package:workmanager/workmanager.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -172,6 +173,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
             print("accountType $accountType");
 
+            print("stop all task");
+            Workmanager().cancelAll();
             if (accountType == "hrd" || accountType == "admin") {
               Navigator.of(context)
                   .pushReplacement(MaterialPageRoute(builder: (_) {

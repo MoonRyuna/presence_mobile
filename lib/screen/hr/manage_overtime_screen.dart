@@ -507,10 +507,9 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
                                         children: [
                                           BsBadge(
                                             text: (overtime.submissionType ==
-                                                        "new"
-                                                    ? "pengajuan"
-                                                    : "pembatalan")
-                                                .toUpperCase(),
+                                                    "new"
+                                                ? "Pengajuan"
+                                                : "Pembatalan"),
                                             textStyle: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: Colors.white,
@@ -519,7 +518,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
                                             backgroundColor: (overtime
                                                         .submissionType! ==
                                                     "new"
-                                                ? Colors.green
+                                                ? Colors.purple
                                                 : overtime.submissionType! ==
                                                         "cancel"
                                                     ? Colors.red
@@ -531,8 +530,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
                                           ),
                                           const SizedBox(width: 5),
                                           BsBadge(
-                                            text: submissionStatusText!
-                                                .toUpperCase(),
+                                            text: submissionStatusText!,
                                             textStyle: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: Colors.white,

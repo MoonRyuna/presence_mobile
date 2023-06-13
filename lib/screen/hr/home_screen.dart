@@ -24,6 +24,7 @@ import 'package:presence_alpha/utility/common_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:presence_alpha/utility/maps_utility.dart';
 import 'package:presence_alpha/widget/bs_alert.dart';
+import 'package:presence_alpha/widget/dashboard_box.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -383,7 +384,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Padding(padding: EdgeInsets.all(5)),
                     userInfo(),
                     const Padding(padding: EdgeInsets.all(10)),
-                    boxInfo("HRD"),
+                    Consumer<UserProvider>(builder: (context, up, child) {
+                      return boxInfo(up.user?.accountType != null
+                          ? up.user!.accountType!.toString().toUpperCase()
+                          : "-");
+                    }),
                     const SizedBox(height: 20),
                     Consumer<PropertiesProvider>(builder: (context, pp, child) {
                       if (pp.todayCheckData?.isWorkday == true) {
@@ -426,6 +431,47 @@ class _HomeScreenState extends State<HomeScreen> {
                       return Container();
                     }),
                     const Padding(padding: EdgeInsets.all(10)),
+                    Consumer<PropertiesProvider>(builder: (context, pp, child) {
+                      return Column(
+                        children: [
+                          DashboardBox(
+                            color: Colors.orange,
+                            icon: Icons.supervisor_account_rounded,
+                            title: 'Jumlah Karyawan Terdaftar',
+                            value: pp.todayCheckData?.countKaryawanActive
+                                    .toString() ??
+                                "0",
+                          ),
+                          const SizedBox(height: 20),
+                          DashboardBox(
+                            color: Colors.red,
+                            icon: Icons.delete,
+                            title: 'Jumlah Karyawan Terhapus',
+                            value: pp.todayCheckData?.countKaryawanInactive
+                                    .toString() ??
+                                "0",
+                          ),
+                          const SizedBox(height: 20),
+                          DashboardBox(
+                            color: Colors.purple,
+                            icon: Icons.access_time,
+                            title: 'Lembur Belum Disetujui',
+                            value: pp.todayCheckData?.submissionPendingOvertime
+                                    .toString() ??
+                                "0",
+                          ),
+                          const SizedBox(height: 20),
+                          DashboardBox(
+                            color: Colors.purple,
+                            icon: Icons.assignment,
+                            title: 'Izin Belum Disetujui',
+                            value: pp.todayCheckData?.submissionPendingAbsence
+                                    .toString() ??
+                                "0",
+                          ),
+                        ],
+                      );
+                    }),
                   ],
                 ),
               ),

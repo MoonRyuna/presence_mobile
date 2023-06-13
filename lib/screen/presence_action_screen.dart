@@ -26,6 +26,9 @@ import 'package:presence_alpha/utility/maps_utility.dart';
 import 'package:presence_alpha/widget/bs_alert.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
+
+import 'package:workmanager/workmanager.dart';
 
 class PresenceActionScreen extends StatefulWidget {
   const PresenceActionScreen({super.key});
@@ -326,6 +329,32 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
     }
   }
 
+  void startTracking() {
+    final up = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
+
+    String userId = up.user!.id!;
+
+    Workmanager().registerPeriodicTask(
+      "send-location-task",
+      "user-$userId",
+      frequency: const Duration(
+        minutes: 15,
+      ),
+      inputData: {
+        'user_id': userId,
+        'date': CalendarUtility.dateNow(),
+      },
+    );
+  }
+
+  void stopTracking() {
+    print("stop all task");
+    Workmanager().cancelAll();
+  }
+
   void onConfirmation() async {
     final pp = Provider.of<PropertiesProvider>(
       context,
@@ -426,19 +455,6 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
         print("jarak dalam meter $jarakM");
         // return;
 
-        if (_type == 'wfo') {
-          // cek jarak kantor ke lokasi
-          if (jarakM > geofence) {
-            AmessageUtility.show(
-              context,
-              "Info",
-              "Anda berada diluar area kantor",
-              TipType.WARN,
-            );
-            return;
-          }
-        }
-
         final _location = {
           'lat': _latitude,
           'lng': _longitude,
@@ -446,6 +462,20 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
         };
 
         if (infoType == "1") {
+          if (_type == 'wfo') {
+            // cek jarak kantor ke lokasi
+            if (jarakM > geofence) {
+              AmessageUtility.show(
+                context,
+                "Info",
+                "Anda berada diluar area kantor",
+                TipType.WARN,
+              );
+              return;
+            }
+          }
+          stopTracking();
+
           final requestData = {
             "user_id": _user_id,
             "check_in": _time,
@@ -465,6 +495,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
               response.message!,
               TipType.COMPLETE,
             );
+            startTracking();
           } else {
             AmessageUtility.show(
               context,
@@ -493,6 +524,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
               response.message!,
               TipType.COMPLETE,
             );
+            stopTracking();
           } else {
             AmessageUtility.show(
               context,
@@ -626,6 +658,9 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
   void dispose() {
     _descController.dispose();
     _timer.cancel();
+    _controller.future.then((controller) {
+      controller.dispose();
+    });
     super.dispose();
   }
 

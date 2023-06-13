@@ -374,7 +374,7 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
                                     ),
                                     const SizedBox(height: 4.0),
                                     BsBadge(
-                                      text: overtimeStatusText!.toUpperCase(),
+                                      text: overtimeStatusText!,
                                       textStyle: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,

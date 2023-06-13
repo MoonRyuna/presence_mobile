@@ -8,6 +8,7 @@ import 'package:presence_alpha/payload/response/change_password_response.dart';
 import 'package:presence_alpha/payload/response/create_user_response.dart';
 import 'package:presence_alpha/payload/response/dashboard1_response.dart';
 import 'package:presence_alpha/payload/response/delete_user_response.dart';
+import 'package:presence_alpha/payload/response/list_monitoring_karyawan_response.dart';
 import 'package:presence_alpha/payload/response/reset_imei_response.dart';
 import 'package:presence_alpha/payload/response/today_check_response.dart';
 import 'package:presence_alpha/payload/response/update_profile_response.dart';
@@ -424,6 +425,7 @@ class UserService {
   Future<UserListResponse> getUserList(
       {String? name,
       String? userCode,
+      String? accountType,
       bool deleted = false,
       int page = 1,
       int limit = 10,
@@ -437,11 +439,13 @@ class UserService {
     Map<String, dynamic> queryParams = {
       'page': page.toString(),
       'limit': limit.toString(),
+      'account_type': accountType.toString(),
       'deleted': deleted.toString(),
     };
 
     if (name != null) queryParams['name'] = name;
     if (userCode != null) queryParams['user_code'] = userCode;
+    if (accountType != null) queryParams['account_type'] = accountType;
     if (order != null) queryParams['order'] = order;
 
     String queryString = Uri(queryParameters: queryParams).query;
@@ -537,6 +541,69 @@ class UserService {
       return ListJatahCutiTahunanResponse(
         status: false,
         message: e.toString(),
+      );
+    }
+  }
+
+  Future<ListMonitoringKaryawanResponse> getMonitoringKaryawan(
+      {String? date,
+      String? name,
+      int page = 1,
+      int limit = 10,
+      String? token}) async {
+    print('GET: user list');
+
+    String target = '${ApiConstant.baseApi}/user/list/monitor_karyawan';
+    print('target: $target');
+
+    Map<String, dynamic> queryParams = {
+      'date': date,
+      'page': page.toString(),
+      'limit': limit.toString(),
+    };
+
+    if (name != null) queryParams['name'] = name;
+
+    String queryString = Uri(queryParameters: queryParams).query;
+    target += '?$queryString';
+
+    try {
+      final response = await http.get(
+        Uri.parse(target),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        return ListMonitoringKaryawanResponse.fromJson(responseData);
+      } else {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        return ListMonitoringKaryawanResponse(
+          status: false,
+          message: responseData['message'] ?? 'Unable to fetch user list',
+          data: null,
+        );
+      }
+    } on SocketException catch (e) {
+      return ListMonitoringKaryawanResponse(
+        status: false,
+        message: e.message,
+        data: null,
+      );
+    } on Exception {
+      return ListMonitoringKaryawanResponse(
+        status: false,
+        message: 'Failed to connect to server',
+        data: null,
+      );
+    } catch (e) {
+      return ListMonitoringKaryawanResponse(
+        status: false,
+        message: e.toString(),
+        data: null,
       );
     }
   }

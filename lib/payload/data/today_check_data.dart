@@ -12,6 +12,10 @@ class TodayCheckData {
   bool? haveOvertime;
   bool? alreadyOvertimeStarted;
   bool? alreadyOvertimeEnded;
+  int? countKaryawanActive;
+  int? countKaryawanInactive;
+  int? submissionPendingAbsence;
+  int? submissionPendingOvertime;
 
   TodayCheckData({
     this.date,
@@ -25,6 +29,10 @@ class TodayCheckData {
     this.haveOvertime,
     this.alreadyOvertimeStarted,
     this.alreadyOvertimeEnded,
+    this.countKaryawanActive,
+    this.countKaryawanInactive,
+    this.submissionPendingAbsence,
+    this.submissionPendingOvertime,
   });
 
   factory TodayCheckData.fromJson(Map<String, dynamic> json) {
@@ -42,6 +50,10 @@ class TodayCheckData {
       haveOvertime: json['have_overtime'],
       alreadyOvertimeStarted: json['already_overtime_started'],
       alreadyOvertimeEnded: json['already_overtime_ended'],
+      countKaryawanActive: json['count_karyawan_active'],
+      countKaryawanInactive: json['count_karyawan_inactive'],
+      submissionPendingAbsence: json['submission_pending_absence'],
+      submissionPendingOvertime: json['submission_pending_overtime'],
     );
   }
 
@@ -58,6 +70,10 @@ class TodayCheckData {
     data['have_overtime'] = haveOvertime;
     data['already_overtime_started'] = alreadyOvertimeStarted;
     data['already_overtime_ended'] = alreadyOvertimeEnded;
+    data['count_karyawan_active'] = countKaryawanActive;
+    data['count_karyawan_inactive'] = countKaryawanInactive;
+    data['submission_pending_absence'] = submissionPendingAbsence;
+    data['submission_pending_overtime'] = submissionPendingOvertime;
     return data;
   }
 

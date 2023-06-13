@@ -269,8 +269,11 @@ class _ManageReportScreenState extends State<ManageReportScreen> {
         TipType.COMPLETE,
       );
 
-      var url = ApiConstant.baseUrl + response.data!.url!;
+      print("ini ${response.data!.url!}");
+      var url = ApiConstant.baseUrl + '/' + response.data!.url!;
       var filename = url.substring(url.lastIndexOf("/") + 1);
+      print(url);
+      print(savePath + filename);
       await downloadFile(url, savePath + filename);
     } catch (e) {
       LoadingUtility.hide();
