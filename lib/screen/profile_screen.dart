@@ -1,11 +1,15 @@
+import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
+import 'package:presence_alpha/model/user_model.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
+import 'package:presence_alpha/screen/hr/manage_karyawan_detail_screen.dart';
 import 'package:presence_alpha/screen/login_screen.dart';
 import 'package:presence_alpha/screen/ubah_password_screen.dart';
 import 'package:presence_alpha/screen/ubah_profile_screen.dart';
 import 'package:presence_alpha/storage/app_storage.dart';
+import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -16,14 +20,15 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String? accountType = null;
+  String? accountType;
+  UserModel? user;
 
   @override
   void initState() {
     super.initState();
     // Call userProvider to get user data and update the userData variable
-    accountType =
-        Provider.of<UserProvider>(context, listen: false).user?.accountType;
+    user = Provider.of<UserProvider>(context, listen: false).user;
+    accountType = user?.accountType;
   }
 
   @override
@@ -40,7 +45,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             children: <Widget>[
               profileInfo(),
-              profileActions(context),
+              profileActions(context, user: user),
             ],
           ),
         ),
@@ -95,7 +100,7 @@ Widget profileInfo() {
   );
 }
 
-Widget profileActions(BuildContext context) {
+Widget profileActions(BuildContext context, {UserModel? user}) {
   return Column(
     children: <Widget>[
       Container(
@@ -115,6 +120,49 @@ Widget profileActions(BuildContext context) {
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: ListTile(
             leading: const Icon(Icons.person),
+            title: const Text(
+              'Profile',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () async {
+              if (user == null) {
+                AmessageUtility.show(
+                  context,
+                  "Gagal",
+                  "Data Profile Tidak Ditemukan",
+                  TipType.ERROR,
+                );
+              } else {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ManageKaryawanDetailScreen(user: user),
+                  ),
+                );
+              }
+            },
+          ),
+        ),
+      ),
+      Container(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: Colors.grey.shade300,
+              width: 0.5,
+            ),
+            bottom: BorderSide(
+              color: Colors.grey.shade300,
+              width: 0.5,
+            ),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: ListTile(
+            leading: const Icon(Icons.manage_accounts),
             title: const Text(
               'Ubah Profile',
               style: TextStyle(fontWeight: FontWeight.bold),
