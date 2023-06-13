@@ -365,30 +365,33 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
                     icon: Icons.delete,
                     label: 'Delete',
                   ),
-                  SlidableAction(
-                    onPressed: (context) async {
-                      if (user != null && user.id != null) {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                RekapKaryawanScreen(id: user.id!),
-                          ),
-                        );
-                      } else {
-                        AmessageUtility.show(
-                          context,
-                          "Gagal",
-                          "Info user tidak diketahui",
-                          TipType.ERROR,
-                        );
-                      }
-                    },
-                    backgroundColor: Colors.purple,
-                    foregroundColor: Colors.white,
-                    icon: Icons.data_thresholding_outlined,
-                    label: 'Rekap',
-                  ),
+                  if (user != null &&
+                      user.accountType != null &&
+                      user.accountType?.toLowerCase() == "karyawan")
+                    SlidableAction(
+                      onPressed: (context) async {
+                        if (user != null && user.id != null) {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  RekapKaryawanScreen(id: user.id!),
+                            ),
+                          );
+                        } else {
+                          AmessageUtility.show(
+                            context,
+                            "Gagal",
+                            "Info user tidak diketahui",
+                            TipType.ERROR,
+                          );
+                        }
+                      },
+                      backgroundColor: Colors.purple,
+                      foregroundColor: Colors.white,
+                      icon: Icons.data_thresholding_outlined,
+                      label: 'Rekap',
+                    ),
                 ],
               ),
               child: Padding(

@@ -3,7 +3,17 @@ import 'package:intl/intl.dart';
 
 class CalendarUtility {
   static String dateNow() {
-    return DateTime.now().toString().substring(0, 10);
+    return DateTime.now().toLocal().toString().substring(0, 10);
+  }
+
+  static String dateNow2() {
+    final formatter = DateFormat('EEEE, dd MMMM yyyy', 'id_ID');
+    return formatter.format(DateTime.now().toLocal());
+  }
+
+  static String dateNow3() {
+    final formatter = DateFormat('yyyy-MM-dd HH:mm:ss', 'id_ID');
+    return formatter.format(DateTime.now().toLocal()).toString();
   }
 
   static Future<void> init() async {
@@ -12,6 +22,11 @@ class CalendarUtility {
 
   static String formatBasic(DateTime date) {
     final formatter = DateFormat('EEEE, dd MMMM yyyy HH:mm:ss', 'id_ID');
+    return formatter.format(date);
+  }
+
+  static String formatBasic2(DateTime date) {
+    final formatter = DateFormat('EEEE, dd MMMM yyyy', 'id_ID');
     return formatter.format(date);
   }
 

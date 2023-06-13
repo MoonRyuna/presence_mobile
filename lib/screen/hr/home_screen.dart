@@ -385,8 +385,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     userInfo(),
                     const Padding(padding: EdgeInsets.all(10)),
                     Consumer<UserProvider>(builder: (context, up, child) {
-                      return boxInfo(
-                          up.user!.accountType!.toString().toUpperCase());
+                      return boxInfo(up.user?.accountType != null
+                          ? up.user!.accountType!.toString().toUpperCase()
+                          : "-");
                     }),
                     const SizedBox(height: 20),
                     Consumer<PropertiesProvider>(builder: (context, pp, child) {

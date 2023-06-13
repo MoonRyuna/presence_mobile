@@ -22,7 +22,9 @@ class RekapKaryawanScreen extends StatefulWidget {
 }
 
 class _RekapKaryawanScreenState extends State<RekapKaryawanScreen> {
-  WebViewController? _webViewController;
+  final WebViewController _webViewController = WebViewController()
+    ..setJavaScriptMode(JavaScriptMode.unrestricted)
+    ..setBackgroundColor(const Color(0x00000000));
 
   List<MonthOption> monthOptions = [
     MonthOption('1', 'Januari'),
@@ -177,16 +179,8 @@ class _RekapKaryawanScreenState extends State<RekapKaryawanScreen> {
           ),
           SizedBox(
             width: MediaQuery.of(context).size.width,
-            height: (MediaQuery.of(context).size.height - 135),
-            child: WebView(
-              gestureNavigationEnabled: false,
-              zoomEnabled: false,
-              backgroundColor: Colors.white,
-              javascriptMode: JavascriptMode.unrestricted,
-              onWebViewCreated: (WebViewController webViewController) {
-                _webViewController = webViewController;
-              },
-            ),
+            height: (MediaQuery.of(context).size.height - 150),
+            child: WebViewWidget(controller: _webViewController),
           ),
         ],
       ),
@@ -224,10 +218,10 @@ class _RekapKaryawanScreenState extends State<RekapKaryawanScreen> {
     print("response status ${response.statusCode}");
 
     if (response.statusCode == 200) {
-      await _webViewController?.loadHtmlString(response.body);
+      await _webViewController.loadHtmlString(response.body);
       LoadingUtility.hide();
     } else {
-      await _webViewController?.loadHtmlString(
+      await _webViewController.loadHtmlString(
           '<h1 style="text-align: center;">Gagal mendapatkan data rekap</h1>');
       LoadingUtility.hide();
     }

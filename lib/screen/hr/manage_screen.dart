@@ -250,7 +250,7 @@ Widget profileActions(BuildContext context) {
 Widget officeLogo(String? imagePath) {
   if (imagePath == null) {
     return Image.asset(
-      'assets/images/default.png',
+      'assets/images/default-logo.png',
       width: 200,
       height: 120,
     );
@@ -263,7 +263,7 @@ Widget officeLogo(String? imagePath) {
     width: 200,
     height: 120,
     errorBuilder: (context, error, stackTrace) => Image.asset(
-      'assets/images/default.png',
+      'assets/images/default-logo.png',
       width: 200,
       height: 120,
     ),

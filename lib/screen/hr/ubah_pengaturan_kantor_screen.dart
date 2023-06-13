@@ -661,7 +661,7 @@ class _UbahPengaturanKantorScreenState
 Widget officeLogo(String? imagePath) {
   if (imagePath == null) {
     return Image.asset(
-      'assets/images/default.png',
+      'assets/images/default-logo.png',
       width: 200,
     );
   }
@@ -673,7 +673,7 @@ Widget officeLogo(String? imagePath) {
     width: 200,
     errorBuilder: (context, error, stackTrace) {
       return Image.asset(
-        'assets/images/default.png',
+        'assets/images/default-logo.png',
         width: 200,
       );
     },

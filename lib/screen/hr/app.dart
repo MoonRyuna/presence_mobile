@@ -2,6 +2,7 @@ import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.da
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
 import 'package:presence_alpha/provider/hr_navbar_provider.dart';
+import 'package:presence_alpha/screen/hr/monitoring_karyawan.dart';
 import 'package:provider/provider.dart';
 
 class App extends StatelessWidget {
@@ -44,12 +45,12 @@ class App extends StatelessWidget {
         backgroundColor: ColorConstant.lightPrimary,
         onPressed: () {
           //move to PresenceActionScreen
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (context) => const PresenceActionScreen(),
-          //   ),
-          // );
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MonitoringKaryawanScreen(),
+            ),
+          );
         },
         child: const Icon(
           Icons.map,

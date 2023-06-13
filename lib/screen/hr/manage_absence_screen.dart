@@ -513,9 +513,8 @@ class _ManageAbsenceScreenState extends State<ManageAbsenceScreen> {
                                           BsBadge(
                                             text:
                                                 (absence.submissionType == "new"
-                                                        ? "pengajuan"
-                                                        : "pembatalan")
-                                                    .toUpperCase(),
+                                                    ? "Pengajuan"
+                                                    : "Pembatalan"),
                                             textStyle: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: Colors.white,
@@ -524,7 +523,7 @@ class _ManageAbsenceScreenState extends State<ManageAbsenceScreen> {
                                             backgroundColor:
                                                 (absence.submissionType! ==
                                                         "new"
-                                                    ? Colors.green
+                                                    ? Colors.purple
                                                     : absence.submissionType! ==
                                                             "cancel"
                                                         ? Colors.red
@@ -536,8 +535,7 @@ class _ManageAbsenceScreenState extends State<ManageAbsenceScreen> {
                                           ),
                                           const SizedBox(width: 5),
                                           BsBadge(
-                                            text: submissionStatusText!
-                                                .toUpperCase(),
+                                            text: submissionStatusText!,
                                             textStyle: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: Colors.white,

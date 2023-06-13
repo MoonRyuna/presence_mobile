@@ -30,20 +30,6 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
 
 import 'package:workmanager/workmanager.dart';
 
-@pragma('vm:entry-point')
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) {
-    print("Native called background task: $task");
-    return Future.value(true);
-  });
-}
-
-void startTracking() {
-  Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
-  Workmanager().registerPeriodicTask("task-identifier", "simpleTask",
-      frequency: const Duration(minutes: 16));
-}
-
 class PresenceActionScreen extends StatefulWidget {
   const PresenceActionScreen({super.key});
 
@@ -343,33 +329,30 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
     }
   }
 
-  void sendLocationToSupabase() async {
-    try {
-      String userId = Provider.of<UserProvider>(
-        context,
-        listen: false,
-      ).user!.id!;
+  void startTracking() {
+    final up = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
 
-      String cAddress = address;
-      String cLatitude = _currentPosition.latitude.toString();
-      String cLongitude = _currentPosition.longitude.toString();
+    String userId = up.user!.id!;
 
-      await Supabase.instance.client.from('user_location').upsert({
+    Workmanager().registerPeriodicTask(
+      "send-location-task",
+      "user-$userId",
+      frequency: const Duration(
+        minutes: 15,
+      ),
+      inputData: {
         'user_id': userId,
-        'lat': cLatitude,
-        'lng': cLongitude,
-        'address': cAddress
-      });
+        'date': CalendarUtility.dateNow(),
+      },
+    );
+  }
 
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Saved the Task'),
-      ));
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Error saving task'),
-        backgroundColor: Colors.red,
-      ));
-    }
+  void stopTracking() {
+    print("stop all task");
+    Workmanager().cancelAll();
   }
 
   void onConfirmation() async {
@@ -472,19 +455,6 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
         print("jarak dalam meter $jarakM");
         // return;
 
-        if (_type == 'wfo') {
-          // cek jarak kantor ke lokasi
-          if (jarakM > geofence) {
-            AmessageUtility.show(
-              context,
-              "Info",
-              "Anda berada diluar area kantor",
-              TipType.WARN,
-            );
-            return;
-          }
-        }
-
         final _location = {
           'lat': _latitude,
           'lng': _longitude,
@@ -492,6 +462,20 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
         };
 
         if (infoType == "1") {
+          if (_type == 'wfo') {
+            // cek jarak kantor ke lokasi
+            if (jarakM > geofence) {
+              AmessageUtility.show(
+                context,
+                "Info",
+                "Anda berada diluar area kantor",
+                TipType.WARN,
+              );
+              return;
+            }
+          }
+          stopTracking();
+
           final requestData = {
             "user_id": _user_id,
             "check_in": _time,
@@ -511,6 +495,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
               response.message!,
               TipType.COMPLETE,
             );
+            startTracking();
           } else {
             AmessageUtility.show(
               context,
@@ -539,6 +524,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
               response.message!,
               TipType.COMPLETE,
             );
+            stopTracking();
           } else {
             AmessageUtility.show(
               context,
@@ -672,6 +658,9 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
   void dispose() {
     _descController.dispose();
     _timer.cancel();
+    _controller.future.then((controller) {
+      controller.dispose();
+    });
     super.dispose();
   }
 
@@ -728,18 +717,6 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                     radius: 30,
                     child:
                         const Icon(Icons.business_center, color: Colors.white),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                FloatingActionButton(
-                  heroTag: "btnToSupabase",
-                  onPressed: () {
-                    sendLocationToSupabase();
-                  },
-                  child: CircleAvatar(
-                    backgroundColor: ColorConstant.lightPrimary,
-                    radius: 30,
-                    child: const Icon(Icons.flash_on, color: Colors.white),
                   ),
                 ),
                 const SizedBox(height: 16),
