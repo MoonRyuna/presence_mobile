@@ -161,6 +161,7 @@ class _MonitoringKaryawanScreenState extends State<MonitoringKaryawanScreen> {
                                 id: user.userId!,
                                 type: user.type!,
                                 name: user.name!,
+                                profilePicture: user.profilePicture!,
                                 date: CalendarUtility.dateNow(),
                               ),
                             ),
@@ -298,7 +299,7 @@ class _MonitoringKaryawanScreenState extends State<MonitoringKaryawanScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Monitoring Karyawan'),
+        title: const Text('Pemantauan Karyawan'),
         backgroundColor: ColorConstant.lightPrimary,
       ),
       floatingActionButton: Column(

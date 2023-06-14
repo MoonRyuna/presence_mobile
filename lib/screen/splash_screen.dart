@@ -117,9 +117,11 @@ class _SplashScreenState extends State<SplashScreen> {
         }
       }
 
+      print(response.message);
       if (response.message == "Connection timed out" ||
           response.message == "Connection Failed" ||
-          response.message == "Failed to connect to server") {
+          response.message == "Failed to connect to server" ||
+          response.message == "Connection refused") {
         Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) {
           return const OfflineScreen();
         }));

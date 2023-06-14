@@ -1,13 +1,17 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
 import 'package:presence_alpha/model/user_location_model.dart';
+import 'package:presence_alpha/provider/office_config_provide.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
+import 'package:provider/provider.dart';
 
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
 import 'package:timeline_tile/timeline_tile.dart';
 
 class LocationKaryawanScreen extends StatefulWidget {
@@ -15,6 +19,7 @@ class LocationKaryawanScreen extends StatefulWidget {
   final String type;
   final String name;
   final String date;
+  final String profilePicture;
 
   const LocationKaryawanScreen({
     super.key,
@@ -22,6 +27,7 @@ class LocationKaryawanScreen extends StatefulWidget {
     required this.type,
     required this.name,
     required this.date,
+    required this.profilePicture,
   });
 
   @override
@@ -29,7 +35,8 @@ class LocationKaryawanScreen extends StatefulWidget {
 }
 
 class _LocationKaryawanScreenState extends State<LocationKaryawanScreen> {
-  late final _stream;
+  dynamic _stream;
+  final Set<Marker> _markers = {};
 
   late String distanceBetweenPoints = "-";
   int distanceInMeter = 0;
@@ -46,7 +53,7 @@ class _LocationKaryawanScreenState extends State<LocationKaryawanScreen> {
     bearing: 0,
   );
 
-  final CameraPosition _kOffice = const CameraPosition(
+  CameraPosition _kOffice = const CameraPosition(
     target: LatLng(-7.011477899042147, 107.55234770202203),
     zoom: 17,
   );
@@ -86,6 +93,97 @@ class _LocationKaryawanScreenState extends State<LocationKaryawanScreen> {
     }
   }
 
+  Future<BitmapDescriptor>? _createMarkerImage(
+    String icon,
+    double width,
+    double height,
+  ) async {
+    final Uint8List byteList = await _getBytesFromAsset('assets/images/$icon');
+    final ui.Codec codec = await ui.instantiateImageCodec(byteList);
+    final ui.FrameInfo frameInfo = await codec.getNextFrame();
+
+    final ui.Image image = frameInfo.image;
+    final ui.Image resizedImage = await _resizeImage(image, width, height);
+
+    final ByteData? byteData =
+        await resizedImage.toByteData(format: ui.ImageByteFormat.png);
+    final Uint8List? resizedByteList = byteData?.buffer.asUint8List();
+
+    return BitmapDescriptor.fromBytes(resizedByteList!);
+  }
+
+  Future<Uint8List> _getBytesFromAsset(String path) async {
+    final ByteData byteData = await rootBundle.load(path);
+    return byteData.buffer.asUint8List();
+  }
+
+  Future<ui.Image> _resizeImage(ui.Image image, double width, double height) {
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+    final Paint paint = Paint()..filterQuality = FilterQuality.high;
+
+    canvas.drawImageRect(
+      image,
+      Rect.fromLTRB(0, 0, image.width.toDouble(), image.height.toDouble()),
+      Rect.fromLTRB(0, 0, width, height),
+      paint,
+    );
+
+    final ui.Picture picture = pictureRecorder.endRecording();
+
+    return picture.toImage(width.toInt(), height.toInt());
+  }
+
+  void _createMarkers() async {
+    final ocp = Provider.of<OfficeConfigProvider>(
+      context,
+      listen: false,
+    );
+
+    dynamic ss = await Supabase.instance.client
+        .from('user_location')
+        .select()
+        .eq('user_id', widget.id)
+        .like('tracked_at', '${widget.date}%')
+        .order('tracked_at', ascending: true);
+    List<UserLocationModel> userLocations = (ss as List<dynamic>).map((data) {
+      return UserLocationModel.fromJson(data);
+    }).toList();
+
+    if (!mounted) return;
+    final userMarker = await _createMarkerImage('user-marker.png', 150, 150);
+    final officeMarker =
+        await _createMarkerImage('office-marker.png', 150, 150);
+
+    setState(() {
+      _markers.clear();
+      for (UserLocationModel userLocation in userLocations) {
+        print("ini ah ${userLocation.toJsonString()}");
+        Marker mm = Marker(
+          markerId: MarkerId(userLocation.id.toString()),
+          position: LatLng(userLocation.lat ?? 0.0, userLocation.lng ?? 0.0),
+          icon: userMarker ?? BitmapDescriptor.defaultMarker,
+          infoWindow: InfoWindow(
+            title: widget.name,
+            snippet: userLocation.address,
+          ),
+        );
+        _markers.add(mm);
+      }
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('kantor'),
+          position: _kOffice.target,
+          icon: officeMarker ?? BitmapDescriptor.defaultMarker,
+          infoWindow: InfoWindow(
+            title: 'Kantor',
+            snippet: ocp.officeConfig?.name,
+          ),
+        ),
+      );
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -95,35 +193,63 @@ class _LocationKaryawanScreenState extends State<LocationKaryawanScreen> {
     print("ini name ${widget.name}");
     print("ini date ${widget.date}");
 
-    _stream = Supabase.instance.client
-        .from('user_location')
-        .select()
-        .eq('user_id', widget.id)
-        .like('tracked_at', '${widget.date}%');
+    getList();
+    Supabase.instance.client.channel('public:user_location').on(
+      RealtimeListenTypes.postgresChanges,
+      ChannelFilter(event: '*', schema: 'public', table: 'user_location'),
+      (payload, [ref]) {
+        print('Change received: ${payload.toString()}');
+        getList();
+      },
+    ).subscribe();
+
+    setKantorMarker();
+  }
+
+  void setKantorMarker() {
+    final ocp = Provider.of<OfficeConfigProvider>(
+      context,
+      listen: false,
+    );
+
+    double latOffice = -7.01147799042147;
+    double lngOffice = 107.55234770202203;
+
+    if (ocp.officeConfig?.latitude != null) {
+      latOffice = ocp.officeConfig?.latitude as double;
+    }
+    if (ocp.officeConfig?.longitude != null) {
+      lngOffice = ocp.officeConfig?.longitude as double;
+    }
+    setState(() {
+      _kOffice = CameraPosition(
+        target: LatLng(latOffice, lngOffice),
+        zoom: 17,
+      );
+      radiusGeofence = ocp.officeConfig?.radius!.toDouble() ?? 20;
+      _circlesSet = _buildCircles();
+    });
   }
 
   @override
   void dispose() {
+    Supabase.instance.client.channel('public:user_location').unsubscribe();
     _controller.future.then((controller) {
       controller.dispose();
     });
     super.dispose();
   }
 
-  Future<List<Map<String, dynamic>>> getUserLocations(String userId) async {
-    final response = await Supabase.instance.client
-        .from('user_location')
-        .select()
-        .eq('user_Id', userId)
-        .order('tracked_at', ascending: false);
-
-    if (response.error != null) {
-      // Error handling
-      print('Error retrieving user locations: ${response.error!.message}');
-      return [];
-    }
-
-    return response.data as List<Map<String, dynamic>>;
+  void getList() async {
+    setState(() {
+      _stream = Supabase.instance.client
+          .from('user_location')
+          .select()
+          .eq('user_id', widget.id)
+          .like('tracked_at', '${widget.date}%')
+          .order('tracked_at', ascending: true);
+    });
+    _createMarkers();
   }
 
   @override
@@ -158,14 +284,15 @@ class _LocationKaryawanScreenState extends State<LocationKaryawanScreen> {
                 onMapCreated: (GoogleMapController controller) {
                   _controller.complete(controller);
                 },
-                markers: {
-                  Marker(
-                    markerId: const MarkerId('kantor'),
-                    position: _kOffice.target,
-                    infoWindow:
-                        const InfoWindow(title: 'PT. Digital Amore Kriyanesia'),
-                  ),
-                },
+                // markers: {
+                //   Marker(
+                //     markerId: const MarkerId('kantor'),
+                //     position: _kOffice.target,
+                //     infoWindow:
+                //         const InfoWindow(title: 'PT. Digital Amore Kriyanesia'),
+                //   ),
+                // },
+                markers: _markers,
                 circles: _circlesSet ?? const <Circle>{},
               ),
             ),
@@ -177,7 +304,9 @@ class _LocationKaryawanScreenState extends State<LocationKaryawanScreen> {
                 children: [
                   FloatingActionButton(
                     heroTag: "btnToRefresh",
-                    onPressed: () {},
+                    onPressed: () {
+                      getList();
+                    },
                     child: CircleAvatar(
                       backgroundColor: ColorConstant.lightPrimary,
                       radius: 30,
@@ -279,8 +408,6 @@ class _LocationKaryawanScreenState extends State<LocationKaryawanScreen> {
                               future: _stream,
                               builder: (context, snapshot) {
                                 if (snapshot.hasData) {
-                                  print(snapshot.data.toString());
-
                                   List<UserLocationModel> userLocations =
                                       (snapshot.data as List<dynamic>)
                                           .map((data) {
@@ -318,7 +445,7 @@ class _LocationKaryawanScreenState extends State<LocationKaryawanScreen> {
                                               ),
                                               const SizedBox(height: 8),
                                               Text(
-                                                  'Jam ${userLocation.trackedAt!.hour}:${userLocation.trackedAt!.minute}'),
+                                                  'Jam ${CalendarUtility.getTime(userLocation.trackedAt!)}'),
                                               const SizedBox(height: 8),
                                               Text(
                                                   'lat: ${userLocation.lat!.toString()}, lng: ${userLocation.lng.toString()}'),

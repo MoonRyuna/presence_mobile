@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -26,7 +27,7 @@ import 'package:presence_alpha/utility/maps_utility.dart';
 import 'package:presence_alpha/widget/bs_alert.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
+import 'dart:ui' as ui;
 
 import 'package:workmanager/workmanager.dart';
 
@@ -49,6 +50,8 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
   final TextEditingController _descController = TextEditingController();
 
   bool isKeyboardVisible = false;
+
+  final Set<Marker> _markers = {};
 
   Position _currentPosition = Position(
       longitude: 0,
@@ -94,12 +97,47 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
   int _selectedType = 0;
 
   Future<void> _getLocation() async {
+    final ocp = Provider.of<OfficeConfigProvider>(
+      context,
+      listen: false,
+    );
+
     await loadData();
     await getCurrentLocation();
+    final userMarker = await _createMarkerImage('user-marker.png', 150, 150);
+    final officeMarker =
+        await _createMarkerImage('office-marker.png', 150, 150);
+
     setState(() {
       _kCurrentPosition = CameraPosition(
         target: LatLng(_currentPosition.latitude, _currentPosition.longitude),
         zoom: 17,
+      );
+
+      _markers.clear();
+
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('user'),
+          position:
+              LatLng(_currentPosition.latitude, _currentPosition.longitude),
+          icon: userMarker ?? BitmapDescriptor.defaultMarker,
+          infoWindow: InfoWindow(
+            title: 'Lokasi Anda',
+            snippet: address,
+          ),
+        ),
+      );
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('kantor'),
+          position: _kOffice.target,
+          icon: officeMarker ?? BitmapDescriptor.defaultMarker,
+          infoWindow: InfoWindow(
+            title: 'Kantor',
+            snippet: ocp.officeConfig?.name,
+          ),
+        ),
       );
     });
     calculateDistance();
@@ -205,6 +243,8 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
           );
           radiusGeofence = ocp.officeConfig?.radius!.toDouble() ?? 20;
           _circlesSet = _buildCircles();
+
+          //set marker office
         });
       }
     }
@@ -286,6 +326,47 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
     final GoogleMapController controller = await _controller.future;
     controller.animateCamera(CameraUpdate.newCameraPosition(_kCurrentPosition));
     _getLocation();
+  }
+
+  Future<BitmapDescriptor>? _createMarkerImage(
+    String icon,
+    double width,
+    double height,
+  ) async {
+    final Uint8List byteList = await _getBytesFromAsset('assets/images/$icon');
+    final ui.Codec codec = await ui.instantiateImageCodec(byteList);
+    final ui.FrameInfo frameInfo = await codec.getNextFrame();
+
+    final ui.Image image = frameInfo.image;
+    final ui.Image resizedImage = await _resizeImage(image, width, height);
+
+    final ByteData? byteData =
+        await resizedImage.toByteData(format: ui.ImageByteFormat.png);
+    final Uint8List? resizedByteList = byteData?.buffer.asUint8List();
+
+    return BitmapDescriptor.fromBytes(resizedByteList!);
+  }
+
+  Future<Uint8List> _getBytesFromAsset(String path) async {
+    final ByteData byteData = await rootBundle.load(path);
+    return byteData.buffer.asUint8List();
+  }
+
+  Future<ui.Image> _resizeImage(ui.Image image, double width, double height) {
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+    final Paint paint = Paint()..filterQuality = FilterQuality.high;
+
+    canvas.drawImageRect(
+      image,
+      Rect.fromLTRB(0, 0, image.width.toDouble(), image.height.toDouble()),
+      Rect.fromLTRB(0, 0, width, height),
+      paint,
+    );
+
+    final ui.Picture picture = pictureRecorder.endRecording();
+
+    return picture.toImage(width.toInt(), height.toInt());
   }
 
   final PanelController _panelCtl = PanelController();
@@ -685,19 +766,20 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
               onMapCreated: (GoogleMapController controller) {
                 _controller.complete(controller);
               },
-              markers: {
-                Marker(
-                  markerId: const MarkerId('kantor'),
-                  position: _kOffice.target,
-                  infoWindow:
-                      const InfoWindow(title: 'PT. Digital Amore Kriyanesia'),
-                ),
-                Marker(
-                  markerId: const MarkerId('your_position'),
-                  position: _kCurrentPosition.target,
-                  infoWindow: const InfoWindow(title: 'Posisi Anda'),
-                ),
-              },
+              // markers: {
+              //   Marker(
+              //     markerId: const MarkerId('kantor'),
+              //     position: _kOffice.target,
+              //     infoWindow:
+              //         const InfoWindow(title: 'PT. Digital Amore Kriyanesia'),
+              //   ),
+              //   Marker(
+              //     markerId: const MarkerId('your_position'),
+              //     position: _kCurrentPosition.target,
+              //     infoWindow: const InfoWindow(title: 'Posisi Anda'),
+              //   ),
+              // },
+              markers: _markers,
               circles: _circlesSet ?? const <Circle>{},
             ),
           ),
