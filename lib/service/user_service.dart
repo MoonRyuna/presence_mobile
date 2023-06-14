@@ -12,6 +12,7 @@ import 'package:presence_alpha/payload/response/list_monitoring_karyawan_respons
 import 'package:presence_alpha/payload/response/reset_imei_response.dart';
 import 'package:presence_alpha/payload/response/today_check_response.dart';
 import 'package:presence_alpha/payload/response/update_profile_response.dart';
+import 'package:presence_alpha/payload/response/user/list_jatah_cuti_tahunan_response.dart';
 import 'package:presence_alpha/payload/response/user_list_response.dart';
 
 class UserService {
@@ -487,6 +488,59 @@ class UserService {
         status: false,
         message: e.toString(),
         data: null,
+      );
+    }
+  }
+
+  Future<ListJatahCutiTahunanResponse> listJatahCutiTahunanResponse(
+      Map<String, dynamic> queryParams, String token) async {
+    print('GET: user - list jatah cuti karyawan');
+
+    String target = '${ApiConstant.baseApi}/user/list/jatah_cuti_tahunan';
+    final queryParameters = Uri(queryParameters: queryParams).queryParameters;
+
+    final queryString = Uri(queryParameters: queryParameters).query;
+
+    print('target: ${Uri.parse("$target?$queryString")}');
+
+    try {
+      final response = await http.get(
+        Uri.parse("$target?$queryString"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+      ).timeout(Duration(seconds: ApiConstant.timeout));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        return ListJatahCutiTahunanResponse.fromJson(responseData);
+      } else {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        return ListJatahCutiTahunanResponse(
+          status: false,
+          message: responseData['message'] ?? 'Unable to fetch data',
+        );
+      }
+    } on TimeoutException {
+      return ListJatahCutiTahunanResponse(
+        status: false,
+        message: 'Connection timed out',
+      );
+    } on SocketException catch (e) {
+      return ListJatahCutiTahunanResponse(
+        status: false,
+        message: e.message,
+      );
+    } on Exception {
+      return ListJatahCutiTahunanResponse(
+        status: false,
+        message: 'Failed to connect to server',
+      );
+    } catch (e) {
+      return ListJatahCutiTahunanResponse(
+        status: false,
+        message: e.toString(),
       );
     }
   }

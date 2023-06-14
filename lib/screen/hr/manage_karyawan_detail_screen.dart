@@ -1,9 +1,12 @@
+import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
 import 'package:presence_alpha/model/user_model.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
+import 'package:presence_alpha/screen/jatah_cuti_tahunan_screen.dart';
+import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:provider/provider.dart';
 
 class ManageKaryawanDetailScreen extends StatelessWidget {
@@ -28,6 +31,50 @@ class ManageKaryawanDetailScreen extends StatelessWidget {
             },
           ),
           title: const Text("Detail Karyawan"),
+          actions: [
+            user.accountType == "admin" || user.accountType == "hrd"
+                ? PopupMenuButton(
+                    onSelected: (value) {
+                      if (value == "jatah_cuti_tahunan") {
+                        if (user.id != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  JatahCutiTahunanScreen(id: user.id!),
+                            ),
+                          );
+                        } else {
+                          AmessageUtility.show(
+                            context,
+                            "Gagal",
+                            "User ID tidak ditemukan",
+                            TipType.ERROR,
+                          );
+                        }
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: "jatah_cuti_tahunan",
+                        child: Row(
+                          children: const [
+                            Icon(
+                              Icons.calendar_today,
+                              color: Colors.black,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              "Jatah Cuti Tahunan",
+                              style: TextStyle(color: Colors.black),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                : const SizedBox(),
+          ],
           backgroundColor: ColorConstant.lightPrimary,
         ),
         body: SafeArea(
