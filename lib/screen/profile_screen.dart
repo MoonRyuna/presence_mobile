@@ -254,6 +254,7 @@ Widget profileActions(BuildContext context, {UserModel? user}) {
 
               if (isConfirmed) {
                 AppStorage.localStorage.deleteItem("usr");
+                // FIXME: Do not use build context in async, and it should be pop until login screen.
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
