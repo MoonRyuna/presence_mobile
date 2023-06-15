@@ -12,7 +12,8 @@ import 'package:presence_alpha/model/user_auth_model.dart';
 import 'package:presence_alpha/payload/response/auth_response.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/screen/app.dart';
-import 'package:presence_alpha/screen/hr/app.dart' as hrApp;
+import 'package:presence_alpha/screen/forgot_password_screen.dart';
+import 'package:presence_alpha/screen/hr/app.dart' as hr_app;
 import 'package:presence_alpha/service/auth_service.dart';
 import 'package:presence_alpha/storage/app_storage.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
@@ -147,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
             listen: false,
           );
 
-          final accountType = response.data!.accountType ?? null;
+          final accountType = response.data!.accountType;
 
           if (response.data!.token != null) {
             tokenProvider.setToken(response.data!.token as String);
@@ -178,7 +179,7 @@ class _LoginScreenState extends State<LoginScreen> {
             if (accountType == "hrd" || accountType == "admin") {
               Navigator.of(context)
                   .pushReplacement(MaterialPageRoute(builder: (_) {
-                return const hrApp.App();
+                return const hr_app.App();
               }));
               return;
             } else if (accountType == "karyawan") {
@@ -354,7 +355,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: double.infinity,
                       alignment: Alignment.bottomLeft,
                       child: TextButton(
-                        onPressed: () => {},
+                        onPressed: () => {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const ForgotPasswordScreen(),
+                            ),
+                          )
+                        },
                         child: const Text(
                           'Lupa Password?',
                           style: TextStyle(fontSize: 16),
