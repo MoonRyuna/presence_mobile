@@ -110,10 +110,6 @@ Widget profileActions(BuildContext context, {UserModel? user}) {
               color: Colors.grey.shade300,
               width: 0.5,
             ),
-            bottom: BorderSide(
-              color: Colors.grey.shade300,
-              width: 0.5,
-            ),
           ),
         ),
         child: Padding(

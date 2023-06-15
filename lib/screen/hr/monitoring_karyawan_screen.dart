@@ -154,27 +154,36 @@ class _MonitoringKaryawanScreenState extends State<MonitoringKaryawanScreen> {
                     child: ListTile(
                       onTap: () async {
                         if (user != null) {
-                          bool result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => LocationKaryawanScreen(
-                                id: user.userId!,
-                                type: user.type!,
-                                name: user.name!,
-                                profilePicture: user.profilePicture!,
-                                date: CalendarUtility.dateNow(),
+                          if (user.checkIn != null) {
+                            bool result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => LocationKaryawanScreen(
+                                  id: user.userId!,
+                                  type: user.type!,
+                                  name: user.name!,
+                                  profilePicture: user.profilePicture!,
+                                  date: CalendarUtility.dateNow(),
+                                ),
                               ),
-                            ),
-                          );
+                            );
 
-                          if (result) {
-                            setState(() {
-                              _userList = null;
-                              _currentPage = 1;
-                              _hasMore = true;
-                            });
+                            if (result) {
+                              setState(() {
+                                _userList = null;
+                                _currentPage = 1;
+                                _hasMore = true;
+                              });
 
-                            await _loadUserList();
+                              await _loadUserList();
+                            }
+                          } else {
+                            AmessageUtility.show(
+                              context,
+                              "Gagal",
+                              "Karyawan belum bisa di monitoring",
+                              TipType.ERROR,
+                            );
                           }
                         } else {
                           AmessageUtility.show(

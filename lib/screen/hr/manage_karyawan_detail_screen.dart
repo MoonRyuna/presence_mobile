@@ -32,7 +32,7 @@ class ManageKaryawanDetailScreen extends StatelessWidget {
           ),
           title: const Text("Detail Karyawan"),
           actions: [
-            user.accountType == "admin" || user.accountType == "hrd"
+            user.accountType == "karyawan"
                 ? PopupMenuButton(
                     onSelected: (value) {
                       if (value == "jatah_cuti_tahunan") {

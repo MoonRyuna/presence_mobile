@@ -14,6 +14,7 @@ import 'package:presence_alpha/payload/response/upload_response.dart';
 import 'package:presence_alpha/provider/office_config_provide.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
+import 'package:presence_alpha/screen/hr/picker_map_screen.dart';
 import 'package:presence_alpha/service/office_config_service.dart';
 import 'package:presence_alpha/service/upload_service.dart';
 import 'package:presence_alpha/storage/app_storage.dart';
@@ -556,12 +557,60 @@ class _UbahPengaturanKantorScreenState
                         ),
                       ),
                     ),
+                    const SizedBox(height: 10),
+                    Consumer<OfficeConfigProvider>(
+                      builder: (context, ofc, _) {
+                        final lat = ofc.officeConfig?.latitude;
+                        final lng = ofc.officeConfig?.longitude;
+
+                        return ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                ColorConstant.lightPrimary.withOpacity(0.8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                          onPressed: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PickerMapScreen(
+                                  lat: lat!,
+                                  lng: lng!,
+                                ),
+                              ),
+                            );
+
+                            print("feedback ${result.toString()}");
+
+                            if (result['lat'] != null &&
+                                result['lng'] != null) {
+                              _latitudeController.text =
+                                  result['lat'].toString().trim();
+                              _longitudeController.text =
+                                  result['lng'].toString().trim();
+                            }
+                          },
+                          child: Row(
+                            children: const [
+                              Icon(
+                                Icons.location_searching,
+                                size: 15,
+                              ),
+                              Text(' Ganti Lokasi')
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                     const SizedBox(height: 20),
                     Row(
                       children: [
                         Expanded(
                           child: TextField(
                             controller: _latitudeController,
+                            enabled: false,
                             decoration: InputDecoration(
                               labelText: 'Latitude',
                               errorText: _latitudeErrorText,
@@ -583,6 +632,7 @@ class _UbahPengaturanKantorScreenState
                         Expanded(
                           child: TextField(
                             controller: _longitudeController,
+                            enabled: false,
                             decoration: InputDecoration(
                               labelText: 'Longitude',
                               errorText: _longitudeErrorText,

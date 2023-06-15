@@ -121,9 +121,9 @@ class _JatahCutiTahunanScreenState extends State<JatahCutiTahunanScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 8),
-                    Text(jatahCutiTahunan?.year ?? ""),
+                    Text("Jatah Cuti Tahun ${jatahCutiTahunan?.year}" ?? ""),
                     const SizedBox(height: 8),
-                    Text("${jatahCutiTahunan?.annualLeave ?? ""}"),
+                    Text("Sisa ${jatahCutiTahunan?.annualLeave ?? ""}"),
                   ],
                 ),
               ),
@@ -147,7 +147,7 @@ class _JatahCutiTahunanScreenState extends State<JatahCutiTahunanScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Karyawan'),
+        title: const Text('Jatah Cuti'),
         backgroundColor: ColorConstant.lightPrimary,
       ),
       floatingActionButton: Column(
