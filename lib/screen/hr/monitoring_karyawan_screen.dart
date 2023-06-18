@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:ai_awesome_message/ai_awesome_message.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
@@ -382,18 +383,20 @@ Widget profilePicture(String? imagePath) {
 
   String profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
 
-  return Image.network(
-    profilePictureURI,
+  return SizedBox(
     width: 50,
     height: 50,
-    fit: BoxFit.cover,
-    errorBuilder: (context, error, stackTrace) {
-      return Image.asset(
+    child: CachedNetworkImage(
+      imageUrl: profilePictureURI,
+      progressIndicatorBuilder: (context, url, downloadProgress) =>
+          CircularProgressIndicator(value: downloadProgress.progress),
+      errorWidget: (context, url, error) => Image.asset(
         'assets/images/default.png',
         width: 50,
         height: 50,
         fit: BoxFit.cover,
-      );
-    },
+      ),
+      fit: BoxFit.cover,
+    ),
   );
 }

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:ai_awesome_message/ai_awesome_message.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:http_parser/http_parser.dart';
@@ -718,14 +719,18 @@ Widget officeLogo(String? imagePath) {
 
   String profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
 
-  return Image.network(
-    profilePictureURI,
+  return SizedBox(
     width: 200,
-    errorBuilder: (context, error, stackTrace) {
-      return Image.asset(
-        'assets/images/default-logo.png',
+    height: 120,
+    child: CachedNetworkImage(
+      imageUrl: profilePictureURI,
+      progressIndicatorBuilder: (context, url, downloadProgress) =>
+          LinearProgressIndicator(value: downloadProgress.progress),
+      errorWidget: (context, url, error) => Image.asset(
+        'assets/images/default.png',
         width: 200,
-      );
-    },
+        height: 120,
+      ),
+    ),
   );
 }

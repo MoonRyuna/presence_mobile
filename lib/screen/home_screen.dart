@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
@@ -26,6 +28,7 @@ import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:presence_alpha/utility/maps_utility.dart';
 import 'package:presence_alpha/widget/bs_alert.dart';
 import 'package:provider/provider.dart';
+import 'package:trust_location/trust_location.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -70,8 +73,72 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    TrustLocation.stop();
     _timer.cancel();
     super.dispose();
+  }
+
+  Future<void> listenTrustedLocation() async {
+    try {
+      TrustLocation.onChange.listen(
+        (values) {
+          isMockLocation(values);
+        },
+      );
+    } on PlatformException catch (e) {
+      print('PlatformException $e');
+    }
+  }
+
+  void isMockLocation(LatLongPosition values) {
+    print('lat: ${values.latitude}');
+    print('lng: ${values.longitude}');
+    print('is Mock Location: ${values.isMockLocation}');
+
+    setState(() {
+      if (values.latitude != null && values.longitude != null) {
+        _kCurrentPosition = CameraPosition(
+          target: LatLng(
+            double.parse(values.latitude!),
+            double.parse(values.longitude!),
+          ),
+          zoom: 17,
+        );
+      }
+      if (values.isMockLocation == true) {
+        TrustLocation.stop();
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return WillPopScope(
+              onWillPop: () async {
+                return false; // Prevent dialog from closing on back button press
+              },
+              child: AlertDialog(
+                title: Row(
+                  children: const [
+                    Icon(Icons.warning),
+                    SizedBox(width: 8),
+                    Text('Peringatan'),
+                  ],
+                ),
+                content: const Text('Terdeteksi Pemalsuan Lokasi'),
+                actions: [
+                  TextButton(
+                    child: const Text('Oke'),
+                    onPressed: () {
+                      SystemChannels.platform
+                          .invokeMethod<void>('SystemNavigator.pop');
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      }
+    });
   }
 
   Future<void> loadData() async {
@@ -165,6 +232,20 @@ class _HomeScreenState extends State<HomeScreen> {
       await checkLocationPermission();
       _currentPosition = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
+
+      //check first time
+      // List<String?> position = await TrustLocation.getLatLong;
+      // bool isMock = await TrustLocation.isMockLocation;
+      // LatLongPosition values = LatLongPosition(
+      //   position[0],
+      //   position[1],
+      //   isMock,
+      // );
+      // isMockLocation(values);
+
+      //listen location
+      TrustLocation.start(30);
+      listenTrustedLocation();
     } catch (e) {
       // ignore: avoid_print
       print(e);
@@ -185,10 +266,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> calculateDistance() async {
     double distance = MapsUtility.calculateDistance(
-        _kOffice.target.latitude,
-        _kOffice.target.longitude,
-        _kCurrentPosition.target.latitude,
-        _kCurrentPosition.target.longitude);
+      _kOffice.target.latitude,
+      _kOffice.target.longitude,
+      _kCurrentPosition.target.latitude,
+      _kCurrentPosition.target.longitude,
+    );
 
     String dstring;
     if (distance >= 1) {
@@ -353,7 +435,9 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Container(
           padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
-          width: (MediaQuery.of(context).size.width - 60) / 2,
+          width: (MediaQuery.of(context).size.width >= 60)
+              ? (MediaQuery.of(context).size.width - 60) / 2
+              : 0,
           decoration: const BoxDecoration(
             color: Color.fromARGB(255, 238, 238, 238),
             borderRadius: BorderRadius.all(Radius.circular(13)),
@@ -377,7 +461,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         Container(
           padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
-          width: (MediaQuery.of(context).size.width - 60) / 2,
+          width: (MediaQuery.of(context).size.width >= 60)
+              ? (MediaQuery.of(context).size.width - 60) / 2
+              : 0,
           decoration: const BoxDecoration(
             color: Color.fromARGB(255, 238, 238, 238),
             borderRadius: BorderRadius.all(Radius.circular(13)),
@@ -591,23 +677,27 @@ Widget profilePicture(String? imagePath) {
     return Image.asset(
       'assets/images/default.png',
       width: 50,
+      height: 50,
+      fit: BoxFit.cover,
     );
   }
 
   String profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
 
-  return Image.network(
-    profilePictureURI,
+  return SizedBox(
     width: 50,
     height: 50,
-    fit: BoxFit.cover,
-    errorBuilder: (context, error, stackTrace) {
-      return Image.asset(
+    child: CachedNetworkImage(
+      imageUrl: profilePictureURI,
+      progressIndicatorBuilder: (context, url, downloadProgress) =>
+          CircularProgressIndicator(value: downloadProgress.progress),
+      errorWidget: (context, url, error) => Image.asset(
         'assets/images/default.png',
         width: 50,
         height: 50,
         fit: BoxFit.cover,
-      );
-    },
+      ),
+      fit: BoxFit.cover,
+    ),
   );
 }

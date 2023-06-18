@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/model/office_config_model.dart';
@@ -185,15 +186,17 @@ class _SplashScreenState extends State<SplashScreen> {
 
     String profilePictureURI = "${ApiConstant.baseUrl}/$pathLogo";
 
-    return Image.network(
-      profilePictureURI,
+    return SizedBox(
       width: 250,
-      errorBuilder: (context, error, stackTrace) {
-        return Image.asset(
-          'assets/images/default-logo.png',
+      child: CachedNetworkImage(
+        imageUrl: profilePictureURI,
+        progressIndicatorBuilder: (context, url, downloadProgress) =>
+            LinearProgressIndicator(value: downloadProgress.progress),
+        errorWidget: (context, url, error) => Image.asset(
+          'assets/images/default.png',
           width: 250,
-        );
-      },
+        ),
+      ),
     );
   }
 }

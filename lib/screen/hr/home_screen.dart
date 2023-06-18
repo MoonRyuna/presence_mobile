@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -219,7 +220,9 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Container(
           padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
-          width: (MediaQuery.of(context).size.width - 60) / 2,
+          width: (MediaQuery.of(context).size.width >= 60)
+              ? (MediaQuery.of(context).size.width - 60) / 2
+              : 0,
           decoration: const BoxDecoration(
             color: Color.fromARGB(255, 238, 238, 238),
             borderRadius: BorderRadius.all(Radius.circular(13)),
@@ -243,7 +246,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         Container(
           padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
-          width: (MediaQuery.of(context).size.width - 60) / 2,
+          width: (MediaQuery.of(context).size.width >= 60)
+              ? (MediaQuery.of(context).size.width - 60) / 2
+              : 0,
           decoration: const BoxDecoration(
             color: Color.fromARGB(255, 238, 238, 238),
             borderRadius: BorderRadius.all(Radius.circular(13)),
@@ -341,7 +346,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget profilePicture(String? imagePath) {
-    print("ini woy $imagePath");
     if (imagePath == null) {
       return Image.asset(
         'assets/images/default.png',
@@ -353,19 +357,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
     String profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
 
-    return Image.network(
-      profilePictureURI,
+    return SizedBox(
       width: 50,
       height: 50,
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) {
-        return Image.asset(
+      child: CachedNetworkImage(
+        imageUrl: profilePictureURI,
+        progressIndicatorBuilder: (context, url, downloadProgress) =>
+            CircularProgressIndicator(value: downloadProgress.progress),
+        errorWidget: (context, url, error) => Image.asset(
           'assets/images/default.png',
           width: 50,
           height: 50,
           fit: BoxFit.cover,
-        );
-      },
+        ),
+        fit: BoxFit.cover,
+      ),
     );
   }
 

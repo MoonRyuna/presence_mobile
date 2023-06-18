@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/provider/office_config_provide.dart';
@@ -258,14 +259,18 @@ Widget officeLogo(String? imagePath) {
 
   String profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
 
-  return Image.network(
-    profilePictureURI,
+  return SizedBox(
     width: 200,
     height: 120,
-    errorBuilder: (context, error, stackTrace) => Image.asset(
-      'assets/images/default-logo.png',
-      width: 200,
-      height: 120,
+    child: CachedNetworkImage(
+      imageUrl: profilePictureURI,
+      progressIndicatorBuilder: (context, url, downloadProgress) =>
+          LinearProgressIndicator(value: downloadProgress.progress),
+      errorWidget: (context, url, error) => Image.asset(
+        'assets/images/default.png',
+        width: 200,
+        height: 120,
+      ),
     ),
   );
 }

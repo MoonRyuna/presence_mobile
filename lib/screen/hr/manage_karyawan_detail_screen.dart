@@ -1,4 +1,5 @@
 import 'package:ai_awesome_message/ai_awesome_message.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
@@ -156,19 +157,21 @@ class ManageKaryawanDetailScreen extends StatelessWidget {
 
     String profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
 
-    return Image.network(
-      profilePictureURI,
+    return SizedBox(
       width: 100,
       height: 100,
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) {
-        return Image.asset(
+      child: CachedNetworkImage(
+        imageUrl: profilePictureURI,
+        progressIndicatorBuilder: (context, url, downloadProgress) =>
+            CircularProgressIndicator(value: downloadProgress.progress),
+        errorWidget: (context, url, error) => Image.asset(
           'assets/images/default.png',
           width: 100,
           height: 100,
           fit: BoxFit.cover,
-        );
-      },
+        ),
+        fit: BoxFit.cover,
+      ),
     );
   }
 }

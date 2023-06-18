@@ -18,6 +18,7 @@ import 'package:presence_alpha/service/user_service.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ManageKaryawanScreen extends StatefulWidget {
   const ManageKaryawanScreen({super.key});
@@ -36,6 +37,13 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
   bool _hasMore = true;
   int _currentPage = 1;
   Timer? timeHandle;
+
+  @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
 
   @override
   void initState() {
@@ -561,18 +569,20 @@ Widget profilePicture(String? imagePath) {
 
   String profilePictureURI = "${ApiConstant.baseUrl}/$imagePath";
 
-  return Image.network(
-    profilePictureURI,
+  return SizedBox(
     width: 50,
     height: 50,
-    fit: BoxFit.cover,
-    errorBuilder: (context, error, stackTrace) {
-      return Image.asset(
+    child: CachedNetworkImage(
+      imageUrl: profilePictureURI,
+      progressIndicatorBuilder: (context, url, downloadProgress) =>
+          CircularProgressIndicator(value: downloadProgress.progress),
+      errorWidget: (context, url, error) => Image.asset(
         'assets/images/default.png',
         width: 50,
         height: 50,
         fit: BoxFit.cover,
-      );
-    },
+      ),
+      fit: BoxFit.cover,
+    ),
   );
 }

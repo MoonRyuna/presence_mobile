@@ -27,6 +27,7 @@ import 'package:presence_alpha/utility/maps_utility.dart';
 import 'package:presence_alpha/widget/bs_alert.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trust_location/trust_location.dart';
 import 'dart:ui' as ui;
 
 import 'package:workmanager/workmanager.dart';
@@ -140,6 +141,20 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
         ),
       );
     });
+
+    //check first time
+    // List<String?> position = await TrustLocation.getLatLong;
+    // bool isMock = await TrustLocation.isMockLocation;
+    // LatLongPosition values = LatLongPosition(
+    //   position[0],
+    //   position[1],
+    //   isMock,
+    // );
+    // isMockLocation(values);
+
+    //listen location
+    TrustLocation.start(30);
+    listenTrustedLocation();
     calculateDistance();
   }
 
@@ -410,6 +425,74 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
     }
   }
 
+  Future<void> listenTrustedLocation() async {
+    try {
+      TrustLocation.onChange.listen(
+        (values) async {
+          isMockLocation(values);
+
+          final GoogleMapController controller = await _controller.future;
+          controller
+              .animateCamera(CameraUpdate.newCameraPosition(_kCurrentPosition));
+          calculateDistance();
+        },
+      );
+    } on PlatformException catch (e) {
+      print('PlatformException $e');
+    }
+  }
+
+  void isMockLocation(LatLongPosition values) {
+    print('lat: ${values.latitude}');
+    print('lng: ${values.longitude}');
+    print('is Mock Location: ${values.isMockLocation}');
+
+    setState(() {
+      if (values.latitude != null && values.longitude != null) {
+        _kCurrentPosition = CameraPosition(
+          target: LatLng(
+            double.parse(values.latitude!),
+            double.parse(values.longitude!),
+          ),
+          zoom: 17,
+        );
+      }
+      if (values.isMockLocation == true) {
+        TrustLocation.stop();
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return WillPopScope(
+              onWillPop: () async {
+                return false; // Prevent dialog from closing on back button press
+              },
+              child: AlertDialog(
+                title: Row(
+                  children: const [
+                    Icon(Icons.warning),
+                    SizedBox(width: 8),
+                    Text('Peringatan'),
+                  ],
+                ),
+                content: const Text('Terdeteksi Pemalsuan Lokasi'),
+                actions: [
+                  TextButton(
+                    child: const Text('Oke'),
+                    onPressed: () {
+                      SystemChannels.platform
+                          .invokeMethod<void>('SystemNavigator.pop');
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      }
+    });
+  }
+
   void startTracking() {
     final up = Provider.of<UserProvider>(
       context,
@@ -441,6 +524,16 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
       context,
       listen: false,
     );
+
+    //Check mockLocation
+    List<String?> position = await TrustLocation.getLatLong;
+    bool isMock = await TrustLocation.isMockLocation;
+    LatLongPosition values = LatLongPosition(
+      position[0],
+      position[1],
+      isMock,
+    );
+    isMockLocation(values);
 
     // 1 = Belum Check In
     // 2 = Belum Check Out
@@ -857,8 +950,9 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                             Container(
                               padding:
                                   const EdgeInsets.fromLTRB(25, 20, 25, 20),
-                              width:
-                                  (MediaQuery.of(context).size.width - 60) / 2,
+                              width: (MediaQuery.of(context).size.width >= 60)
+                                  ? (MediaQuery.of(context).size.width - 60) / 2
+                                  : 0,
                               decoration: const BoxDecoration(
                                 color: Color.fromARGB(255, 238, 238, 238),
                                 borderRadius:
@@ -885,8 +979,9 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
                             Container(
                               padding:
                                   const EdgeInsets.fromLTRB(25, 20, 25, 20),
-                              width:
-                                  (MediaQuery.of(context).size.width - 60) / 2,
+                              width: (MediaQuery.of(context).size.width >= 60)
+                                  ? (MediaQuery.of(context).size.width - 60) / 2
+                                  : 0,
                               decoration: const BoxDecoration(
                                 color: Color.fromARGB(255, 238, 238, 238),
                                 borderRadius:
