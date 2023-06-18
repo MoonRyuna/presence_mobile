@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
@@ -28,7 +27,6 @@ import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:presence_alpha/utility/maps_utility.dart';
 import 'package:presence_alpha/widget/bs_alert.dart';
 import 'package:provider/provider.dart';
-import 'package:trust_location/trust_location.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -73,73 +71,73 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    TrustLocation.stop();
+    // TrustLocation.stop();
     _timer.cancel();
     super.dispose();
   }
 
-  Future<void> listenTrustedLocation() async {
-    try {
-      TrustLocation.onChange.listen(
-        (values) {
-          isMockLocation(values);
-        },
-      );
-    } on PlatformException catch (e) {
-      print('PlatformException $e');
-    }
-  }
+  // Future<void> listenTrustedLocation() async {
+  //   try {
+  //     TrustLocation.onChange.listen(
+  //       (values) {
+  //         isMockLocation(values);
+  //       },
+  //     );
+  //   } on PlatformException catch (e) {
+  //     print('PlatformException $e');
+  //   }
+  // }
 
-  void isMockLocation(LatLongPosition values) {
-    print('lat: ${values.latitude}');
-    print('lng: ${values.longitude}');
-    print('is Mock Location: ${values.isMockLocation}');
+  // void isMockLocation(LatLongPosition values) {
+  //   print('lat: ${values.latitude}');
+  //   print('lng: ${values.longitude}');
+  //   print('is Mock Location: ${values.isMockLocation}');
 
-    setState(() {
-      if (values.latitude != null && values.longitude != null) {
-        _kCurrentPosition = CameraPosition(
-          target: LatLng(
-            double.parse(values.latitude!),
-            double.parse(values.longitude!),
-          ),
-          zoom: 17,
-        );
-      }
-      if (values.isMockLocation == true) {
-        TrustLocation.stop();
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return WillPopScope(
-              onWillPop: () async {
-                return false; // Prevent dialog from closing on back button press
-              },
-              child: AlertDialog(
-                title: Row(
-                  children: const [
-                    Icon(Icons.warning),
-                    SizedBox(width: 8),
-                    Text('Peringatan'),
-                  ],
-                ),
-                content: const Text('Terdeteksi Pemalsuan Lokasi'),
-                actions: [
-                  TextButton(
-                    child: const Text('Oke'),
-                    onPressed: () {
-                      SystemChannels.platform
-                          .invokeMethod<void>('SystemNavigator.pop');
-                    },
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      }
-    });
-  }
+  //   setState(() {
+  //     if (values.latitude != null && values.longitude != null) {
+  //       _kCurrentPosition = CameraPosition(
+  //         target: LatLng(
+  //           double.parse(values.latitude!),
+  //           double.parse(values.longitude!),
+  //         ),
+  //         zoom: 17,
+  //       );
+  //     }
+  //     if (values.isMockLocation == true) {
+  //       TrustLocation.stop();
+  //       showDialog(
+  //         context: context,
+  //         barrierDismissible: false,
+  //         builder: (BuildContext context) {
+  //           return WillPopScope(
+  //             onWillPop: () async {
+  //               return false; // Prevent dialog from closing on back button press
+  //             },
+  //             child: AlertDialog(
+  //               title: Row(
+  //                 children: const [
+  //                   Icon(Icons.warning),
+  //                   SizedBox(width: 8),
+  //                   Text('Peringatan'),
+  //                 ],
+  //               ),
+  //               content: const Text('Terdeteksi Pemalsuan Lokasi'),
+  //               actions: [
+  //                 TextButton(
+  //                   child: const Text('Oke'),
+  //                   onPressed: () {
+  //                     SystemChannels.platform
+  //                         .invokeMethod<void>('SystemNavigator.pop');
+  //                   },
+  //                 ),
+  //               ],
+  //             ),
+  //           );
+  //         },
+  //       );
+  //     }
+  //   });
+  // }
 
   Future<void> loadData() async {
     LoadingUtility.show("Pembaruan Data");
@@ -244,8 +242,8 @@ class _HomeScreenState extends State<HomeScreen> {
       // isMockLocation(values);
 
       //listen location
-      TrustLocation.start(30);
-      listenTrustedLocation();
+      // TrustLocation.start(30);
+      // listenTrustedLocation();
     } catch (e) {
       // ignore: avoid_print
       print(e);

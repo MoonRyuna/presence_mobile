@@ -62,7 +62,6 @@ dependencies:
   supabase_flutter: ^1.10.2
   google_maps_place_picker_mb: ^3.0.2
   cached_network_image: ^3.2.3
-  trust_location: ^2.0.13
 
 dev_dependencies:
   flutter_test:
