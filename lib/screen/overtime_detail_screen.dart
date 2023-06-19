@@ -155,8 +155,7 @@ class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
                             const SizedBox(height: 6.0),
                             Text(
                               CalendarUtility.formatDate(
-                                  DateTime.parse(overtimeData!.overtimeAt!)
-                                      .toLocal()),
+                                  DateTime.parse(overtimeData!.overtimeAt!)),
                               style: TextStyle(
                                 color: Colors.grey.shade900,
                                 fontWeight: FontWeight.w500,
@@ -270,7 +269,7 @@ class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
                                           ),
                                           const SizedBox(height: 8),
                                           Text(
-                                              'Tanggal Pengajuan: ${CalendarUtility.formatDate(DateTime.parse(submission.submissionAt!).toLocal())}'),
+                                              'Tanggal Pengajuan: ${CalendarUtility.formatDate(DateTime.parse(submission.submissionAt!))}'),
                                           Text(
                                               'Status: ${submissionStatusText[submission.submissionStatus]!}'),
                                           const SizedBox(height: 2),
@@ -278,7 +277,7 @@ class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
                                           if (submission.authorizationAt !=
                                               null)
                                             Text(
-                                                'Disetujui pada: ${CalendarUtility.formatDate(DateTime.parse(submission.authorizationAt!).toLocal())}'),
+                                                'Disetujui pada: ${CalendarUtility.formatDate(DateTime.parse(submission.authorizationAt!))}'),
                                           if (submission.authorizer?.name !=
                                               null)
                                             Text(

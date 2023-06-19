@@ -365,8 +365,7 @@ class _OvertimeScreenState extends State<OvertimeScreen> {
                                     const SizedBox(height: 6.0),
                                     Text(
                                       CalendarUtility.formatDate(
-                                          DateTime.parse(overtime.overtimeAt!)
-                                              .toLocal()),
+                                          DateTime.parse(overtime.overtimeAt!)),
                                       style: TextStyle(
                                         color: Colors.grey.shade900,
                                         fontWeight: FontWeight.w500,

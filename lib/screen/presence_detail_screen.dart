@@ -144,8 +144,7 @@ class _PresenceDetailScreenState extends State<PresenceDetailScreen> {
                             const SizedBox(height: 3.0),
                             Text(
                               CalendarUtility.formatDate(
-                                  DateTime.parse(presenceData!.checkIn!)
-                                      .toLocal()),
+                                  DateTime.parse(presenceData!.checkIn!)),
                               style: TextStyle(
                                 color: Colors.grey.shade900,
                                 fontWeight: FontWeight.w500,
@@ -177,7 +176,7 @@ class _PresenceDetailScreenState extends State<PresenceDetailScreen> {
                               children: [
                                 BsBadge(
                                   text:
-                                      "${presenceData!.checkIn != null ? CalendarUtility.getTime(DateTime.parse(presenceData!.checkIn!).toLocal()) : '?'} - ${presenceData!.checkOut != null ? CalendarUtility.getTime(DateTime.parse(presenceData!.checkOut!).toLocal()) : '?'}",
+                                      "${presenceData!.checkIn != null ? CalendarUtility.getTime(DateTime.parse(presenceData!.checkIn!)) : '?'} - ${presenceData!.checkOut != null ? CalendarUtility.getTime(DateTime.parse(presenceData!.checkOut!)) : '?'}",
                                   textStyle: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
@@ -285,7 +284,7 @@ class _PresenceDetailScreenState extends State<PresenceDetailScreen> {
                                 if (presenceData!.overtime == true)
                                   BsBadge(
                                     text:
-                                        "${CalendarUtility.getTime(DateTime.parse(presenceData!.overtimeStartAt!).toLocal())} - ${CalendarUtility.getTime(DateTime.parse(presenceData!.overtimeEndAt!).toLocal())}  ${presenceData!.overtimeStartAt != null && presenceData!.overtimeEndAt != null ? CalendarUtility.formatOvertimeInterval(presenceData!.overtimeStartAt!, presenceData!.overtimeEndAt!) : ""}",
+                                        "${CalendarUtility.getTime(DateTime.parse(presenceData!.overtimeStartAt!))} - ${CalendarUtility.getTime(DateTime.parse(presenceData!.overtimeEndAt!))}  ${presenceData!.overtimeStartAt != null && presenceData!.overtimeEndAt != null ? CalendarUtility.formatOvertimeInterval(presenceData!.overtimeStartAt!, presenceData!.overtimeEndAt!) : ""}",
                                     textStyle: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,

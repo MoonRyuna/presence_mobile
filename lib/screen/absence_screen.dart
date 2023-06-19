@@ -373,8 +373,7 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
                                     const SizedBox(height: 4.0),
                                     Text(
                                       CalendarUtility.formatDate(
-                                          DateTime.parse(absence.absenceAt!)
-                                              .toLocal()),
+                                          DateTime.parse(absence.absenceAt!)),
                                       style: TextStyle(
                                         color: Colors.grey.shade900,
                                         fontWeight: FontWeight.w500,

@@ -237,7 +237,7 @@ class _MonitoringKaryawanScreenState extends State<MonitoringKaryawanScreen> {
                                 const SizedBox(width: 5),
                                 Text(
                                   "IN ${CalendarUtility.getTime(
-                                    DateTime.parse(user!.checkIn!).toLocal(),
+                                    DateTime.parse(user!.checkIn!),
                                   )}",
                                 ),
                               ],
@@ -266,7 +266,7 @@ class _MonitoringKaryawanScreenState extends State<MonitoringKaryawanScreen> {
                                 const SizedBox(width: 5),
                                 Text(
                                   "OUT ${CalendarUtility.getTime(
-                                    DateTime.parse(user!.checkOut!).toLocal(),
+                                    DateTime.parse(user!.checkOut!),
                                   )}",
                                 ),
                               ],

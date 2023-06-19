@@ -163,8 +163,7 @@ class _AbsenceDetailScreenState extends State<AbsenceDetailScreen> {
                             const SizedBox(height: 4.0),
                             Text(
                               CalendarUtility.formatDate(
-                                  DateTime.parse(absenceData!.absenceAt!)
-                                      .toLocal()),
+                                  DateTime.parse(absenceData!.absenceAt!)),
                               style: TextStyle(
                                 color: Colors.grey.shade900,
                                 fontWeight: FontWeight.w500,
@@ -280,7 +279,7 @@ class _AbsenceDetailScreenState extends State<AbsenceDetailScreen> {
                                           ),
                                           const SizedBox(height: 8),
                                           Text(
-                                              'Tanggal Pengajuan: ${CalendarUtility.formatDate(DateTime.parse(submission.submissionAt!).toLocal())}'),
+                                              'Tanggal Pengajuan: ${CalendarUtility.formatDate(DateTime.parse(submission.submissionAt!))}'),
                                           Text(
                                               'Status: ${submissionStatusText[submission.submissionStatus]!}'),
                                           const SizedBox(height: 2),
@@ -288,7 +287,7 @@ class _AbsenceDetailScreenState extends State<AbsenceDetailScreen> {
                                           if (submission.authorizationAt !=
                                               null)
                                             Text(
-                                                'Disetujui pada: ${CalendarUtility.formatDate(DateTime.parse(submission.authorizationAt!).toLocal())}'),
+                                                'Disetujui pada: ${CalendarUtility.formatDate(DateTime.parse(submission.authorizationAt!))}'),
                                           if (submission.authorizer?.name !=
                                               null)
                                             Text(

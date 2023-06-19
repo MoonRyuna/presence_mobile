@@ -504,8 +504,7 @@ Widget profileInfo(BuildContext context) {
       (userProvider.user?.accountType ?? "N/A") +
           (userProvider.user?.startedWorkAt != null
               ? " sejak ${DateFormat('d MMMM y', locale.toString()).format(
-                  DateTime.parse(userProvider.user?.startedWorkAt ?? '')
-                      .toLocal(),
+                  DateTime.parse(userProvider.user?.startedWorkAt ?? ''),
                 )}"
               : ""),
       style: TextStyle(

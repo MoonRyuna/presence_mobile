@@ -3,17 +3,17 @@ import 'package:intl/intl.dart';
 
 class CalendarUtility {
   static String dateNow() {
-    return DateTime.now().toLocal().toString().substring(0, 10);
+    return DateTime.now().toString().substring(0, 10);
   }
 
   static String dateNow2() {
     final formatter = DateFormat('EEEE, dd MMMM yyyy', 'id_ID');
-    return formatter.format(DateTime.now().toLocal());
+    return formatter.format(DateTime.now());
   }
 
   static String dateNow3() {
     final formatter = DateFormat('yyyy-MM-dd HH:mm:ss', 'id_ID');
-    return formatter.format(DateTime.now().toLocal()).toString();
+    return formatter.format(DateTime.now()).toString();
   }
 
   static Future<void> init() async {
@@ -51,6 +51,7 @@ class CalendarUtility {
   }
 
   static String getTime(DateTime date) {
+    print(date.toString());
     final formatter = DateFormat('HH:mm', 'id_ID');
     return formatter.format(date);
   }
@@ -71,8 +72,8 @@ class CalendarUtility {
   static String formatOvertimeInterval(
       String? overtimeStartAt, String? overtimeEndAt) {
     if (overtimeStartAt != null && overtimeEndAt != null) {
-      DateTime start = DateTime.parse(overtimeStartAt).toLocal();
-      DateTime end = DateTime.parse(overtimeEndAt).toLocal();
+      DateTime start = DateTime.parse(overtimeStartAt);
+      DateTime end = DateTime.parse(overtimeEndAt);
       String interval = getIntervalDate(start, end);
       return "($interval)";
     } else {

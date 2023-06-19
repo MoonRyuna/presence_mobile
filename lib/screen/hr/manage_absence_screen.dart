@@ -492,8 +492,7 @@ class _ManageAbsenceScreenState extends State<ManageAbsenceScreen> {
                                       const SizedBox(height: 6.0),
                                       Text(
                                         CalendarUtility.formatDate(
-                                            DateTime.parse(absence.absenceAt!)
-                                                .toLocal()),
+                                            DateTime.parse(absence.absenceAt!)),
                                         style: TextStyle(
                                           color: Colors.grey.shade900,
                                           fontWeight: FontWeight.w500,
@@ -501,7 +500,7 @@ class _ManageAbsenceScreenState extends State<ManageAbsenceScreen> {
                                       ),
                                       const SizedBox(height: 4.0),
                                       Text(
-                                        "Tanggal Pengajuan: ${CalendarUtility.formatDate(DateTime.parse(absence.submissionAt!).toLocal())}",
+                                        "Tanggal Pengajuan: ${CalendarUtility.formatDate(DateTime.parse(absence.submissionAt!))}",
                                         style: TextStyle(
                                           color: Colors.grey.shade900,
                                           fontWeight: FontWeight.w500,
