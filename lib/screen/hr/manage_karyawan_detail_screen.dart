@@ -120,7 +120,7 @@ class ManageKaryawanDetailScreen extends StatelessWidget {
                       buildCard(
                         "Bergabung Sejak",
                         DateFormat("d MMMM y").format(
-                          DateTime.parse(user.startedWorkAt ?? ""),
+                          DateTime.parse(user.startedWorkAt ?? "").toLocal(),
                         ),
                       ),
                       const SizedBox(height: 16.0),

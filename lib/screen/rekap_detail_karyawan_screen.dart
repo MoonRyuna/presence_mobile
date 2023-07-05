@@ -205,7 +205,8 @@ class _RekapDetailKaryawanScreenState extends State<RekapDetailKaryawanScreen> {
               itemCount: rekapDetailList.length,
               itemBuilder: (context, index) {
                 final formattedDate = DateFormat('dd MMMM yyyy', 'id_ID')
-                    .format(DateTime.parse(rekapDetailList[index].date ?? ""));
+                    .format(DateTime.parse(rekapDetailList[index].date ?? "")
+                        .toLocal());
                 return Container(
                   decoration: BoxDecoration(
                     color: Colors.white,

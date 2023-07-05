@@ -1,5 +1,12 @@
+import 'dart:async';
+import 'dart:io';
+import 'dart:ui';
+
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,20 +24,115 @@ import 'package:presence_alpha/service/supabase_service.dart';
 import 'package:presence_alpha/storage/app_storage.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
-import 'package:workmanager/workmanager.dart';
+import 'package:flutter_background_service_android/flutter_background_service_android.dart';
+
+Future<void> initializeService() async {
+  final service = FlutterBackgroundService();
+
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'location_monitoring',
+    'Location Monitoring',
+    description: 'Service ini untuk mengirim lokasi anda.',
+    importance: Importance.high,
+  );
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  if (Platform.isIOS || Platform.isAndroid) {
+    await flutterLocalNotificationsPlugin.initialize(
+      const InitializationSettings(
+        iOS: DarwinInitializationSettings(),
+        android: AndroidInitializationSettings('ic_bg_service_small'),
+      ),
+    );
+  }
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
+
+  await service.configure(
+    androidConfiguration: AndroidConfiguration(
+      onStart: onStart,
+      autoStart: false,
+      isForegroundMode: true,
+      notificationChannelId: 'location_monitoring',
+      initialNotificationTitle: 'Jangan Khawatir',
+      initialNotificationContent: 'Lokasi Anda Sedang Dipantau',
+      foregroundServiceNotificationId: 888,
+    ),
+    iosConfiguration: IosConfiguration(),
+  );
+}
 
 @pragma('vm:entry-point')
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) async {
-    await CalendarUtility.init();
-    print("background service running: $task");
+void onStart(ServiceInstance service) async {
+  DartPluginRegistrant.ensureInitialized();
 
-    String? userId = inputData!['user_id'] ?? "";
-    String? date = inputData!['date'] ?? "";
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  if (service is AndroidServiceInstance) {
+    service.on('setAsForeground').listen((event) {
+      service.setAsForegroundService();
+    });
+
+    service.on('setAsBackground').listen((event) {
+      service.setAsBackgroundService();
+    });
+  }
+
+  service.on('stopService').listen((event) {
+    service.stopSelf();
+  });
+
+  Timer.periodic(const Duration(seconds: 60), (timer) async {
+    await CalendarUtility.init();
+    if (service is AndroidServiceInstance) {
+      if (await service.isForegroundService()) {
+        flutterLocalNotificationsPlugin.show(
+          888,
+          'COOL SERVICE',
+          'Awesome ${CalendarUtility.dateNow3()}',
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'location_monitoring',
+              'Location Monitoring',
+              icon: 'ic_bg_service_small',
+              ongoing: true,
+            ),
+          ),
+        );
+
+        service.setForegroundNotificationInfo(
+          title: "Location Service",
+          content: "Updated at ${CalendarUtility.dateNow3()}",
+        );
+      }
+    }
+
+    final deviceInfo = DeviceInfoPlugin();
+    String? device;
+    if (Platform.isAndroid) {
+      final androidInfo = await deviceInfo.androidInfo;
+      device = androidInfo.model;
+    }
+
+    print('Background Service: ${DateTime.now()}');
+    print('Device Info: ${device}');
+
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String? userId = preferences.getString("user_id");
+    String? date = preferences.getString("date");
+
     String now = CalendarUtility.dateNow();
+
+    print("userId $userId");
     if (userId != null) {
-      print("user id $userId");
       try {
         print("ini now $now");
         print("ini date task $date");
@@ -56,17 +158,35 @@ void callbackDispatcher() {
             address,
             CalendarUtility.dateNow3(),
           );
+
+          service.invoke(
+            'update',
+            {
+              "current_date": DateTime.now().toIso8601String(),
+              "device": device,
+            },
+          );
         } else {
           print("stop task yesterday");
-          Workmanager().cancelAll();
+          SharedPreferences preferences = await SharedPreferences.getInstance();
+          await preferences.remove('user_id');
+          await preferences.remove('date');
+          service.invoke('stopService');
         }
       } catch (e) {
         print(e.toString());
+        SharedPreferences preferences = await SharedPreferences.getInstance();
+        await preferences.remove('user_id');
+        await preferences.remove('date');
+        service.invoke('stopService');
       }
     } else {
       print("user id null");
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      await preferences.remove('user_id');
+      await preferences.remove('date');
+      service.invoke('stopService');
     }
-    return Future.value(true);
   });
 }
 
@@ -78,7 +198,7 @@ void main() async {
     url: EnvConstant.supabaseUrl,
     anonKey: EnvConstant.supabaseKey,
   );
-  Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
+  await initializeService();
 
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider<NavbarProvider>(create: (_) => NavbarProvider()),

@@ -487,8 +487,8 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
                                       const SizedBox(height: 6.0),
                                       Text(
                                         CalendarUtility.formatDate(
-                                            DateTime.parse(
-                                                overtime.overtimeAt!)),
+                                            DateTime.parse(overtime.overtimeAt!)
+                                                .toLocal()),
                                         style: TextStyle(
                                           color: Colors.grey.shade900,
                                           fontWeight: FontWeight.w500,
@@ -496,7 +496,7 @@ class _ManageOvertimeScreenState extends State<ManageOvertimeScreen> {
                                       ),
                                       const SizedBox(height: 4.0),
                                       Text(
-                                        "Tanggal Pengajuan: ${CalendarUtility.formatDate(DateTime.parse(overtime.submissionAt!))}",
+                                        "Tanggal Pengajuan: ${CalendarUtility.formatDate(DateTime.parse(overtime.submissionAt!).toLocal())}",
                                         style: TextStyle(
                                           color: Colors.grey.shade900,
                                           fontWeight: FontWeight.w500,

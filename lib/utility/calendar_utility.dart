@@ -72,8 +72,8 @@ class CalendarUtility {
   static String formatOvertimeInterval(
       String? overtimeStartAt, String? overtimeEndAt) {
     if (overtimeStartAt != null && overtimeEndAt != null) {
-      DateTime start = DateTime.parse(overtimeStartAt);
-      DateTime end = DateTime.parse(overtimeEndAt);
+      DateTime start = DateTime.parse(overtimeStartAt).toLocal();
+      DateTime end = DateTime.parse(overtimeEndAt).toLocal();
       String interval = getIntervalDate(start, end);
       return "($interval)";
     } else {

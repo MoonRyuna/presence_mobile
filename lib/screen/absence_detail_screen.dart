@@ -1,4 +1,5 @@
 import 'package:ai_awesome_message/ai_awesome_message.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:presence_alpha/constant/api_constant.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
@@ -163,7 +164,8 @@ class _AbsenceDetailScreenState extends State<AbsenceDetailScreen> {
                             const SizedBox(height: 4.0),
                             Text(
                               CalendarUtility.formatDate(
-                                  DateTime.parse(absenceData!.absenceAt!)),
+                                  DateTime.parse(absenceData!.absenceAt!)
+                                      .toLocal()),
                               style: TextStyle(
                                 color: Colors.grey.shade900,
                                 fontWeight: FontWeight.w500,
@@ -206,9 +208,18 @@ class _AbsenceDetailScreenState extends State<AbsenceDetailScreen> {
                             const SizedBox(
                               height: 10,
                             ),
-                            Image.network(
-                              "${ApiConstant.baseUrl}/${absenceData!.attachment!}",
-                              width: MediaQuery.of(context).size.width - 32,
+                            CachedNetworkImage(
+                              imageUrl:
+                                  "${ApiConstant.baseUrl}/${absenceData!.attachment!}",
+                              progressIndicatorBuilder:
+                                  (context, url, downloadProgress) =>
+                                      LinearProgressIndicator(
+                                value: downloadProgress.progress,
+                              ),
+                              errorWidget: (context, url, error) => Image.asset(
+                                'assets/images/empty.png',
+                              ),
+                              fit: BoxFit.cover,
                             ),
                           ],
                         ),
@@ -279,7 +290,7 @@ class _AbsenceDetailScreenState extends State<AbsenceDetailScreen> {
                                           ),
                                           const SizedBox(height: 8),
                                           Text(
-                                              'Tanggal Pengajuan: ${CalendarUtility.formatDate(DateTime.parse(submission.submissionAt!))}'),
+                                              'Tanggal Pengajuan: ${CalendarUtility.formatDate(DateTime.parse(submission.submissionAt!).toLocal())}'),
                                           Text(
                                               'Status: ${submissionStatusText[submission.submissionStatus]!}'),
                                           const SizedBox(height: 2),
@@ -287,7 +298,7 @@ class _AbsenceDetailScreenState extends State<AbsenceDetailScreen> {
                                           if (submission.authorizationAt !=
                                               null)
                                             Text(
-                                                'Disetujui pada: ${CalendarUtility.formatDate(DateTime.parse(submission.authorizationAt!))}'),
+                                                'Disetujui pada: ${CalendarUtility.formatDate(DateTime.parse(submission.authorizationAt!).toLocal())}'),
                                           if (submission.authorizer?.name !=
                                               null)
                                             Text(

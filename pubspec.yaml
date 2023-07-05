@@ -57,11 +57,13 @@ dependencies:
   dropdown_search: ^5.0.6
   flutter_slidable: ^3.0.0
   webview_flutter: ^4.0.0
-  workmanager: ^0.5.1
   shared_preferences: ^2.1.2
   supabase_flutter: ^1.10.2
   google_maps_place_picker_mb: ^3.0.2
   cached_network_image: ^3.2.3
+  flutter_background_service: ^3.0.1
+  flutter_local_notifications: ^14.1.1
+  device_info_plus: ^9.0.2
 
 dev_dependencies:
   flutter_test:

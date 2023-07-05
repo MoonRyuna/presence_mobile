@@ -346,7 +346,7 @@ class _ManageReportScreenState extends State<ManageReportScreen> {
                           final totalEmployee = report.totalEmployee ?? 0;
 
                           final reportDate =
-                              DateTime.parse(report.endDate ?? '');
+                              DateTime.parse(report.endDate ?? '').toLocal();
                           final date =
                               DateFormat('MMMM yyyy', 'id').format(reportDate);
 

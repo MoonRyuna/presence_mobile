@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
@@ -15,6 +17,7 @@ import 'package:presence_alpha/provider/office_config_provide.dart';
 import 'package:presence_alpha/provider/properties_provider.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
+import 'package:presence_alpha/repository/platform_repository.dart';
 import 'package:presence_alpha/screen/absence_screen.dart';
 import 'package:presence_alpha/screen/overtime_screen.dart';
 import 'package:presence_alpha/screen/presence_screen.dart';
@@ -27,6 +30,7 @@ import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:presence_alpha/utility/maps_utility.dart';
 import 'package:presence_alpha/widget/bs_alert.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -36,6 +40,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final _repository = PlatformRepository();
+  String text = "Start Service";
   late Timer _timer;
 
   late String distanceBetweenPoints = "-";
@@ -57,6 +63,19 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<bool> isMockLocationEnabled() async {
+    bool result;
+    try {
+      final bool isLocationMocked = await _repository.isMockLocationEnabled();
+      result = isLocationMocked;
+    } on PlatformException catch (e) {
+      // Handle platform exception
+      result = false;
+      print(e.message);
+    }
+    return result;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -74,6 +93,37 @@ class _HomeScreenState extends State<HomeScreen> {
     // TrustLocation.stop();
     _timer.cancel();
     super.dispose();
+  }
+
+  void startTracking() async {
+    final up = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
+
+    String userId = up.user!.id!;
+
+    final service = FlutterBackgroundService();
+    var isRunning = await service.isRunning();
+    if (!isRunning) {
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      await preferences.setString("user_id", userId);
+      await preferences.setString("date", CalendarUtility.dateNow());
+      service.startService();
+    }
+  }
+
+  void stopTracking() async {
+    print("stop all task");
+    // Workmanager().cancelAll();
+    final service = FlutterBackgroundService();
+    var isRunning = await service.isRunning();
+    if (isRunning) {
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      await preferences.remove('user_id');
+      await preferences.remove('date');
+      service.invoke("stopService");
+    }
   }
 
   // Future<void> listenTrustedLocation() async {
@@ -164,6 +214,14 @@ class _HomeScreenState extends State<HomeScreen> {
       listen: false,
     );
 
+    if (pp.todayCheckData?.alreadyCheckIn == true) {
+      startTracking();
+    }
+
+    if (pp.todayCheckData?.alreadyCheckOut == true) {
+      stopTracking();
+    }
+
     final String now = CalendarUtility.dateNow();
     final String token = tp.token;
     final requestData = {
@@ -231,19 +289,8 @@ class _HomeScreenState extends State<HomeScreen> {
       _currentPosition = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
 
-      //check first time
-      // List<String?> position = await TrustLocation.getLatLong;
-      // bool isMock = await TrustLocation.isMockLocation;
-      // LatLongPosition values = LatLongPosition(
-      //   position[0],
-      //   position[1],
-      //   isMock,
-      // );
-      // isMockLocation(values);
-
-      //listen location
-      // TrustLocation.start(30);
-      // listenTrustedLocation();
+      bool mockLocationEnabled = await isMockLocationEnabled();
+      print("mockLocation $mockLocationEnabled");
     } catch (e) {
       // ignore: avoid_print
       print(e);
@@ -602,7 +649,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     distanceLocation(distanceBetweenPoints),
                     const SizedBox(height: 20),
                     Consumer<PropertiesProvider>(builder: (context, pp, child) {
-                      if (pp.todayCheckData?.isWorkday == true) {
+                      if (pp.todayCheckData?.isWorkday == true &&
+                          pp.todayCheckData?.isAbsence == false) {
                         return Consumer<OfficeConfigProvider>(
                           builder: (context, ofc, _) => BsAlert(
                             icon: Icons.info_outline,

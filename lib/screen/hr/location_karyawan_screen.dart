@@ -383,7 +383,7 @@ class _LocationKaryawanScreenState extends State<LocationKaryawanScreen> {
                                 const SizedBox(height: 6),
                                 Text(
                                   CalendarUtility.formatBasic2(
-                                    DateTime.parse(widget.date),
+                                    DateTime.parse(widget.date).toLocal(),
                                   ),
                                 )
                               ],

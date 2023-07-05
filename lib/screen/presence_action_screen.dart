@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -17,6 +18,7 @@ import 'package:presence_alpha/provider/office_config_provide.dart';
 import 'package:presence_alpha/provider/properties_provider.dart';
 import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
+import 'package:presence_alpha/repository/platform_repository.dart';
 import 'package:presence_alpha/service/presence_service.dart';
 import 'package:presence_alpha/service/user_service.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
@@ -26,10 +28,9 @@ import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:presence_alpha/utility/maps_utility.dart';
 import 'package:presence_alpha/widget/bs_alert.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'dart:ui' as ui;
-
-import 'package:workmanager/workmanager.dart';
 
 class PresenceActionScreen extends StatefulWidget {
   const PresenceActionScreen({super.key});
@@ -39,6 +40,7 @@ class PresenceActionScreen extends StatefulWidget {
 }
 
 class _PresenceActionScreenState extends State<PresenceActionScreen> {
+  final _repository = PlatformRepository();
   late Timer _timer;
   late String distanceBetweenPoints = "-";
   int distanceInMeter = 0;
@@ -141,19 +143,6 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
       );
     });
 
-    //check first time
-    // List<String?> position = await TrustLocation.getLatLong;
-    // bool isMock = await TrustLocation.isMockLocation;
-    // LatLongPosition values = LatLongPosition(
-    //   position[0],
-    //   position[1],
-    //   isMock,
-    // );
-    // isMockLocation(values);
-
-    //listen location
-    // TrustLocation.start(30);
-    // listenTrustedLocation();
     calculateDistance();
   }
 
@@ -173,6 +162,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
       setState(() {
         address = formattedAddress;
       });
+      // }
     } catch (e) {
       // ignore: avoid_print
       print(e);
@@ -293,7 +283,8 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
 
         if (response2.data?.isWorkday == true &&
             response2.data?.alreadyCheckOut == true &&
-            response2.data?.haveOvertime == true) {
+            response2.data?.haveOvertime == true &&
+            response2.data?.isAbsence == false) {
           showBtn = true;
 
           if (response2.data?.alreadyOvertimeEnded == true) {
@@ -302,7 +293,8 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
         }
 
         if (response2.data?.isHoliday == true ||
-            response2.data?.isWeekend == true) {
+            response2.data?.isWeekend == true ||
+            response2.data?.isAbsence == true) {
           showType = false;
           showDesc = false;
           showBtn = false;
@@ -424,75 +416,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
     }
   }
 
-  // Future<void> listenTrustedLocation() async {
-  //   try {
-  //     TrustLocation.onChange.listen(
-  //       (values) async {
-  //         isMockLocation(values);
-
-  //         final GoogleMapController controller = await _controller.future;
-  //         controller
-  //             .animateCamera(CameraUpdate.newCameraPosition(_kCurrentPosition));
-  //         calculateDistance();
-  //       },
-  //     );
-  //   } on PlatformException catch (e) {
-  //     print('PlatformException $e');
-  //   }
-  // }
-
-  // void isMockLocation(LatLongPosition values) {
-  //   print('lat: ${values.latitude}');
-  //   print('lng: ${values.longitude}');
-  //   print('is Mock Location: ${values.isMockLocation}');
-
-  //   setState(() {
-  //     if (values.latitude != null && values.longitude != null) {
-  //       _kCurrentPosition = CameraPosition(
-  //         target: LatLng(
-  //           double.parse(values.latitude!),
-  //           double.parse(values.longitude!),
-  //         ),
-  //         zoom: 17,
-  //       );
-  //     }
-  //     if (values.isMockLocation == true) {
-  //       TrustLocation.stop();
-  //       showDialog(
-  //         context: context,
-  //         barrierDismissible: false,
-  //         builder: (BuildContext context) {
-  //           return WillPopScope(
-  //             onWillPop: () async {
-  //               return false; // Prevent dialog from closing on back button press
-  //             },
-  //             child: AlertDialog(
-  //               title: Row(
-  //                 children: const [
-  //                   Icon(Icons.warning),
-  //                   SizedBox(width: 8),
-  //                   Text('Peringatan'),
-  //                 ],
-  //               ),
-  //               content: const Text('Terdeteksi Pemalsuan Lokasi'),
-  //               actions: [
-  //                 TextButton(
-  //                   child: const Text('Oke'),
-  //                   onPressed: () {
-  //                     SystemChannels.platform
-  //                         .invokeMethod<void>('SystemNavigator.pop');
-  //                   },
-  //                 ),
-  //               ],
-  //             ),
-  //           );
-  //         },
-  //       );
-  //     }
-  //   });
-  // }
-
-  void startTracking() {
+  void startTracking() async {
     final up = Provider.of<UserProvider>(
       context,
       listen: false,
@@ -500,22 +424,51 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
 
     String userId = up.user!.id!;
 
-    Workmanager().registerPeriodicTask(
-      "send-location-task",
-      "user-$userId",
-      frequency: const Duration(
-        minutes: 15,
-      ),
-      inputData: {
-        'user_id': userId,
-        'date': CalendarUtility.dateNow(),
-      },
-    );
+    final service = FlutterBackgroundService();
+    var isRunning = await service.isRunning();
+    if (!isRunning) {
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      await preferences.setString("user_id", userId);
+      await preferences.setString("date", CalendarUtility.dateNow());
+      service.startService();
+    }
+
+    // Workmanager().registerPeriodicTask(
+    //   "send-location-task",
+    //   "user-$userId",
+    //   frequency: const Duration(
+    //     minutes: 15,
+    //   ),
+    //   inputData: {
+    //     'user_id': userId,
+    //     'date': CalendarUtility.dateNow(),
+    //   },
+    // );
   }
 
-  void stopTracking() {
+  void stopTracking() async {
     print("stop all task");
-    Workmanager().cancelAll();
+    // Workmanager().cancelAll();
+    final service = FlutterBackgroundService();
+    var isRunning = await service.isRunning();
+    if (isRunning) {
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      await preferences.remove('user_id');
+      await preferences.remove('date');
+      service.invoke("stopService");
+    }
+  }
+
+  Future<bool> isMockLocationEnabled() async {
+    bool result;
+    try {
+      final bool isLocationMocked = await _repository.isMockLocationEnabled();
+      result = isLocationMocked;
+    } on PlatformException catch (e) {
+      result = false;
+      print(e.message);
+    }
+    return result;
   }
 
   void onConfirmation() async {
@@ -524,15 +477,45 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
       listen: false,
     );
 
-    //Check mockLocation
-    // List<String?> position = await TrustLocation.getLatLong;
-    // bool isMock = await TrustLocation.isMockLocation;
-    // LatLongPosition values = LatLongPosition(
-    //   position[0],
-    //   position[1],
-    //   isMock,
-    // );
-    // isMockLocation(values);
+    try {
+      bool mockLocationEnabled = await isMockLocationEnabled();
+      print("mockLocation $mockLocationEnabled");
+      if (mockLocationEnabled) {
+        if (!mounted) return;
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return WillPopScope(
+              onWillPop: () async {
+                return false; // Prevent dialog from closing on back button press
+              },
+              child: AlertDialog(
+                title: Row(
+                  children: const [
+                    Icon(Icons.warning),
+                    SizedBox(width: 8),
+                    Text('Peringatan'),
+                  ],
+                ),
+                content: const Text('Terdeteksi Pemalsuan Lokasi'),
+                actions: [
+                  TextButton(
+                    child: const Text('Oke'),
+                    onPressed: () {
+                      SystemChannels.platform
+                          .invokeMethod<void>('SystemNavigator.pop');
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      }
+    } catch (e) {
+      print(e.toString());
+    }
 
     // 1 = Belum Check In
     // 2 = Belum Check Out
@@ -574,6 +557,7 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
     }
 
     try {
+      if (!mounted) return;
       bool isConfirmed = await showDialog(
         context: context,
         builder: (BuildContext context) {

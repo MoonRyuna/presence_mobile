@@ -3,8 +3,11 @@
 import 'package:ai_awesome_message/ai_awesome_message.dart';
 import 'package:device_information/device_information.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 // ignore: import_of_legacy_library_into_null_safe
 // import 'package:flutter_statusbarcolor_ns/flutter_statusbarcolor_ns.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:presence_alpha/constant/color_constant.dart';
 import 'package:presence_alpha/model/office_config_model.dart';
@@ -19,7 +22,6 @@ import 'package:presence_alpha/storage/app_storage.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:provider/provider.dart';
-import 'package:workmanager/workmanager.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -174,8 +176,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
             print("accountType $accountType");
 
-            print("stop all task");
-            Workmanager().cancelAll();
+            //stop tracking
+            stopTracking();
             if (accountType == "hrd" || accountType == "admin") {
               Navigator.of(context)
                   .pushReplacement(MaterialPageRoute(builder: (_) {
@@ -213,6 +215,19 @@ class _LoginScreenState extends State<LoginScreen> {
         LoadingUtility.hide();
       }
     });
+  }
+
+  void stopTracking() async {
+    print("stop all task");
+    // Workmanager().cancelAll();
+    final service = FlutterBackgroundService();
+    var isRunning = await service.isRunning();
+    if (isRunning) {
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      await preferences.remove('user_id');
+      await preferences.remove('date');
+      service.invoke("stopService");
+    }
   }
 
   @override
