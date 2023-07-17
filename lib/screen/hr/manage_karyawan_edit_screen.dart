@@ -69,7 +69,7 @@ class _ManageKaryawanEditScreenState extends State<ManageKaryawanEditScreen> {
     _nameController.text = widget.user.name ?? '';
     _addressController.text = widget.user.address ?? '';
     _descriptionController.text = widget.user.description ?? '';
-    _startedWorkAtController.text = DateFormat("dd-MM-yyyy").format(
+    _startedWorkAtController.text = DateFormat("MM-dd-yyyy").format(
       DateTime.parse(widget.user.startedWorkAt ?? "").toLocal(),
     );
 
@@ -431,7 +431,7 @@ class _ManageKaryawanEditScreenState extends State<ManageKaryawanEditScreen> {
       setState(() {
         _selectedDate = picked;
         _startedWorkAtController.text =
-            DateFormat('dd-MM-yyyy').format(_selectedDate!);
+            DateFormat('MM-dd-yyyy').format(_selectedDate!);
       });
     }
   }
