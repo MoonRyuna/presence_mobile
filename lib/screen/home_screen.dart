@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:background_location/background_location.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
@@ -22,12 +24,14 @@ import 'package:presence_alpha/screen/absence_screen.dart';
 import 'package:presence_alpha/screen/overtime_screen.dart';
 import 'package:presence_alpha/screen/presence_screen.dart';
 import 'package:presence_alpha/screen/rekap_karyawan_screen.dart';
+import 'package:presence_alpha/service/supabase_service.dart';
 import 'package:presence_alpha/service/user_service.dart';
 import 'package:presence_alpha/storage/app_storage.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
 import 'package:presence_alpha/utility/common_utility.dart';
 import 'package:presence_alpha/utility/loading_utility.dart';
 import 'package:presence_alpha/utility/maps_utility.dart';
+import 'package:presence_alpha/utility/notification_utility.dart';
 import 'package:presence_alpha/widget/bs_alert.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -96,98 +100,69 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void startTracking() async {
-    final up = Provider.of<UserProvider>(
-      context,
-      listen: false,
-    );
+    print("startTracking");
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String? date = preferences.getString("date");
+    String? userId = preferences.getString("userId");
+    String now = CalendarUtility.dateNow();
 
-    String userId = up.user!.id!;
+    print("ini now $now");
+    print("ini date task $date");
+    print("ini user id $userId");
 
-    final service = FlutterBackgroundService();
-    var isRunning = await service.isRunning();
-    if (!isRunning) {
-      SharedPreferences preferences = await SharedPreferences.getInstance();
-      await preferences.setString("user_id", userId);
-      await preferences.setString("date", CalendarUtility.dateNow());
-      service.startService();
+    if (now == date && userId != null) {
+      await BackgroundLocation.setAndroidNotification(
+        title: 'Jangan Khawatir',
+        message: 'Posisi sedang dipantau',
+        icon: '@mipmap/ic_launcher',
+      );
+
+      await BackgroundLocation.startLocationService(distanceFilter: 20);
+      BackgroundLocation.getLocationUpdates((location) async {
+        String latitude = location.latitude.toString();
+        String longitude = location.longitude.toString();
+
+        print("update location: ");
+        print("latitude: $latitude");
+        print("longitude: $longitude");
+
+        final currentPosition = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
+
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          currentPosition.latitude,
+          currentPosition.longitude,
+        );
+
+        Placemark placemark = placemarks[0];
+        String address =
+            "${placemark.name}, ${placemark.subLocality}, ${placemark.locality}, ${placemark.subAdministrativeArea}, ${placemark.administrativeArea}, ${placemark.postalCode}, ${placemark.country}";
+
+        print("address: $address");
+
+        await SupabaseService().sendLocationToSupabase(
+          userId,
+          currentPosition.latitude.toString(),
+          currentPosition.longitude.toString(),
+          address,
+          CalendarUtility.dateNow3(),
+        );
+      });
+    } else {
+      stopTracking();
     }
   }
 
   void stopTracking() async {
-    print("stop all task");
-    // Workmanager().cancelAll();
-    final service = FlutterBackgroundService();
-    var isRunning = await service.isRunning();
-    if (isRunning) {
-      SharedPreferences preferences = await SharedPreferences.getInstance();
-      await preferences.remove('user_id');
-      await preferences.remove('date');
-      service.invoke("stopService");
-    }
+    print("stop background service");
+
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    await preferences.remove('user_id');
+    await preferences.remove('date');
+
+    BackgroundLocation.stopLocationService();
   }
-
-  // Future<void> listenTrustedLocation() async {
-  //   try {
-  //     TrustLocation.onChange.listen(
-  //       (values) {
-  //         isMockLocation(values);
-  //       },
-  //     );
-  //   } on PlatformException catch (e) {
-  //     print('PlatformException $e');
-  //   }
-  // }
-
-  // void isMockLocation(LatLongPosition values) {
-  //   print('lat: ${values.latitude}');
-  //   print('lng: ${values.longitude}');
-  //   print('is Mock Location: ${values.isMockLocation}');
-
-  //   setState(() {
-  //     if (values.latitude != null && values.longitude != null) {
-  //       _kCurrentPosition = CameraPosition(
-  //         target: LatLng(
-  //           double.parse(values.latitude!),
-  //           double.parse(values.longitude!),
-  //         ),
-  //         zoom: 17,
-  //       );
-  //     }
-  //     if (values.isMockLocation == true) {
-  //       TrustLocation.stop();
-  //       showDialog(
-  //         context: context,
-  //         barrierDismissible: false,
-  //         builder: (BuildContext context) {
-  //           return WillPopScope(
-  //             onWillPop: () async {
-  //               return false; // Prevent dialog from closing on back button press
-  //             },
-  //             child: AlertDialog(
-  //               title: Row(
-  //                 children: const [
-  //                   Icon(Icons.warning),
-  //                   SizedBox(width: 8),
-  //                   Text('Peringatan'),
-  //                 ],
-  //               ),
-  //               content: const Text('Terdeteksi Pemalsuan Lokasi'),
-  //               actions: [
-  //                 TextButton(
-  //                   child: const Text('Oke'),
-  //                   onPressed: () {
-  //                     SystemChannels.platform
-  //                         .invokeMethod<void>('SystemNavigator.pop');
-  //                   },
-  //                 ),
-  //               ],
-  //             ),
-  //           );
-  //         },
-  //       );
-  //     }
-  //   });
-  // }
 
   Future<void> loadData() async {
     LoadingUtility.show("Pembaruan Data");
@@ -214,13 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
       listen: false,
     );
 
-    if (pp.todayCheckData?.alreadyCheckIn == true) {
-      startTracking();
-    }
 
-    if (pp.todayCheckData?.alreadyCheckOut == true) {
-      stopTracking();
-    }
 
     final String now = CalendarUtility.dateNow();
     final String token = tp.token;
@@ -239,6 +208,8 @@ class _HomeScreenState extends State<HomeScreen> {
         dp.lembur = response.data!.lembur;
         dp.presensi = response.data!.presensi;
         ocp.officeConfig = response.data!.officeConfig;
+
+
 
         await AppStorage.localStorage.setItem(
           "ocp",
@@ -270,6 +241,63 @@ class _HomeScreenState extends State<HomeScreen> {
     if (response2.status == true) {
       if (response2.data != null) {
         pp.todayCheckData = response2.data;
+
+        if (pp.todayCheckData?.alreadyCheckIn == true) {
+          startTracking();
+        }
+
+        if (pp.todayCheckData?.alreadyCheckOut == true) {
+          stopTracking();
+        }
+
+        //set notif
+        String? workSchedule = ocp.officeConfig!.workSchedule;
+
+        if(workSchedule != null){
+          // Memisahkan waktu mulai dan waktu selesai dari workSchedule
+          List<String> scheduleParts = workSchedule.split(" - ");
+          String startTime = scheduleParts[0]; // Misalnya: "08:00"
+          String endTime = scheduleParts[1]; // Misalnya: "17:00"
+          // String endTime = "12:30";
+
+          // Memecah waktu mulai dan waktu selesai menjadi jam dan menit
+          List<String> startParts = startTime.split(":");
+          List<String> endParts = endTime.split(":");
+          int startHour = int.parse(startParts[0]);
+          int startMinute = int.parse(startParts[1]);
+          int endHour = int.parse(endParts[0]);
+          int endMinute = int.parse(endParts[1]);
+
+          //set id
+          String uId = up.user!.id as String;
+          String idIn = "91$uId";
+          String idOut = "92$uId";
+
+          // Jadwalkan notifikasi untuk waktu mulai
+          NotificationUtility notificationUtility = NotificationUtility();
+          notificationUtility.initializeNotification();
+          notificationUtility.cancelAll();
+
+
+          notificationUtility.scheduledNotification(
+              hour: startHour,
+              minutes: startMinute,
+              id: int.parse(idIn),
+              title: "Hai Semuanya️",
+              message: "Jangan lupa check-in"
+          );
+
+          // Jadwalkan notifikasi untuk waktu selesai
+          if (pp.todayCheckData?.alreadyCheckIn == true) {
+            notificationUtility.scheduledNotification(
+                hour: endHour,
+                minutes: endMinute,
+                id: int.parse(idOut),
+                title: "Hai Semuanya️",
+                message: "Jangan lupa check-out"
+            );
+          }
+        }
       }
     }
 

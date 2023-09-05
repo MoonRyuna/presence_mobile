@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:ai_awesome_message/ai_awesome_message.dart';
-import 'package:background_location/background_location.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -21,7 +20,6 @@ import 'package:presence_alpha/provider/token_provider.dart';
 import 'package:presence_alpha/provider/user_provider.dart';
 import 'package:presence_alpha/repository/platform_repository.dart';
 import 'package:presence_alpha/service/presence_service.dart';
-import 'package:presence_alpha/service/supabase_service.dart';
 import 'package:presence_alpha/service/user_service.dart';
 import 'package:presence_alpha/utility/amessage_utility.dart';
 import 'package:presence_alpha/utility/calendar_utility.dart';
@@ -419,7 +417,6 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
   }
 
   void startTracking() async {
-    print("start background service");
     final up = Provider.of<UserProvider>(
       context,
       listen: false,
@@ -427,58 +424,39 @@ class _PresenceActionScreenState extends State<PresenceActionScreen> {
 
     String userId = up.user!.id!;
 
-    await BackgroundLocation.setAndroidNotification(
-      title: 'Jangan Khawatir',
-      message: 'Posisi sedang dipantau',
-      icon: '@mipmap/ic_launcher',
-    );
+    final service = FlutterBackgroundService();
+    var isRunning = await service.isRunning();
+    if (!isRunning) {
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      await preferences.setString("user_id", userId);
+      await preferences.setString("date", CalendarUtility.dateNow());
+      service.startService();
+    }
 
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    await preferences.setString("userId", userId);
-    await preferences.setString("date", CalendarUtility.dateNow());
-
-    await BackgroundLocation.startLocationService(distanceFilter: 20);
-    BackgroundLocation.getLocationUpdates((location) async {
-      String latitude = location.latitude.toString();
-      String longitude = location.longitude.toString();
-
-      print("update location: ");
-      print("latitude: $latitude");
-      print("longitude: $longitude");
-
-      final currentPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-        currentPosition.latitude,
-        currentPosition.longitude,
-      );
-
-      Placemark placemark = placemarks[0];
-      String address =
-          "${placemark.name}, ${placemark.subLocality}, ${placemark.locality}, ${placemark.subAdministrativeArea}, ${placemark.administrativeArea}, ${placemark.postalCode}, ${placemark.country}";
-
-      print("address: $address");
-
-      await SupabaseService().sendLocationToSupabase(
-        userId,
-        currentPosition.latitude.toString(),
-        currentPosition.longitude.toString(),
-        address,
-        CalendarUtility.dateNow3(),
-      );
-    });
+    // Workmanager().registerPeriodicTask(
+    //   "send-location-task",
+    //   "user-$userId",
+    //   frequency: const Duration(
+    //     minutes: 15,
+    //   ),
+    //   inputData: {
+    //     'user_id': userId,
+    //     'date': CalendarUtility.dateNow(),
+    //   },
+    // );
   }
 
   void stopTracking() async {
-    print("stop background service");
-
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    await preferences.remove('user_id');
-    await preferences.remove('date');
-
-    BackgroundLocation.stopLocationService();
+    print("stop all task");
+    // Workmanager().cancelAll();
+    final service = FlutterBackgroundService();
+    var isRunning = await service.isRunning();
+    if (isRunning) {
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      await preferences.remove('user_id');
+      await preferences.remove('date');
+      service.invoke("stopService");
+    }
   }
 
   Future<bool> isMockLocationEnabled() async {
