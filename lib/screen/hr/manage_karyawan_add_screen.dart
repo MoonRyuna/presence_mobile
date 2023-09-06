@@ -334,7 +334,7 @@ class _ManageKaryawanAddScreenState extends State<ManageKaryawanAddScreen> {
       setState(() {
         _selectedDate = picked;
         _startedWorkAtController.text =
-            DateFormat('dd-MM-yyyy').format(_selectedDate!);
+            DateFormat('MM-dd-yyyy').format(_selectedDate!);
       });
     }
   }
