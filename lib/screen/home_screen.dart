@@ -288,15 +288,13 @@ class _HomeScreenState extends State<HomeScreen> {
           );
 
           // Jadwalkan notifikasi untuk waktu selesai
-          if (pp.todayCheckData?.alreadyCheckIn == true) {
-            notificationUtility.scheduledNotification(
-                hour: endHour,
-                minutes: endMinute,
-                id: int.parse(idOut),
-                title: "Hai Semuanya️",
-                message: "Jangan lupa check-out"
-            );
-          }
+          notificationUtility.scheduledNotification(
+              hour: endHour,
+              minutes: endMinute,
+              id: int.parse(idOut),
+              title: "Hai Semuanya️",
+              message: "Jangan lupa check-out"
+          );
         }
       }
     }
