@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -62,12 +64,13 @@ class NotificationUtility {
       _convertTime(hour, minutes),
       NotificationDetails(
         android: AndroidNotificationDetails(
-          'your_channel_id_here',
-          'your_channel_name_here',
-          channelDescription: 'your_channel_description_here',
+          '9192',
+          'Schedule Notification',
+          channelDescription: 'Schedule Notification',
           importance: Importance.max,
           priority: Priority.high,
           sound: sound != null ? RawResourceAndroidNotificationSound(sound) : null,
+          vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
         ),
       ),
       androidAllowWhileIdle: true,

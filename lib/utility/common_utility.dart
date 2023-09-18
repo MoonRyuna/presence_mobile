@@ -127,4 +127,32 @@ class CommonUtility {
 
     return textToShow;
   }
+
+  static String kurangiWaktu(String waktu, int pengurang) {
+    // Parsing waktu awal
+    List<String> parts = waktu.split(":");
+    int hours = int.parse(parts[0]);
+    int minutes = int.parse(parts[1]);
+
+    // Mengurangkan menit
+    minutes -= pengurang;
+
+    // Memastikan bahwa waktu yang dikurangkan tidak menjadi negatif
+    while (minutes < 0) {
+      hours -= 1;
+      minutes += 60;
+    }
+
+    // Mengatasi jika jam melebihi 24
+    while (hours < 0) {
+      hours += 24;
+    }
+
+    // Mengonversi kembali ke format "HH:mm"
+    String newTime = "${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}";
+
+    print("new time $newTime");
+    return newTime;
+  }
+
 }

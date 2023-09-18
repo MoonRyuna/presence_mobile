@@ -253,49 +253,63 @@ class _HomeScreenState extends State<HomeScreen> {
         //set notif
         String? workSchedule = ocp.officeConfig!.workSchedule;
 
-        if(workSchedule != null){
-          // Memisahkan waktu mulai dan waktu selesai dari workSchedule
-          List<String> scheduleParts = workSchedule.split(" - ");
-          String startTime = scheduleParts[0]; // Misalnya: "08:00"
-          String endTime = scheduleParts[1]; // Misalnya: "17:00"
-          // String endTime = "12:30";
-
-          // Memecah waktu mulai dan waktu selesai menjadi jam dan menit
-          List<String> startParts = startTime.split(":");
-          List<String> endParts = endTime.split(":");
-          int startHour = int.parse(startParts[0]);
-          int startMinute = int.parse(startParts[1]);
-          int endHour = int.parse(endParts[0]);
-          int endMinute = int.parse(endParts[1]);
-
-          //set id
-          String uId = up.user!.id as String;
-          String idIn = "91$uId";
-          String idOut = "92$uId";
-
-          // Jadwalkan notifikasi untuk waktu mulai
+        if(pp.todayCheckData?.isWeekend == true || pp.todayCheckData?.isHoliday == true || pp.todayCheckData?.isAbsence == true){
+          // Cancel Notif
           NotificationUtility notificationUtility = NotificationUtility();
           notificationUtility.initializeNotification();
           notificationUtility.cancelAll();
-
-
-          notificationUtility.scheduledNotification(
-              hour: startHour,
-              minutes: startMinute,
-              id: int.parse(idIn),
-              title: "Hai Semuanya️",
-              message: "Jangan lupa check-in"
-          );
-
-          // Jadwalkan notifikasi untuk waktu selesai
-          notificationUtility.scheduledNotification(
-              hour: endHour,
-              minutes: endMinute,
-              id: int.parse(idOut),
-              title: "Hai Semuanya️",
-              message: "Jangan lupa check-out"
-          );
         }
+
+        if (pp.todayCheckData?.isWorkday == true) {
+          if(workSchedule != null){
+            // Memisahkan waktu mulai dan waktu selesai dari workSchedule
+            List<String> scheduleParts = workSchedule.split(" - ");
+            String startTime = scheduleParts[0]; // Misalnya: "08:00"
+            String endTime = scheduleParts[1]; // Misalnya: "17:00"
+
+            startTime = CommonUtility.kurangiWaktu(startTime, 30);
+
+            // startTime = "15:45";
+
+            // Memecah waktu mulai dan waktu selesai menjadi jam dan menit
+            List<String> startParts = startTime.split(":");
+            List<String> endParts = endTime.split(":");
+            int startHour = int.parse(startParts[0]);
+            int startMinute = int.parse(startParts[1]);
+            int endHour = int.parse(endParts[0]);
+            int endMinute = int.parse(endParts[1]);
+
+            //set id
+            String uId = up.user!.id as String;
+            String idIn = "91$uId";
+            String idOut = "92$uId";
+
+            // Jadwalkan notifikasi untuk waktu mulai
+            NotificationUtility notificationUtility = NotificationUtility();
+            notificationUtility.initializeNotification();
+            notificationUtility.cancelAll();
+
+            notificationUtility.scheduledNotification(
+                hour: startHour,
+                minutes: startMinute,
+                id: int.parse(idIn),
+                title: "Hai Semuanya️",
+                message: "Jangan lupa check-in",
+                sound: "sound_reminder2"
+            );
+
+            // Jadwalkan notifikasi untuk waktu selesai
+            notificationUtility.scheduledNotification(
+                hour: endHour,
+                minutes: endMinute,
+                id: int.parse(idOut),
+                title: "Hai Semuanya️",
+                message: "Jangan lupa check-out",
+                sound: "sound_reminder2"
+            );
+          }
+        }
+
       }
     }
 
