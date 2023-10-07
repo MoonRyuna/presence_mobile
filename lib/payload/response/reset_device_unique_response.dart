@@ -3,17 +3,17 @@ import 'dart:convert';
 import 'package:presence_alpha/model/user_model.dart';
 import 'package:presence_alpha/payload/response/base_response.dart';
 
-class ResetImeiResponse extends BaseResponse {
+class ResetDeviceUniqueResponse extends BaseResponse {
   final UserModel? data;
 
-  ResetImeiResponse({
+  ResetDeviceUniqueResponse({
     required bool status,
     required String message,
     this.data,
   }) : super(status: status, message: message);
 
-  factory ResetImeiResponse.fromJson(Map<String, dynamic> json) {
-    return ResetImeiResponse(
+  factory ResetDeviceUniqueResponse.fromJson(Map<String, dynamic> json) {
+    return ResetDeviceUniqueResponse(
       status: json['status'],
       message: json['message'],
       data: json['data'] != null ? UserModel.fromJson(json['data']) : null,

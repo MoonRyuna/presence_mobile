@@ -22,7 +22,7 @@ class UserModel {
   String? updatedAt;
   String? createdAt;
   String? token;
-  String? imei;
+  String? deviceUnique;
   String? deviceUid;
   String? otp;
   String? updatedBy;
@@ -50,7 +50,7 @@ class UserModel {
       this.updatedAt,
       this.createdAt,
       this.token,
-      this.imei,
+      this.deviceUnique,
       this.deviceUid,
       this.otp,
       this.updatedBy,
@@ -79,7 +79,7 @@ class UserModel {
       updatedAt: json['updatedAt'],
       createdAt: json['createdAt'],
       token: json['token'],
-      imei: json['imei'],
+      deviceUnique: json['device_unique'],
       deviceUid: json['device_uid'],
       otp: json['otp'],
       updatedBy: json['updated_by'],
@@ -112,7 +112,7 @@ class UserModel {
     data['updated_at'] = updatedAt;
     data['created_at'] = createdAt;
     data['token'] = token;
-    data['imei'] = imei;
+    data['device_unique'] = deviceUnique;
     data['device_uid'] = deviceUid;
     data['otp'] = otp;
     data['updated_by'] = updatedBy;
@@ -124,7 +124,7 @@ class UserModel {
     data['updated_at'] = updatedAt;
     data['created_at'] = createdAt;
     data['token'] = token;
-    data['imei'] = imei;
+    data['device_unique'] = deviceUnique;
     data['device_uid'] = deviceUid;
     data['otp'] = otp;
     data['updated_by'] = updatedBy;

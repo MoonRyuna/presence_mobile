@@ -37,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? usernameError;
   String? passwordError;
 
-  late String imei = "";
+  late String deviceUnique = "";
   bool _isObscure = true;
 
   String? officeName;
@@ -45,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    setImei();
+    setDeviceUnique();
     getConfig();
   }
 
@@ -66,12 +66,12 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> setImei() async {
+  Future<void> setDeviceUnique() async {
     await checkPermission();
-    String? gImei = await DeviceInformation.deviceIMEINumber;
+    String? gDeviceUnique = await DeviceInformation.deviceIMEINumber;
 
     setState(() {
-      imei = gImei;
+      deviceUnique = gDeviceUnique;
     });
   }
 
@@ -129,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
         final requestData = {
           'username': username,
           'password': password,
-          'imei': imei,
+          'device_unique': deviceUnique,
         };
         print(requestData);
 
@@ -158,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
             UserAuthModel userAuthModel = UserAuthModel(
               username: username,
               password: password,
-              imei: imei,
+              deviceUnique: deviceUnique,
             );
 
             await AppStorage.localStorage.setItem("usr", userAuthModel);
@@ -269,7 +269,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const Padding(padding: EdgeInsets.all(3)),
                     Text(
-                      "IMEI: $imei",
+                      "DEVICE UNIQUE: $deviceUnique",
                       style: const TextStyle(
                         fontSize: 13,
                         color: Colors.white,

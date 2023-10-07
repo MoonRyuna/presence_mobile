@@ -9,7 +9,7 @@ import 'package:presence_alpha/payload/response/create_user_response.dart';
 import 'package:presence_alpha/payload/response/dashboard1_response.dart';
 import 'package:presence_alpha/payload/response/delete_user_response.dart';
 import 'package:presence_alpha/payload/response/list_monitoring_karyawan_response.dart';
-import 'package:presence_alpha/payload/response/reset_imei_response.dart';
+import 'package:presence_alpha/payload/response/reset_device_unique_response.dart';
 import 'package:presence_alpha/payload/response/today_check_response.dart';
 import 'package:presence_alpha/payload/response/update_profile_response.dart';
 import 'package:presence_alpha/payload/response/user/list_jatah_cuti_tahunan_response.dart';
@@ -364,11 +364,11 @@ class UserService {
     }
   }
 
-  Future<ResetImeiResponse> resetImei(
+  Future<ResetDeviceUniqueResponse> resetDeviceUnique(
       Map<String, dynamic> requestData, String token) async {
-    print('POST: reset imei user');
+    print('POST: reset device_unique user');
 
-    String target = '${ApiConstant.baseApi}/user/reset_imei';
+    String target = '${ApiConstant.baseApi}/user/reset_device_unique';
     print('target: $target');
     print('json" ${jsonEncode(json.encode(requestData))}');
 
@@ -386,35 +386,35 @@ class UserService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
-        return ResetImeiResponse.fromJson(responseData);
+        return ResetDeviceUniqueResponse.fromJson(responseData);
       } else {
         final Map<String, dynamic> responseData = json.decode(response.body);
-        return ResetImeiResponse(
+        return ResetDeviceUniqueResponse(
           status: false,
           message: responseData['message'] ?? 'Unable to fetch data',
           data: null,
         );
       }
     } on TimeoutException {
-      return ResetImeiResponse(
+      return ResetDeviceUniqueResponse(
         status: false,
         message: 'Connection timed out',
         data: null,
       );
     } on SocketException catch (e) {
-      return ResetImeiResponse(
+      return ResetDeviceUniqueResponse(
         status: false,
         message: e.message,
         data: null,
       );
     } on Exception {
-      return ResetImeiResponse(
+      return ResetDeviceUniqueResponse(
         status: false,
         message: 'Failed to connect to server',
         data: null,
       );
     } catch (e) {
-      return ResetImeiResponse(
+      return ResetDeviceUniqueResponse(
         status: false,
         message: e.toString(),
         data: null,

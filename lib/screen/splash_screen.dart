@@ -54,12 +54,12 @@ class _SplashScreenState extends State<SplashScreen> {
       print("userAuthModel ${userAuthModel.toJsonString()}");
       String? username = userAuthModel.username;
       String? password = userAuthModel.password;
-      String? imei = userAuthModel.imei;
+      String? deviceUnique = userAuthModel.deviceUnique;
 
       final requestData = {
         'username': username,
         'password': password,
-        'imei': imei,
+        'device_unique': deviceUnique,
       };
       print(requestData);
 
@@ -81,7 +81,7 @@ class _SplashScreenState extends State<SplashScreen> {
           UserAuthModel userAuthModel = UserAuthModel(
             username: username,
             password: password,
-            imei: imei,
+            deviceUnique: deviceUnique,
           );
 
           String strUser = jsonEncode(userAuthModel.toJson());

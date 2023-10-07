@@ -222,7 +222,7 @@ class _ManageKaryawanEditScreenState extends State<ManageKaryawanEditScreen> {
     }
   }
 
-  Future<void> onResetImei() async {
+  Future<void> onResetDeviceUnique() async {
     LoadingUtility.show(null);
 
     final token = Provider.of<TokenProvider>(context, listen: false).token;
@@ -233,7 +233,8 @@ class _ManageKaryawanEditScreenState extends State<ManageKaryawanEditScreen> {
         "user_id": _userId!,
       };
 
-      final response = await UserService().resetImei(requestData, token);
+      final response =
+          await UserService().resetDeviceUnique(requestData, token);
       if (!mounted) return;
 
       if (response.status != true || response.data == null) {

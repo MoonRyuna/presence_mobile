@@ -124,14 +124,14 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
     });
   }
 
-  Future<void> _onResetImei(String id) async {
+  Future<void> _onResetDeviceUnique(String id) async {
     bool? isConfirmed = await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text("Konfirmasi"),
           content: const Text(
-              "Apakah anda yakin ingin mereset imei perangkat karyawan ini?"),
+              "Apakah anda yakin ingin mereset device_unique perangkat karyawan ini?"),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -160,7 +160,8 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
         "user_id": id,
       };
 
-      final response = await UserService().resetImei(requestData, token);
+      final response =
+          await UserService().resetDeviceUnique(requestData, token);
       if (!mounted) return;
 
       if (response.status != true || response.data == null) {
@@ -301,7 +302,7 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
                   SlidableAction(
                     onPressed: (context) async {
                       if (user != null && user.id != null) {
-                        await _onResetImei(user.id!);
+                        await _onResetDeviceUnique(user.id!);
                       } else {
                         AmessageUtility.show(
                           context,
@@ -314,7 +315,7 @@ class _ManageKaryawanScreenState extends State<ManageKaryawanScreen> {
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
                     icon: Icons.refresh,
-                    label: 'Reset IMEI',
+                    label: 'Reset DEVICE UNIQUE',
                   ),
                   SlidableAction(
                     onPressed: (context) async {

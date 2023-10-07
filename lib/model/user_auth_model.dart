@@ -3,19 +3,19 @@ import 'dart:convert';
 class UserAuthModel {
   String? username;
   String? password;
-  String? imei;
+  String? deviceUnique;
 
   UserAuthModel({
     this.username,
     this.password,
-    this.imei,
+    this.deviceUnique,
   });
 
   factory UserAuthModel.fromJson(Map<String, dynamic> json) {
     return UserAuthModel(
       username: json['username'],
       password: json['password'],
-      imei: json['imei'],
+      deviceUnique: json['device_unique'],
     );
   }
 
@@ -23,7 +23,7 @@ class UserAuthModel {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['username'] = username;
     data['password'] = password;
-    data['imei'] = imei;
+    data['device_unique'] = deviceUnique;
     return data;
   }
 
